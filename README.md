@@ -22,6 +22,7 @@ scripts/
   sign.mjs                 ed25519 keygen / sign / verify (bundles, catalog index, blocklist)
   build-catalog.mjs        GitHub releases -> catalog index.json (one signed entry per version)
   check-blocklist.mjs      validates catalog/blocklist.json
+  verify-catalog.mjs       checks every bundle an index lists (checksum and signature) before it is signed
 catalog/
   blocklist.json           hand-edited blocklist source; CI signs and publishes it
 .github/
@@ -106,13 +107,77 @@ Every plugin is versioned independently with semver in its own `package.json`. T
    the tag.
 
 The release workflow checks that the tag matches the manifest version, runs `pnpm check`, builds
-the bundle, verifies the checksum and creates a GitHub release with
-`<name>-<version>.js` and `<name>-<version>.js.sha256` attached. Versions with a pre-release
+the bundle, verifies the checksum, signs the bundle and creates a GitHub release with
+`<name>-<version>.js`, `<name>-<version>.js.sha256`, `<name>-<version>.js.sig` and
+`<name>-<version>.manifest.json` attached; the catalog workflow then publishes the new version
+(see "Signing and the catalog"). Versions with a pre-release
 suffix (`-beta.1`) are marked as pre-releases. Artifact attestations (build provenance) are a
 TODO in the workflow.
 
 A plugin bumps its major version when it drops support for an SDK major; widening the
 `transcoda.sdk` range is a minor release.
+
+## Signing and the catalog
+
+Transcoda only installs official bundles that carry a valid ed25519 signature, and verifies
+the catalog index and the blocklist the same way. One key signs all three. It lives in two
+repository secrets: `PLUGIN_SIGNING_KEY` (the private key, PKCS8 PEM) and
+`PLUGIN_SIGNING_KEY_ID` (the key id, `A-Za-z0-9._-`, at most 64 characters).
+
+```bash
+node scripts/sign.mjs keygen --out <dir>
+```
+
+`keygen` writes `signing-key.pem` (mode 0600, refuses to overwrite) and prints the public key
+as 64 hex characters. Pin that public key, with its id, in core's
+`apps/server/src/plugins/official-keys.ts`, store the PEM in the secret, and never commit the
+PEM. Until a build of Transcoda pins the key, it refuses the official catalog. `sign.mjs sign
+<file> --key-id <id>` writes `<file>.sig` and `sign.mjs verify <file> --public <hex>` checks one.
+
+- **Bundles.** The release workflow signs `<name>-<version>.js`, verifies the signature again
+  and uploads `<name>-<version>.js.sig` next to the bundle. The signature covers the bundle's
+  exact bytes.
+- **Catalog.** `.github/workflows/catalog.yml` builds `index.json` from the releases (each
+  version lists its `signature` url), checks that every listed bundle matches its checksum
+  and verifies against the key, signs the index, and pushes `index.json`, `blocklist.json` and
+  their `.sig` files to the `catalog` branch. It runs after a successful Release, on an edit
+  of `catalog/blocklist.json` on `main`, or by hand from `main`. A failed index build does not
+  keep the blocklist from being published; the job still fails and the branch keeps its
+  previous `index.json`.
+
+A signature file is `{ "schema": 1, "alg": "ed25519", "keyId": "<id>", "signature": "<base64
+of the 64-byte signature>" }`, beside its document at `<url>.sig`.
+
+### Blocklisting a build
+
+`catalog/blocklist.json` on `main` is the hand-edited source:
+`{ "schema": 1, "generated": "<ISO datetime>", "entries": [ ... ] }` (CI sets `generated` when
+it publishes). An entry has an `id` (1 to 64 characters, unique), a `reason` (1 to 200
+characters, shown to users), `added` (ISO datetime, not later than `generated`), an optional
+advisory `url` (https), and a way to name the build: `sha256` (the bundle's 64-character hash)
+or `name` with an optional `versions` semver range (`versions` needs `name`). For example, an
+entry with `name: "sonarr"`, `versions: "<1.2.1"` and a reason blocks every older Sonarr
+build, while one with only a `sha256` blocks that single file.
+
+`pnpm check` (the `check-blocklist` step) validates the file; merging the change to `main`
+publishes it, and running servers pick it up within an hour (or at their next start). Transcoda
+stops an installed plugin the list names, with the reason shown on its card, refuses to install
+a listed build, and keeps enforcing the last good list when it cannot fetch a new one. One
+invalid entry makes the whole document invalid, so check before you merge.
+
+### Rotating the key
+
+1. Generate the new key, add its public key to `official-keys.ts` next to the old one, and
+   release core.
+2. Switch the `PLUGIN_SIGNING_KEY` and `PLUGIN_SIGNING_KEY_ID` secrets to the new key (new
+   releases, the index and the blocklist are then signed with it; old bundles keep their old
+   signature and stay valid while the old key is pinned).
+3. Remove the old key from `official-keys.ts` two core releases later. A plugin still signed
+   with it then stops at its next start with `signed with an unknown key <id>` until it is
+   updated to a rebuilt release.
+
+If the key is compromised, remove it from `official-keys.ts` at once and blocklist the
+affected builds by `sha256`.
 
 ## License
 
