@@ -194,6 +194,15 @@ importers:
         specifier: 4.6.7
         version: 4.6.7
 
+  plugins/discord:
+    devDependencies:
+      '@transcoda/sdk':
+        specifier: link:../../../transcoda/packages/sdk
+        version: link:../../../transcoda/packages/sdk
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
+
   plugins/example:
     devDependencies:
       '@transcoda/sdk':

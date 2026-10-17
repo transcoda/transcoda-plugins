@@ -1,0 +1,21 @@
+{
+  "name": "@transcoda/plugin-discord",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Discord plugin: posts a message to a channel through a webhook when a job is done, and optionally when a job fails.",
+  "license": "GPL-3.0-only",
+  "transcoda": {
+    "sdk": "^1",
+    "title": "Discord"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "bundle": "tsdown && node ../../scripts/finalize-bundle.mjs"
+  },
+  "devDependencies": {
+    "@transcoda/sdk": "link:../../../transcoda/packages/sdk",
+    "zod": "4.6.7"
+  }
+}
