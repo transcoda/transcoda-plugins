@@ -30,16 +30,18 @@ jobs:
       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Holds PLUGIN_SIGNING_KEY / PLUGIN_SIGNING_KEY_ID as environment secrets (see README).
+    environment: plugin-signing
     permissions:
       contents: write
     steps:
       # The runner context is not available in job-level env, so OUT is set here.
       - run: echo "OUT=$RUNNER_TEMP/catalog-out" >> "$GITHUB_ENV"
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: main
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v7
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .node-version
           cache: pnpm

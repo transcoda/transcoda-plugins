@@ -54,19 +54,22 @@ function report(files) {
   return errors.length === 0;
 }
 
-const isNote = (f) => /^\.changes\/.+\.md$/.test(f) && f !== '.changes/README.md';
+// A README.md at .changes/ or .changes/<plugin>/ documents; it is not a note.
+const isNote = (f) =>
+  /^\.changes\/.+\.md$/.test(f) && !/^\.changes\/(?:[^/]+\/)?README\.md$/.test(f);
 const args = process.argv.slice(2);
 
 if (args[0] === '--lint') {
+  // Walk every depth, as the PR check sees any path, so both reject the same too-deep notes.
   const all = [];
-  if (existsSync('.changes')) {
-    for (const entry of readdirSync('.changes', { withFileTypes: true })) {
-      if (entry.isDirectory()) {
-        for (const f of readdirSync(`.changes/${entry.name}`))
-          all.push(`.changes/${entry.name}/${f}`);
-      } else all.push(`.changes/${entry.name}`);
+  const walk = (dir) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const path = `${dir}/${entry.name}`;
+      if (entry.isDirectory()) walk(path);
+      else all.push(path);
     }
-  }
+  };
+  if (existsSync('.changes')) walk('.changes');
   process.exit(report(all.filter((f) => f.endsWith('.md') && isNote(f))) ? 0 : 1);
 }
 

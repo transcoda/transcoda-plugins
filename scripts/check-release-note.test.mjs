@@ -83,3 +83,21 @@ test('--lint validates every existing note and ignores the README', () => {
   const bad = repo({ '.changes/sonarr/a.md': note('nope') });
   assert.equal(run(bad.cwd, '--lint').status, 1);
 });
+
+test('--lint and the PR check both reject a note nested deeper than .changes/<plugin>/', () => {
+  const { cwd, base, head } = repo({ '.changes/sonarr/sub/deep.md': note() });
+  const lint = run(cwd, '--lint');
+  assert.equal(lint.status, 1, lint.stderr);
+  assert.match(lint.stderr, /deep\.md/);
+  const pr = run(cwd, base, head, '[]');
+  assert.equal(pr.status, 1);
+  assert.match(pr.stderr, /deep\.md/);
+});
+
+test('.changes/<plugin>/README.md is not a note for --lint or the PR check', () => {
+  const { cwd, base, head } = repo({ '.changes/sonarr/README.md': '# not a note' });
+  assert.equal(run(cwd, '--lint').status, 0);
+  const pr = run(cwd, base, head, '[]');
+  assert.equal(pr.status, 1);
+  assert.match(pr.stderr, /No release note found/);
+});

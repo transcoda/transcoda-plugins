@@ -35,6 +35,11 @@ for (const [what, code] of [
   ['process.binding', "process.binding('fs');"],
   ['new Function', "new Function('return 1');"],
   ['new Function with arguments', 'new Function("a", "return a");'],
+  ['new  Function (extra spaces)', "new  Function('return 1');"],
+  ['new Function over a newline', "new\nFunction('return 1');"],
+  ['Function(...)() without new', "Function('x')();"],
+  ['new Function with a computed empty-looking source', 'new Function("" + x);'],
+  ['node:module', "import 'node:module';"],
   ['eval(', "eval ('1');"],
   ['globalThis.fetch', 'globalThis.fetch(url);'],
   ['bare fetch(', 'await fetch(url);'],
@@ -58,6 +63,10 @@ test('the SDK own context.fetch text and method calls named fetch are allowed', 
 
 test('zod own empty new Function probe is allowed', () => {
   assert.deepEqual(checkBundles(root('try { new Function(""); } catch (_) {}')), []);
+});
+
+test('a method or property named Function is not a Function constructor call', () => {
+  assert.deepEqual(checkBundles(root('const t = x.Function(1); const u = MyFunction(2);')), []);
 });
 
 test('a repo without plugins passes', () => {

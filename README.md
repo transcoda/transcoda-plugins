@@ -166,8 +166,23 @@ A plugin bumps its major version when it drops support for an SDK major; widenin
 
 Transcoda only installs official bundles that carry a valid ed25519 signature, and verifies
 the catalog index and the blocklist the same way. One key signs all three. It lives in two
-repository secrets: `PLUGIN_SIGNING_KEY` (the private key, PKCS8 PEM) and
-`PLUGIN_SIGNING_KEY_ID` (the key id, `A-Za-z0-9._-`, at most 64 characters).
+secrets of the GitHub **environment** `plugin-signing` (not repository secrets, so no other
+job or workflow can read them): `PLUGIN_SIGNING_KEY` (the private key, PKCS8 PEM) and
+`PLUGIN_SIGNING_KEY_ID` (the key id, `A-Za-z0-9._-`, at most 64 characters). Only the
+`release` job in `release.yml` and the `publish` job in `catalog.yml` declare that
+environment, and every action those jobs use is pinned to a full commit SHA.
+
+Settings the maintainer configures once (Settings > Environments > New environment >
+`plugin-signing`):
+
+- **Required reviewers:** at least one maintainer (enable "Prevent self-review" if there is a
+  second maintainer), so every run that touches the key waits for an approval.
+- **Deployment branches and tags:** "Selected branches and tags" with `main` (catalog runs) and
+  a tag rule `*-v*` (release runs). Nothing else may deploy to the environment.
+- **Environment secrets:** add `PLUGIN_SIGNING_KEY` and `PLUGIN_SIGNING_KEY_ID` here, and
+  delete any repository-level secrets of the same names.
+- Leave "Allow administrators to bypass" off if the plan offers it, and keep the tag
+  `*-v*` creation restricted to maintainers (a tag ruleset), since a pushed tag starts a release.
 
 ```bash
 node scripts/sign.mjs keygen --out <dir>
@@ -202,7 +217,9 @@ characters, shown to users), `added` (ISO datetime, not later than `generated`),
 advisory `url` (https), and a way to name the build: `sha256` (the bundle's 64-character hash)
 or `name` with an optional `versions` semver range (`versions` needs `name`). For example, an
 entry with `name: "sonarr"`, `versions: "<1.2.1"` and a reason blocks every older Sonarr
-build, while one with only a `sha256` blocks that single file.
+build, while one with only a `sha256` blocks that single file. An entry that has both `sha256`
+and `name` matches either: the named plugin (in the `versions` range, if given) or the build
+with that hash.
 
 `pnpm check` (the `check-blocklist` step) validates the file; merging the change to `main`
 publishes it, and running servers pick it up within an hour (or at their next start). Transcoda
@@ -221,8 +238,23 @@ invalid entry makes the whole document invalid, so check before you merge.
    with it then stops at its next start with `signed with an unknown key <id>` until it is
    updated to a rebuilt release.
 
-If the key is compromised, remove it from `official-keys.ts` at once and blocklist the
-affected builds by `sha256`.
+### If the key is compromised
+
+Do these in this order; the order matters because the blocklist and index must be signed by a
+key the servers already trust.
+
+1. Generate a new key (`node scripts/sign.mjs keygen --out <dir>`).
+2. Release core with the new public key pinned in `official-keys.ts` and the compromised key
+   removed.
+3. Put the new key and id in the `plugin-signing` environment secrets, then re-sign the index
+   and the blocklist with it (run the Catalog workflow by hand from `main`).
+4. Add `sha256` entries for every build signed with the compromised key (and any build you
+   cannot vouch for) to `catalog/blocklist.json`, merge to `main`, and let the Catalog workflow
+   publish it.
+5. Re-release the plugins you still support, so they carry a signature from the new key.
+
+Servers running an older core still pin the compromised key and have no protection until they
+update to the core release from step 2; say so in the advisory.
 
 ## License
 

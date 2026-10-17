@@ -1,6 +1,8 @@
 // Static check of every built bundle (plugins/*/dist/*.js): a plugin must not reach for the
 // filesystem, processes, threads, code generation or the global network. This is defence in
-// depth for review; the plugin host's permission sandbox is the real boundary.
+// depth for review; the plugin host's permission sandbox is the real boundary. This grep is
+// defence in depth only: a bare `import 'fs'` (no node: prefix) is blocked earlier, by
+// finalize-bundle.mjs, which rejects any import that is not a node: built-in.
 // Usage: node scripts/check-bundles.mjs     (after `pnpm bundle`)
 // Exports checkBundles(root) for tests; the CLI runs only when executed directly.
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
@@ -12,10 +14,15 @@ const SDK_FETCH_SHIM =
   /async fetch\(\)\s*\{\s*throw new FetchRefused\((["'])core nodes have no integration\1\);?\s*\}/g;
 
 const RULES = [
-  [/\bnode:(fs|fs\/promises|child_process|worker_threads|vm|inspector)\b/, (m) => `node:${m[1]}`],
+  [
+    /\bnode:(fs|fs\/promises|child_process|worker_threads|vm|inspector|module)\b/,
+    (m) => `node:${m[1]}`,
+  ],
   [/\bprocess\.binding\b/, () => 'process.binding'],
   // zod probes eval support with `new Function("")` (empty source); anything else fails.
-  [/\bnew Function\b(?!\s*\(\s*(?:""|'')\s*\))/, () => 'new Function'],
+  [/\bnew\s+Function\b(?!\s*\(\s*(?:""|'')\s*\))/, () => 'new Function'],
+  // Function("...")() without `new` is the same thing (a `new Function` call is handled above).
+  [/(?<!\bnew\s+)(?<![\w$.])Function\s*\(/, () => 'Function('],
   [/\beval\s*\(/, () => 'eval('],
   [/\bglobalThis\.fetch\b/, () => 'globalThis.fetch'],
   [/(?<![\w$.])fetch\s*\(/, () => 'bare fetch('],

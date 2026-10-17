@@ -23,3 +23,7 @@ A pull request with no user-facing change (refactor, tests, tooling, CI) needs n
 `pnpm check-plugins` validates every note that exists; `.github/workflows/release-note.yml` checks that a pull request adds one (or carries the label).
 
 Notes are not removed automatically when a release is cut: after tagging, delete the notes that release consumed in a follow-up pull request.
+
+The flat form is ambiguous when plugin names share a prefix: `arr-common-x.md` could belong to `arr` or `arr-common`; prefer the folder form for any plugin whose name is a prefix of another's.
+
+Consumed notes must be removed at release: delete them in the follow-up pull request, or they are published again in the next release of the same plugin.
