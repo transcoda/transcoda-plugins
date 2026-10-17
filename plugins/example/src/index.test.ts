@@ -62,6 +62,7 @@ describe('plugin', () => {
       version: '1.0.0',
       sdk: '^1',
       nodes: ['example:extension-is'],
+      nodeVersions: [{ type: 'example:extension-is', version: 1, migrations: [] }],
       integration: null,
       triggers: [],
       hooks: [],
