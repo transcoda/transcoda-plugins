@@ -5,6 +5,26 @@ Sonarr, Radarr, Jellyfin, TMDB and notifications. Each plugin is built against t
 plugin SDK (`@transcoda/sdk`) and shipped as one self-contained JavaScript file that Transcoda
 installs into `/config/plugins` and runs in its sandboxed plugin host.
 
+## The plugins
+
+- **Sonarr**: after a transcode replaces a file, tells Sonarr to rescan the series and checks that
+  Sonarr lists the new file. Needs Sonarr's URL and API key.
+- **Radarr**: the same for movies. Needs Radarr's URL and API key.
+- **Jellyfin**: refreshes the library after a file changes. Needs Jellyfin's URL and an API key.
+- **TMDB**: looks up a movie or show so a workflow can branch on it (original language, year,
+  ids). Needs a TMDB API key.
+- **ntfy**: sends a notification when a job finishes or needs attention. Needs an ntfy server
+  URL and topic (and a token if the topic is protected).
+- **Discord**: posts the same notification to a channel through a webhook. Needs the webhook URL.
+
+Emby and Plex are wanted as community plugins: their APIs cannot be verified here (nobody on the
+team runs either), so there are no official ones. Anyone who does can build them against the SDK.
+
+This product uses the TMDB API but is not endorsed or certified by TMDB.
+
+What a plugin can and cannot do inside the sandbox is described in core's
+`docs/plugin-sdk.md`, section "What the sandbox does and does not do".
+
 ## Layout
 
 ```
@@ -12,11 +32,23 @@ plugins/<name>/            one plugin per directory (kebab-case; also the releas
   package.json             @transcoda/plugin-<name>, version, "transcoda": { "sdk": "^1" }
   src/index.ts             default export: definePlugin(...); named export `nodes`
   tsdown.config.ts         uses scripts/plugin-bundle-config.ts
+packages/<name>/           shared code (for example arr-common for Sonarr and Radarr); inlined
+                           into the bundles that use it, never released on its own
+test/
+  setup.ts                 runs before every test file; stubs the global fetch so tests cannot
+                           reach the network
+  fixtures/                recorded-style JSON responses (see its README)
+.changes/<plugin>/         release notes, one small file per user-facing change
 scripts/
   plugin-bundle-config.ts  shared tsdown config (ESM, node24, every dependency inlined)
   finalize-bundle.mjs      checks the bundle is self-contained, writes the sha256 file and the
                            <name>-<version>.manifest.json the catalog is built from
-  bundle-manifest.mjs      prints what a built bundle announces (run sandboxed by finalize-bundle)
+  bundle-manifest.mjs      prints what a built bundle announces, including each node's version and
+                           migrations (run sandboxed by finalize-bundle)
+  check-bundles.mjs        fails when a built bundle uses node:fs, child_process, worker_threads,
+                           vm, inspector, process.binding, eval, new Function or the global fetch
+  check-release-note.mjs   release-note rules: a PR adds a note or carries the label; --lint
+  release-notes.mjs        turns .changes/<plugin>/ into the release body, grouped by type
   check-plugins.mjs        manifest rules (name, semver, transcoda.sdk range, no runtime deps)
   host-check.mjs           starts every built bundle in core's sandboxed host (--check-plugin)
   sign.mjs                 ed25519 keygen / sign / verify (bundles, catalog index, blocklist)
@@ -28,7 +60,8 @@ catalog/
 .github/
   actions/setup            checks out the core repo next to this one and installs both
   workflows/ci.yml         typecheck, lint, test, bundle against each supported core version
-  workflows/release.yml    builds, signs and releases one plugin per tag
+  workflows/release.yml    builds, signs, attests and releases one plugin per tag
+  workflows/release-note.yml  PR check: a release note or the `no user-facing change` label
   workflows/catalog.yml    builds and signs index.json and blocklist.json, pushes to branch `catalog`
 ```
 
@@ -85,7 +118,9 @@ pnpm check
 pnpm bundle
 ```
 
-- `pnpm check`: typecheck, lint (Biome), manifest rules, tests (Vitest).
+- `pnpm check`: typecheck, lint (Biome), manifest rules, release-note lint, script tests,
+  tests (Vitest).
+- `node scripts/check-bundles.mjs` (after `pnpm bundle`): static check of every built bundle.
 - `pnpm bundle`: builds every plugin to `plugins/<name>/dist/<name>-<version>.js` plus
   `<name>-<version>.js.sha256` (`sha256sum` format; verify with `sha256sum --check`).
 - `node scripts/host-check.mjs` (after `pnpm bundle`): builds core's server at `../transcoda` and runs
@@ -107,12 +142,22 @@ Every plugin is versioned independently with semver in its own `package.json`. T
    the tag.
 
 The release workflow checks that the tag matches the manifest version, runs `pnpm check`, builds
-the bundle, verifies the checksum, signs the bundle and creates a GitHub release with
+the bundle, verifies the checksum, signs the bundle, attests its build provenance
+(`actions/attest-build-provenance`) and creates a GitHub release with
 `<name>-<version>.js`, `<name>-<version>.js.sha256`, `<name>-<version>.js.sig` and
 `<name>-<version>.manifest.json` attached; the catalog workflow then publishes the new version
-(see "Signing and the catalog"). Versions with a pre-release
-suffix (`-beta.1`) are marked as pre-releases. Artifact attestations (build provenance) are a
-TODO in the workflow.
+(see "Signing and the catalog"). The release body names the core version, carries an
+`Attestation: <url>` line the catalog reads, and lists the plugin's release notes (below).
+Versions with a pre-release suffix (`-beta.1`) are marked as pre-releases.
+
+## Release notes
+
+Every pull request that changes something a user can notice adds a note,
+`.changes/<plugin>/<short-name>.md`, with front matter `type: new|improved|fixed|breaking` and
+one or two sentences for people who use Transcoda (format in `.changes/README.md`). A pull
+request with no user-facing change gets the `no user-facing change` label instead; CI checks
+for one of the two. The release workflow pastes the plugin's notes into the release, grouped
+New, Improved, Fixed and Breaking. Removing the notes a release consumed is a manual follow-up.
 
 A plugin bumps its major version when it drops support for an SDK major; widening the
 `transcoda.sdk` range is a minor release.

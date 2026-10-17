@@ -23,6 +23,11 @@ console.log(
     version: plugin.version,
     sdk: plugin.sdk,
     nodes: (Array.isArray(plugin.nodes) ? plugin.nodes : []).map((n) => n.type),
+    nodeVersions: (Array.isArray(plugin.nodes) ? plugin.nodes : []).map((n) => ({
+      type: n.type,
+      version: n.version,
+      migrations: (n.migrations ?? []).map(({ from, to, risk }) => ({ from, to, risk })),
+    })),
     integration: plugin.integration?.id ?? null,
     triggers: (plugin.triggers ?? []).map((t) => t.id),
     hooks: HOOKS.filter((h) => typeof plugin.hooks?.[h] === 'function'),

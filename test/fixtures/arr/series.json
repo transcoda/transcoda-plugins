@@ -1,0 +1,84 @@
+[
+  {
+    "id": 7,
+    "title": "Example Show",
+    "sortTitle": "example show",
+    "status": "continuing",
+    "ended": false,
+    "overview": "A fictional show used for tests.",
+    "network": "Example TV",
+    "year": 2020,
+    "path": "/data/shows/Example Show",
+    "qualityProfileId": 1,
+    "seasonFolder": true,
+    "monitored": true,
+    "useSceneNumbering": false,
+    "runtime": 45,
+    "tvdbId": 123456,
+    "tmdbId": 98765,
+    "imdbId": "tt0000001",
+    "titleSlug": "example-show",
+    "seriesType": "standard",
+    "cleanTitle": "exampleshow",
+    "rootFolderPath": "/data/shows/",
+    "genres": ["Drama"],
+    "tags": [],
+    "seasons": [
+      {
+        "seasonNumber": 1,
+        "monitored": true
+      },
+      {
+        "seasonNumber": 2,
+        "monitored": true
+      }
+    ],
+    "statistics": {
+      "seasonCount": 2,
+      "episodeFileCount": 20,
+      "episodeCount": 20,
+      "totalEpisodeCount": 24,
+      "sizeOnDisk": 42000000000,
+      "percentOfEpisodes": 100
+    }
+  },
+  {
+    "id": 8,
+    "title": "Example Show 2",
+    "sortTitle": "example show 2",
+    "status": "ended",
+    "ended": true,
+    "overview": "A sibling series whose folder name starts with the first one.",
+    "network": "Example TV",
+    "year": 2022,
+    "path": "/data/shows/Example Show 2",
+    "qualityProfileId": 1,
+    "seasonFolder": true,
+    "monitored": true,
+    "useSceneNumbering": false,
+    "runtime": 30,
+    "tvdbId": 223456,
+    "tmdbId": 98766,
+    "imdbId": "tt0000002",
+    "titleSlug": "example-show-2",
+    "seriesType": "standard",
+    "cleanTitle": "exampleshow2",
+    "rootFolderPath": "/data/shows/",
+    "genres": ["Comedy"],
+    "tags": [],
+    "seasons": [
+      {
+        "seasonNumber": 1,
+        "monitored": true
+      }
+    ],
+    "statistics": {
+      "seasonCount": 1,
+      "episodeFileCount": 8,
+      "episodeCount": 8,
+      "totalEpisodeCount": 8,
+      "sizeOnDisk": 9000000000,
+      "percentOfEpisodes": 100
+    }
+  }
+]

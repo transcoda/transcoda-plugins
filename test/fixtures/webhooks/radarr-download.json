@@ -1,0 +1,43 @@
+{
+  "eventType": "Download",
+  "movie": {
+    "id": 11,
+    "title": "Example Movie",
+    "year": 2019,
+    "releaseDate": "2019-05-01",
+    "folderPath": "/data/movies/Example Movie (2019)",
+    "tmdbId": 603,
+    "imdbId": "tt0000003",
+    "tags": []
+  },
+  "remoteMovie": {
+    "tmdbId": 603,
+    "imdbId": "tt0000003",
+    "title": "Example Movie",
+    "year": 2019
+  },
+  "movieFile": {
+    "id": 501,
+    "relativePath": "Example Movie (2019).mkv",
+    "path": "/data/movies/Example Movie (2019)/Example Movie (2019).mkv",
+    "quality": "Bluray-2160p",
+    "qualityVersion": 1,
+    "releaseGroup": "GROUP",
+    "sceneName": "Example.Movie.2019.2160p.BluRay",
+    "size": 8000000000
+  },
+  "isUpgrade": false,
+  "downloadClient": "Example Client",
+  "downloadClientType": "Example",
+  "downloadId": "ABCDEF0123456789",
+  "release": {
+    "quality": "Bluray-2160p",
+    "qualityVersion": 1,
+    "releaseGroup": "GROUP",
+    "releaseTitle": "Example.Movie.2019.2160p.BluRay-GROUP",
+    "indexer": "Example Indexer",
+    "size": 8000000000
+  },
+  "instanceName": "Radarr",
+  "applicationUrl": ""
+}

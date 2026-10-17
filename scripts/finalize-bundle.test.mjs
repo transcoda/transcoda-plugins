@@ -18,7 +18,7 @@ function plugin(announce, pkg = { version: '1.0.0', transcoda: { sdk: '^1' } }) 
   );
   writeFileSync(
     join(dir, 'dist', 'demo-1.0.0.js'),
-    `export default ${JSON.stringify({ nodes: [{ type: 'demo:a' }], ...announce })};\n`,
+    `export default ${JSON.stringify({ nodes: [{ type: 'demo:a', version: 1 }], ...announce }).replace(/"(\w+)":/g, '$1:')};\n`,
   );
   return dir;
 }
@@ -31,7 +31,37 @@ test('writes the checksum and a manifest when the bundle agrees with package.jso
   assert.equal(r.status, 0, r.stderr);
   const manifest = JSON.parse(readFileSync(join(dir, 'dist', 'demo-1.0.0.manifest.json'), 'utf8'));
   assert.deepEqual(manifest.nodes, ['demo:a']);
+  assert.deepEqual(manifest.nodeVersions, [{ type: 'demo:a', version: 1, migrations: [] }]);
   assert.match(manifest.sha256, /^[0-9a-f]{64}$/);
+});
+
+test('nodeVersions carries each node version and its migrations (from, to, risk only)', () => {
+  const dir = plugin({
+    ...good,
+    nodes: [
+      {
+        type: 'demo:a',
+        version: 3,
+        migrations: [
+          { from: 1, to: 2, risk: 'safe', migrate: 'ignored' },
+          { from: 2, to: 3, risk: 'review' },
+        ],
+      },
+    ],
+  });
+  const r = run(dir);
+  assert.equal(r.status, 0, r.stderr);
+  const manifest = JSON.parse(readFileSync(join(dir, 'dist', 'demo-1.0.0.manifest.json'), 'utf8'));
+  assert.deepEqual(manifest.nodeVersions, [
+    {
+      type: 'demo:a',
+      version: 3,
+      migrations: [
+        { from: 1, to: 2, risk: 'safe' },
+        { from: 2, to: 3, risk: 'review' },
+      ],
+    },
+  ]);
 });
 
 for (const [what, announce, pattern] of [

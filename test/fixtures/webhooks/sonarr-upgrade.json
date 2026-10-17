@@ -1,0 +1,64 @@
+{
+  "eventType": "Download",
+  "series": {
+    "id": 8,
+    "title": "Example Show 2",
+    "path": "/data/shows/Example Show 2",
+    "tvdbId": 223456,
+    "tmdbId": 98766,
+    "imdbId": "tt0000002",
+    "type": "standard",
+    "year": 2022,
+    "tags": []
+  },
+  "episodes": [
+    {
+      "id": 9001,
+      "episodeNumber": 1,
+      "seasonNumber": 1,
+      "title": "Pilot",
+      "airDate": "2022-03-01",
+      "airDateUtc": "2022-03-01T20:00:00Z",
+      "seriesId": 8,
+      "tvdbId": 5550001
+    }
+  ],
+  "episodeFile": {
+    "id": 301,
+    "relativePath": "Season 01/S01E01.mkv",
+    "path": "/data/shows/Example Show 2/Season 01/S01E01.mkv",
+    "quality": "WEBDL-1080p",
+    "qualityVersion": 1,
+    "releaseGroup": "GROUP",
+    "sceneName": "Example.Show.2.S01E01.1080p.WEB-DL",
+    "size": 1200000000,
+    "dateAdded": "2026-10-17T09:00:00Z"
+  },
+  "release": {
+    "quality": "WEBDL-1080p",
+    "qualityVersion": 1,
+    "releaseGroup": "GROUP",
+    "releaseTitle": "Example.Show.2.S01E01.1080p.WEB-DL-GROUP",
+    "indexer": "Example Indexer",
+    "size": 1200000000
+  },
+  "downloadClient": "Example Client",
+  "downloadClientType": "Example",
+  "downloadId": "ABCDEF0123456789",
+  "isUpgrade": true,
+  "applicationUrl": "",
+  "instanceName": "Sonarr",
+  "deletedFiles": [
+    {
+      "id": 300,
+      "relativePath": "Season 01/S01E01.old.mkv",
+      "path": "/data/shows/Example Show 2/Season 01/S01E01.old.mkv",
+      "quality": "HDTV-720p",
+      "qualityVersion": 1,
+      "releaseGroup": "OLD",
+      "sceneName": "Example.Show.2.S01E01.720p.HDTV",
+      "size": 600000000,
+      "dateAdded": "2026-09-01T09:00:00Z"
+    }
+  ]
+}

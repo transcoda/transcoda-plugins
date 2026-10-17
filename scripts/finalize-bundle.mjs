@@ -77,6 +77,7 @@ const manifest = {
   sha256: sha,
   size: code.length,
   nodes: announced.nodes,
+  nodeVersions: announced.nodeVersions,
   integration: announced.integration,
   triggers: announced.triggers,
   hooks: announced.hooks,

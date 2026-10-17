@@ -31,6 +31,8 @@ jobs:
       # typecheck + lint + check-plugins + test
       - run: pnpm check
       - run: pnpm bundle
+      # No node:fs, child_process, eval, global fetch ... in any built bundle.
+      - run: node scripts/check-bundles.mjs
       # Starts every bundle in core's real sandboxed host and checks its sdk range.
       - run: node scripts/host-check.mjs
       - uses: actions/upload-artifact@v6

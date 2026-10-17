@@ -1,0 +1,28 @@
+[
+  {
+    "id": 11,
+    "title": "Example Movie",
+    "originalTitle": "Example Movie",
+    "sortTitle": "example movie",
+    "status": "released",
+    "overview": "A fictional movie used for tests.",
+    "year": 2019,
+    "path": "/data/movies/Example Movie (2019)",
+    "qualityProfileId": 1,
+    "monitored": true,
+    "minimumAvailability": "released",
+    "isAvailable": true,
+    "folderName": "/data/movies/Example Movie (2019)",
+    "runtime": 110,
+    "cleanTitle": "examplemovie",
+    "imdbId": "tt0000003",
+    "tmdbId": 603,
+    "titleSlug": "603",
+    "rootFolderPath": "/data/movies/",
+    "genres": ["Action"],
+    "tags": [],
+    "hasFile": true,
+    "movieFileId": 501,
+    "sizeOnDisk": 8000000000
+  }
+]

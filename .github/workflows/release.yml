@@ -22,8 +22,9 @@ jobs:
     timeout-minutes: 15
     permissions:
       contents: write
-      # TODO: artifact attestations. Grant `id-token: write` + `attestations: write` and
-      # add actions/attest-build-provenance for the bundle after the bundle step.
+      # Build provenance attestation for the bundle (actions/attest-build-provenance).
+      id-token: write
+      attestations: write
     steps:
       - uses: actions/checkout@v7
       - name: Parse tag
@@ -69,6 +70,11 @@ jobs:
           PLUGIN: ${{ steps.tag.outputs.plugin }}
           VERSION: ${{ steps.tag.outputs.version }}
         run: node scripts/sign.mjs verify "plugins/$PLUGIN/dist/$PLUGIN-$VERSION.js" --public "$PUBLIC_KEY"
+      - name: Attest build provenance
+        id: attest
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: plugins/${{ steps.tag.outputs.plugin }}/dist/${{ steps.tag.outputs.plugin }}-${{ steps.tag.outputs.version }}.js
       - name: Check the bundle in core's host
         run: node scripts/host-check.mjs
       - name: Create release
@@ -77,10 +83,20 @@ jobs:
           TAG: ${{ github.ref_name }}
           PLUGIN: ${{ steps.tag.outputs.plugin }}
           VERSION: ${{ steps.tag.outputs.version }}
+          ATTESTATION_URL: ${{ steps.attest.outputs.attestation-url }}
         run: |
           dist="plugins/$PLUGIN/dist"
           prerelease=()
           [[ "$VERSION" == *-* ]] && prerelease=(--prerelease)
+          # Body: the core version, the attestation line the catalog reads, then the release notes
+          # from .changes/<plugin>/ (consumed notes are removed by hand after the release).
+          {
+            echo "Built against core \`$CORE_REF\`."
+            echo
+            echo "Attestation: $ATTESTATION_URL"
+            notes=$(node scripts/release-notes.mjs "$PLUGIN")
+            if [[ -n "$notes" ]]; then echo; echo "$notes"; fi
+          } > "$RUNNER_TEMP/release-notes.md"
           gh release create "$TAG" "$dist/$PLUGIN-$VERSION.js" "$dist/$PLUGIN-$VERSION.js.sha256" \
             "$dist/$PLUGIN-$VERSION.js.sig" "$dist/$PLUGIN-$VERSION.manifest.json" \
-            --title "$PLUGIN $VERSION" --notes "Built against core \`$CORE_REF\`." --verify-tag "${prerelease[@]}"
+            --title "$PLUGIN $VERSION" --notes-file "$RUNNER_TEMP/release-notes.md" --verify-tag "${prerelease[@]}"

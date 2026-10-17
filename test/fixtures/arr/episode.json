@@ -1,0 +1,17 @@
+[
+  {
+    "id": 9001,
+    "seriesId": 8,
+    "tvdbId": 5550001,
+    "episodeFileId": 301,
+    "seasonNumber": 1,
+    "episodeNumber": 1,
+    "title": "Pilot",
+    "airDate": "2022-03-01",
+    "airDateUtc": "2022-03-01T20:00:00Z",
+    "runtime": 30,
+    "hasFile": true,
+    "monitored": true,
+    "unverifiedSceneNumbering": false
+  }
+]
