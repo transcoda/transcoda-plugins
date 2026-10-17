@@ -14,16 +14,21 @@ plugins/<name>/            one plugin per directory (kebab-case; also the releas
   tsdown.config.ts         uses scripts/plugin-bundle-config.ts
 scripts/
   plugin-bundle-config.ts  shared tsdown config (ESM, node24, every dependency inlined)
-  finalize-bundle.mjs      checks the bundle is self-contained, writes the sha256 file
-  check-plugins.mjs        manifest rules (name, semver, transcoda.sdk, no runtime deps)
+  finalize-bundle.mjs      checks the bundle is self-contained, writes the sha256 file and the
+                           <name>-<version>.manifest.json the catalog is built from
+  bundle-manifest.mjs      prints what a built bundle announces (run sandboxed by finalize-bundle)
+  check-plugins.mjs        manifest rules (name, semver, transcoda.sdk range, no runtime deps)
+  host-check.mjs           starts every built bundle in core's sandboxed host (--check-plugin)
 .github/
   actions/setup            checks out the core repo next to this one and installs both
   workflows/ci.yml         typecheck, lint, test, bundle against each supported core version
   workflows/release.yml    builds and releases one plugin per tag
 ```
 
-`plugins/example` is a minimal reference plugin: one condition node (`example:extension-is`)
-defined with the SDK's `defineNode` and a `definePlugin` default export.
+`plugins/example` is a minimal reference plugin on SDK 1.0: one condition node
+(`example:extension-is`) defined with `defineNode`, a `definePlugin({ name: 'example', ... })`
+default export (the bare name; `package.json` keeps `@transcoda/plugin-example`) and tests on
+`@transcoda/sdk/testing`.
 
 ## Plugin rules
 
@@ -33,7 +38,7 @@ defined with the SDK's `defineNode` and a `definePlugin` default export.
   `devDependencies`) and no install scripts. `pnpm check-plugins` and the bundle step enforce
   this.
 - **SDK compatibility.** `"transcoda": { "sdk": "<semver range>" }` in the plugin's
-  `package.json` declares the SDK major it is built for; the plugin host (M3) checks it against the
+  `package.json` declares the SDK major it is built for; the plugin host checks it against the
   running core's SDK version before loading the plugin.
 - **Node types** are namespaced `<plugin>:<node>` (core uses `core:`).
 
@@ -76,6 +81,10 @@ pnpm bundle
 - `pnpm check`: typecheck, lint (Biome), manifest rules, tests (Vitest).
 - `pnpm bundle`: builds every plugin to `plugins/<name>/dist/<name>-<version>.js` plus
   `<name>-<version>.js.sha256` (`sha256sum` format; verify with `sha256sum --check`).
+- `node scripts/host-check.mjs` (after `pnpm bundle`): builds core's server at `../transcoda` and runs
+  every bundle through `--check-plugin`; fails when a bundle does not start or its `sdk` range is not
+  satisfied by core's SDK. `pnpm bundle` also writes `<name>-<version>.manifest.json` and fails when
+  the bundle's announced name, version or sdk differ from the package.
 - `pnpm format`: apply Biome formatting and import sorting.
 - One plugin only: `pnpm --filter ./plugins/example bundle`.
 

@@ -14,7 +14,7 @@ permissions:
 
 env:
   # Core version the released bundle is built and tested against (newest supported).
-  CORE_REF: m1-workflow-contract
+  CORE_REF: m3-plugins
 
 jobs:
   release:
@@ -52,6 +52,8 @@ jobs:
       - name: Verify checksum
         working-directory: plugins/${{ steps.tag.outputs.plugin }}/dist
         run: sha256sum --check *.js.sha256
+      - name: Check the bundle in core's host
+        run: node scripts/host-check.mjs
       - name: Create release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -63,4 +65,5 @@ jobs:
           prerelease=()
           [[ "$VERSION" == *-* ]] && prerelease=(--prerelease)
           gh release create "$TAG" "$dist/$PLUGIN-$VERSION.js" "$dist/$PLUGIN-$VERSION.js.sha256" \
+            "$dist/$PLUGIN-$VERSION.manifest.json" \
             --title "$PLUGIN $VERSION" --notes "Built against core \`$CORE_REF\`." --verify-tag "${prerelease[@]}"

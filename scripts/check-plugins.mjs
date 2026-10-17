@@ -8,6 +8,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import semver from 'semver';
 
 const SEMVER = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
 const INSTALL_SCRIPTS = ['preinstall', 'install', 'postinstall', 'prepare'];
@@ -27,6 +28,9 @@ export function checkPlugins(root) {
     }
     if (!SEMVER.test(pkg.version ?? '')) errors.push(`${at}: version must be semver`);
     if (typeof pkg.transcoda?.sdk !== 'string') errors.push(`${at}: missing transcoda.sdk range`);
+    else if (semver.validRange(pkg.transcoda.sdk) === null) {
+      errors.push(`${at}: transcoda.sdk '${pkg.transcoda.sdk}' is not a valid semver range`);
+    }
     if (Object.keys(pkg.dependencies ?? {}).length > 0) {
       errors.push(`${at}: runtime dependencies are not allowed; use devDependencies`);
     }

@@ -39,3 +39,16 @@ test('rejects runtime dependencies, install scripts, a missing sdk range and a w
   assert.match(errors.join('\n'), /runtime dependencies/);
   assert.match(errors.join('\n'), /postinstall/);
 });
+
+test('rejects an sdk range that is not valid semver', () => {
+  const errors = checkPlugins(repoWith('sonarr', { ...valid, transcoda: { sdk: 'latest-ish' } }));
+  assert.equal(errors.length, 1);
+  assert.match(errors[0], /transcoda\.sdk.*valid semver range/);
+});
+
+test('accepts a prerelease-friendly range', () => {
+  assert.deepEqual(
+    checkPlugins(repoWith('sonarr', { ...valid, transcoda: { sdk: '>=1.0.0-rc.1 <2' } })),
+    [],
+  );
+});

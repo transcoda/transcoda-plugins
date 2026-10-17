@@ -21,7 +21,7 @@ jobs:
       matrix:
         # Every supported core version. Placeholder until core cuts releases: replace
         # with release tags (e.g. v1.0.0, v1.1.0) and keep `main` to catch breakage early.
-        core: [m1-workflow-contract]
+        core: [m3-plugins]
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
@@ -31,10 +31,13 @@ jobs:
       # typecheck + lint + check-plugins + test
       - run: pnpm check
       - run: pnpm bundle
+      # Starts every bundle in core's real sandboxed host and checks its sdk range.
+      - run: node scripts/host-check.mjs
       - uses: actions/upload-artifact@v6
         with:
           name: bundles-core-${{ matrix.core }}
           path: |
             plugins/*/dist/*.js
             plugins/*/dist/*.js.sha256
+            plugins/*/dist/*.manifest.json
           if-no-files-found: error
