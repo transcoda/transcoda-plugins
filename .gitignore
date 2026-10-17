@@ -1,0 +1,9 @@
+node_modules
+dist
+coverage
+.DS_Store
+.core/
+CLAUDE.local.md
+.claude/settings.local.json
+docs/plans/
+docs/design/

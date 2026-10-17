@@ -1,0 +1,39 @@
+name: Setup
+description: >
+  Check out the core repo at a given ref next to this repo (the SDK is linked from
+  ../transcoda/packages/sdk until it is published), then install both workspaces.
+
+inputs:
+  core-ref:
+    description: Git ref of transcoda/transcoda to build the plugins against.
+    required: true
+  core-token:
+    description: Token with read access to the (private) core repo.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    # actions/checkout only writes inside the workspace, so check out into .core/ and
+    # symlink it to the sibling path the `link:` dependency expects.
+    - uses: actions/checkout@v7
+      with:
+        repository: transcoda/transcoda
+        ref: ${{ inputs.core-ref }}
+        token: ${{ inputs.core-token }}
+        path: .core/transcoda
+        persist-credentials: false
+    - shell: bash
+      run: ln -sfn "$GITHUB_WORKSPACE/.core/transcoda" "$GITHUB_WORKSPACE/../transcoda"
+    - uses: pnpm/action-setup@v6
+    - uses: actions/setup-node@v7
+      with:
+        node-version-file: .node-version
+        cache: pnpm
+        cache-dependency-path: |
+          pnpm-lock.yaml
+          .core/transcoda/pnpm-lock.yaml
+    - shell: bash
+      run: pnpm --dir ../transcoda install --frozen-lockfile
+    - shell: bash
+      run: pnpm install --frozen-lockfile

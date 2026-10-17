@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: check (core ${{ matrix.core }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        # Every supported core version. Placeholder until core cuts releases: replace
+        # with release tags (e.g. v1.0.0, v1.1.0) and keep `main` to catch breakage early.
+        core: [m1-workflow-contract]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+        with:
+          core-ref: ${{ matrix.core }}
+          core-token: ${{ secrets.CORE_REPO_TOKEN }}
+      # typecheck + lint + check-plugins + test
+      - run: pnpm check
+      - run: pnpm bundle
+      - uses: actions/upload-artifact@v6
+        with:
+          name: bundles-core-${{ matrix.core }}
+          path: |
+            plugins/*/dist/*.js
+            plugins/*/dist/*.js.sha256
+          if-no-files-found: error

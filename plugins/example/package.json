@@ -1,0 +1,20 @@
+{
+  "name": "@transcoda/plugin-example",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Example Transcoda plugin: a condition node that branches on the file extension.",
+  "license": "GPL-3.0-only",
+  "transcoda": {
+    "sdk": "^1"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "bundle": "tsdown && node ../../scripts/finalize-bundle.mjs"
+  },
+  "devDependencies": {
+    "@transcoda/sdk": "link:../../../transcoda/packages/sdk",
+    "zod": "4.6.7"
+  }
+}

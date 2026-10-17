@@ -1,0 +1,66 @@
+name: Release
+
+# One release per plugin: push a tag <plugin>-v<semver>, e.g. example-v0.1.0.
+on:
+  push:
+    tags:
+      - '*-v[0-9]*'
+
+concurrency:
+  group: release-${{ github.ref }}
+
+permissions:
+  contents: read
+
+env:
+  # Core version the released bundle is built and tested against (newest supported).
+  CORE_REF: m1-workflow-contract
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      # TODO: artifact attestations. Grant `id-token: write` + `attestations: write` and
+      # add actions/attest-build-provenance for the bundle after the bundle step.
+    steps:
+      - uses: actions/checkout@v7
+      - name: Parse tag
+        id: tag
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          if [[ ! "$TAG" =~ ^([a-z][a-z0-9-]*)-v([0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?)$ ]]; then
+            echo "::error::tag '$TAG' is not <plugin>-v<semver>"; exit 1
+          fi
+          plugin="${BASH_REMATCH[1]}" version="${BASH_REMATCH[2]}"
+          manifest="plugins/$plugin/package.json"
+          if [[ ! -f "$manifest" ]]; then echo "::error::no plugin at plugins/$plugin"; exit 1; fi
+          actual=$(node -p "require('./$manifest').version")
+          if [[ "$actual" != "$version" ]]; then
+            echo "::error::tag version $version does not match $manifest version $actual"; exit 1
+          fi
+          echo "plugin=$plugin" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - uses: ./.github/actions/setup
+        with:
+          core-ref: ${{ env.CORE_REF }}
+          core-token: ${{ secrets.CORE_REPO_TOKEN }}
+      - run: pnpm check
+      - run: pnpm --filter "./plugins/${{ steps.tag.outputs.plugin }}" bundle
+      - name: Verify checksum
+        working-directory: plugins/${{ steps.tag.outputs.plugin }}/dist
+        run: sha256sum --check *.js.sha256
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          PLUGIN: ${{ steps.tag.outputs.plugin }}
+          VERSION: ${{ steps.tag.outputs.version }}
+        run: |
+          dist="plugins/$PLUGIN/dist"
+          prerelease=()
+          [[ "$VERSION" == *-* ]] && prerelease=(--prerelease)
+          gh release create "$TAG" "$dist/$PLUGIN-$VERSION.js" "$dist/$PLUGIN-$VERSION.js.sha256" \
+            --title "$PLUGIN $VERSION" --notes "Built against core \`$CORE_REF\`." --verify-tag "${prerelease[@]}"

@@ -1,0 +1,27 @@
+{
+  "name": "transcoda-plugins",
+  "private": true,
+  "type": "module",
+  "version": "0.0.0",
+  "license": "GPL-3.0-only",
+  "packageManager": "pnpm@12.6.0",
+  "engines": {
+    "node": ">=24.21"
+  },
+  "scripts": {
+    "typecheck": "pnpm -r typecheck",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "test": "vitest run",
+    "check-plugins": "node scripts/check-plugins.mjs && node --test scripts/check-plugins.test.mjs",
+    "bundle": "pnpm -r bundle",
+    "check": "pnpm typecheck && pnpm lint && pnpm check-plugins && pnpm test"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.15",
+    "@types/node": "24.19.2",
+    "tsdown": "0.23.1",
+    "typescript": "7.0.2",
+    "vitest": "5.0.5"
+  }
+}
