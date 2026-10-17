@@ -1,0 +1,113 @@
+name: Catalog
+
+# Builds and signs the catalog index and the blocklist and publishes them, with their .sig
+# files, to the `catalog` branch (what Transcoda fetches from raw.githubusercontent.com).
+# Triggers: a finished Release run, an edit of catalog/blocklist.json on main, or by hand
+# (dispatch only from main). The blocklist is validated, signed and published even when the
+# index build fails (the branch then keeps its previous index.json); the job still fails.
+# (workflow_run only fires once this file is on the default branch.)
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [catalog/blocklist.json]
+  workflow_run:
+    workflows: [Release]
+    types: [completed]
+
+concurrency:
+  group: catalog
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      OUT: ${{ runner.temp }}/catalog-out
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      # The core checkout is not needed: the scripts depend only on `semver`. The `link:` SDK
+      # dependency becomes a dangling symlink, which pnpm tolerates.
+      - run: pnpm install --frozen-lockfile
+      - run: node scripts/check-blocklist.mjs
+      - name: Sign the blocklist
+        id: blocklist
+        env:
+          PLUGIN_SIGNING_KEY: ${{ secrets.PLUGIN_SIGNING_KEY }}
+          PLUGIN_SIGNING_KEY_ID: ${{ secrets.PLUGIN_SIGNING_KEY_ID }}
+        run: |
+          mkdir -p "$OUT"
+          node -e "
+            const fs = require('node:fs');
+            const doc = JSON.parse(fs.readFileSync('catalog/blocklist.json', 'utf8'));
+            doc.generated = new Date().toISOString();
+            fs.writeFileSync(process.argv[1], JSON.stringify(doc, null, 2) + '\n');
+          " "$OUT/blocklist.json"
+          node scripts/sign.mjs sign "$OUT/blocklist.json" --key-id "$PLUGIN_SIGNING_KEY_ID"
+          public=$(node --input-type=module -e "import { publicKeyHex } from './scripts/sign.mjs'; console.log(publicKeyHex(process.env.PLUGIN_SIGNING_KEY))")
+          echo "public=$public" >> "$GITHUB_OUTPUT"
+      # A failure here must not keep the blocklist from being published; the last step
+      # fails the job afterwards.
+      - name: Build the index
+        id: index
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/build-catalog.mjs --out "$OUT/index.json"
+      - name: Verify every bundle, then sign the index
+        id: sign_index
+        if: steps.index.outcome == 'success'
+        continue-on-error: true
+        env:
+          PLUGIN_SIGNING_KEY: ${{ secrets.PLUGIN_SIGNING_KEY }}
+          PLUGIN_SIGNING_KEY_ID: ${{ secrets.PLUGIN_SIGNING_KEY_ID }}
+          PUBLIC_KEY: ${{ steps.blocklist.outputs.public }}
+        run: |
+          node scripts/verify-catalog.mjs "$OUT/index.json" --public "$PUBLIC_KEY"
+          node scripts/sign.mjs sign "$OUT/index.json" --key-id "$PLUGIN_SIGNING_KEY_ID"
+      - name: Publish to the catalog branch
+        if: ${{ !cancelled() && steps.blocklist.outcome == 'success' }}
+        env:
+          TRIGGER: ${{ github.event_name }}
+        run: |
+          if git ls-remote --exit-code --heads origin catalog >/dev/null 2>&1; then
+            git fetch origin catalog
+            git switch catalog
+          else
+            git switch --orphan catalog
+          fi
+          files="blocklist.json blocklist.json.sig"
+          cp "$OUT/blocklist.json" "$OUT/blocklist.json.sig" .
+          if [ "${{ steps.sign_index.outcome }}" = success ]; then
+            cp "$OUT/index.json" "$OUT/index.json.sig" .
+            files="$files index.json index.json.sig"
+          fi
+          plugins=$([ -f index.json ] && node -p "require('./index.json').plugins.length" || echo 0)
+          entries=$(node -p "require('./blocklist.json').entries.length")
+          git add $files
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m "catalog: $TRIGGER ($plugins plugins, $entries blocklist entries)"
+          git push origin catalog
+      - name: Fail when the index was not published
+        if: ${{ !cancelled() && (steps.index.outcome == 'failure' || steps.sign_index.outcome == 'failure') }}
+        run: |
+          echo "::error::the index build or its verification failed; the blocklist was published, index.json on the catalog branch is unchanged"
+          exit 1

@@ -52,6 +52,23 @@ jobs:
       - name: Verify checksum
         working-directory: plugins/${{ steps.tag.outputs.plugin }}/dist
         run: sha256sum --check *.js.sha256
+      - name: Sign bundle
+        id: sign
+        env:
+          PLUGIN_SIGNING_KEY: ${{ secrets.PLUGIN_SIGNING_KEY }}
+          PLUGIN_SIGNING_KEY_ID: ${{ secrets.PLUGIN_SIGNING_KEY_ID }}
+          PLUGIN: ${{ steps.tag.outputs.plugin }}
+          VERSION: ${{ steps.tag.outputs.version }}
+        run: |
+          node scripts/sign.mjs sign "plugins/$PLUGIN/dist/$PLUGIN-$VERSION.js" --key-id "$PLUGIN_SIGNING_KEY_ID"
+          public=$(node --input-type=module -e "import { publicKeyHex } from './scripts/sign.mjs'; console.log(publicKeyHex(process.env.PLUGIN_SIGNING_KEY))")
+          echo "public=$public" >> "$GITHUB_OUTPUT"
+      - name: Verify signature
+        env:
+          PUBLIC_KEY: ${{ steps.sign.outputs.public }}
+          PLUGIN: ${{ steps.tag.outputs.plugin }}
+          VERSION: ${{ steps.tag.outputs.version }}
+        run: node scripts/sign.mjs verify "plugins/$PLUGIN/dist/$PLUGIN-$VERSION.js" --public "$PUBLIC_KEY"
       - name: Check the bundle in core's host
         run: node scripts/host-check.mjs
       - name: Create release
@@ -65,5 +82,5 @@ jobs:
           prerelease=()
           [[ "$VERSION" == *-* ]] && prerelease=(--prerelease)
           gh release create "$TAG" "$dist/$PLUGIN-$VERSION.js" "$dist/$PLUGIN-$VERSION.js.sha256" \
-            "$dist/$PLUGIN-$VERSION.manifest.json" \
+            "$dist/$PLUGIN-$VERSION.js.sig" "$dist/$PLUGIN-$VERSION.manifest.json" \
             --title "$PLUGIN $VERSION" --notes "Built against core \`$CORE_REF\`." --verify-tag "${prerelease[@]}"

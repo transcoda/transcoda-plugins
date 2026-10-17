@@ -14,8 +14,9 @@
     "format": "biome check --write .",
     "test": "vitest run",
     "check-plugins": "node scripts/check-plugins.mjs && node --test scripts/*.test.mjs",
+    "check-blocklist": "node scripts/check-blocklist.mjs",
     "bundle": "pnpm -r bundle",
-    "check": "pnpm typecheck && pnpm lint && pnpm check-plugins && pnpm test"
+    "check": "pnpm typecheck && pnpm lint && pnpm check-plugins && pnpm check-blocklist && pnpm test"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

@@ -19,10 +19,16 @@ scripts/
   bundle-manifest.mjs      prints what a built bundle announces (run sandboxed by finalize-bundle)
   check-plugins.mjs        manifest rules (name, semver, transcoda.sdk range, no runtime deps)
   host-check.mjs           starts every built bundle in core's sandboxed host (--check-plugin)
+  sign.mjs                 ed25519 keygen / sign / verify (bundles, catalog index, blocklist)
+  build-catalog.mjs        GitHub releases -> catalog index.json (one signed entry per version)
+  check-blocklist.mjs      validates catalog/blocklist.json
+catalog/
+  blocklist.json           hand-edited blocklist source; CI signs and publishes it
 .github/
   actions/setup            checks out the core repo next to this one and installs both
   workflows/ci.yml         typecheck, lint, test, bundle against each supported core version
-  workflows/release.yml    builds and releases one plugin per tag
+  workflows/release.yml    builds, signs and releases one plugin per tag
+  workflows/catalog.yml    builds and signs index.json and blocklist.json, pushes to branch `catalog`
 ```
 
 `plugins/example` is a minimal reference plugin on SDK 1.0: one condition node

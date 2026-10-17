@@ -6,7 +6,8 @@
   "description": "Example Transcoda plugin: a condition node that branches on the file extension.",
   "license": "GPL-3.0-only",
   "transcoda": {
-    "sdk": "^1"
+    "sdk": "^1",
+    "title": "Example"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

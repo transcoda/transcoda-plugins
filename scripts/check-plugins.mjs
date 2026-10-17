@@ -2,6 +2,7 @@
 // - name is @transcoda/plugin-<name> (the directory name is the release tag prefix);
 // - version is plain semver (tags are <name>-v<version>);
 // - `transcoda.sdk` declares the supported SDK range;
+// - `transcoda.title` is the display name the catalog shows;
 // - no runtime `dependencies` (bundles inline everything; plugins are never npm-installed);
 // - no install scripts.
 // Exports checkPlugins(root) for tests; the CLI runs only when executed directly.
@@ -30,6 +31,9 @@ export function checkPlugins(root) {
     if (typeof pkg.transcoda?.sdk !== 'string') errors.push(`${at}: missing transcoda.sdk range`);
     else if (semver.validRange(pkg.transcoda.sdk) === null) {
       errors.push(`${at}: transcoda.sdk '${pkg.transcoda.sdk}' is not a valid semver range`);
+    }
+    if (typeof pkg.transcoda?.title !== 'string' || pkg.transcoda.title.trim() === '') {
+      errors.push(`${at}: missing transcoda.title`);
     }
     if (Object.keys(pkg.dependencies ?? {}).length > 0) {
       errors.push(`${at}: runtime dependencies are not allowed; use devDependencies`);
