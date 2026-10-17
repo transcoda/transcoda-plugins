@@ -32,9 +32,9 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: write
-    env:
-      OUT: ${{ runner.temp }}/catalog-out
     steps:
+      # The runner context is not available in job-level env, so OUT is set here.
+      - run: echo "OUT=$RUNNER_TEMP/catalog-out" >> "$GITHUB_ENV"
       - uses: actions/checkout@v7
         with:
           ref: main
