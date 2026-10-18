@@ -45,9 +45,16 @@ const TV_MARKERS = [/\bS\d{1,2}E\d{1,3}\b/i, /\b\d{1,2}x\d{2}\b/];
 const YEAR_RE = /\b(?:19|20)\d{2}\b/g;
 const SEASON_FOLDER = /^(?:season|series|staffel|specials?)\b|^s\d{1,2}$/i;
 
+// Abbreviations whose period belongs to the title (`Sherlock Jr.`, `Mr. Robot`).
+const ABBREVIATION_DOT = /\b(Jr|Sr|Dr|Mr|Mrs|Ms|St|Mt|Vs|Vol)\.(?=[\s()[\]{}]|$)/gi;
+const KEPT_DOT = '\u0000';
+
 function tidy(text: string): string {
-  return text
+  // Only a name written with spaces uses `.` as punctuation; in a release name dots separate words.
+  const kept = /\s/.test(text) ? text.replace(ABBREVIATION_DOT, `$1${KEPT_DOT}`) : text;
+  return kept
     .replace(/[._]/g, ' ')
+    .replaceAll(KEPT_DOT, '.')
     .replace(/[()[\]{}]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
