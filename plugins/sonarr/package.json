@@ -1,0 +1,22 @@
+{
+  "name": "@transcoda/plugin-sonarr",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Sonarr plugin: reads a series' original language and rescans the series after a file is replaced.",
+  "license": "GPL-3.0-only",
+  "transcoda": {
+    "sdk": "^1",
+    "title": "Sonarr"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "bundle": "tsdown && node ../../scripts/finalize-bundle.mjs"
+  },
+  "devDependencies": {
+    "@transcoda/plugin-arr-common": "workspace:*",
+    "@transcoda/sdk": "link:../../../transcoda/packages/sdk",
+    "zod": "4.6.7"
+  }
+}

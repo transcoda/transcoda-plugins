@@ -1,4 +1,3 @@
-import { FetchRateLimited } from '@transcoda/sdk';
 import { fakePluginContext } from '@transcoda/sdk/testing';
 import { describe, expect, it } from 'vitest';
 import { arrFixture } from './fixtures.ts';
@@ -59,12 +58,23 @@ describe('testStatus', () => {
   it('maps a rate-limited fetch to other', async () => {
     const ctx = fakePluginContext({ settings });
     ctx.fetch = async () => {
-      throw new FetchRateLimited('slow down');
+      throw Object.assign(new Error('slow down'), { kind: 'rate-limited' });
     };
     expect(await testStatus(ctx, 'Sonarr', 4)).toEqual({
       ok: false,
       kind: 'other',
       message: 'Sonarr is rate limiting requests',
+    });
+  });
+  it('maps a kind-tagged timeout from another SDK copy to unreachable', async () => {
+    const ctx = fakePluginContext({ settings });
+    ctx.fetch = async () => {
+      throw Object.assign(new Error('slow'), { kind: 'timeout' });
+    };
+    expect(await testStatus(ctx, 'Sonarr', 4)).toEqual({
+      ok: false,
+      kind: 'unreachable',
+      message: 'Sonarr is not reachable at http://nas:8989: timeout',
     });
   });
   it('never puts the key in a failure message', async () => {

@@ -1,6 +1,6 @@
 import type { IntegrationTestFail, IntegrationTestOk, PluginContext } from '@transcoda/sdk';
-import { FetchError } from '@transcoda/sdk';
 import { ArrHttpError, type ArrProduct, arrClient } from './client.ts';
+import { fetchKindOf } from './fetch-kind.ts';
 
 function originOf(ctx: PluginContext): string {
   try {
@@ -26,14 +26,15 @@ export async function testStatus(
       }
       return { ok: false, kind: 'other', message: e.message };
     }
-    if (e instanceof FetchError && e.kind !== 'rate-limited') {
+    const fetchKind = fetchKindOf(e);
+    if (fetchKind !== null && fetchKind !== 'rate-limited') {
       return {
         ok: false,
         kind: 'unreachable',
-        message: `${product} is not reachable at ${origin}: ${e.kind}`,
+        message: `${product} is not reachable at ${origin}: ${fetchKind}`,
       };
     }
-    if (e instanceof FetchError) {
+    if (fetchKind !== null) {
       return { ok: false, kind: 'other', message: `${product} is rate limiting requests` };
     }
     throw e;

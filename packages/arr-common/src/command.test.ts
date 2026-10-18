@@ -81,6 +81,47 @@ describe('runCommand', () => {
     );
     expect(r).toEqual({ status: 'completed' });
   });
+  it('retries a poll that throws a kind-tagged error from another SDK copy', async () => {
+    const ctx = fakePluginContext({ settings, responses: [post, poll('completed')] });
+    const real = ctx.fetch;
+    let n = 0;
+    ctx.fetch = async (input) => {
+      if (input.method !== 'POST' && n++ === 0) {
+        throw Object.assign(new Error('flaky'), { kind: 'failed' });
+      }
+      return real(input);
+    };
+    let t = 0;
+    const r = await runCommand(
+      ctx,
+      arrClient(ctx, 'Sonarr'),
+      { name: 'RescanSeries' },
+      { timeoutMs: 60_000, pollMs: 0, now: () => (t += 1000), sleep: async () => {} },
+    );
+    expect(r).toEqual({ status: 'completed' });
+  });
+  it('rethrows an error that is neither HTTP nor kind-tagged', async () => {
+    const ctx = fakePluginContext({ settings, responses: [post] });
+    const real = ctx.fetch;
+    ctx.fetch = async (input) => {
+      if (input.method !== 'POST') throw new TypeError('bug');
+      return real(input);
+    };
+    await expect(
+      runCommand(ctx, arrClient(ctx, 'Sonarr'), { name: 'X' }, { timeoutMs: 5000, pollMs: 0 }),
+    ).rejects.toThrow('bug');
+  });
+  it('marks a status-unknown failure retryable', async () => {
+    const ctx = fakePluginContext({ settings, responses: [post] });
+    let t = 0;
+    const r = await runCommand(
+      ctx,
+      arrClient(ctx, 'Sonarr'),
+      { name: 'RescanSeries' },
+      { timeoutMs: 5000, pollMs: 0, now: () => (t += 1000), sleep: async () => {} },
+    );
+    expect(r).toMatchObject({ status: 'failed', retryable: true });
+  });
   it('returns failed with the last error when polls keep failing to the deadline', async () => {
     const ctx = fakePluginContext({ settings, responses: [post] }); // polls: unscripted -> FetchFailed
     let t = 0;
