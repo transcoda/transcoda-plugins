@@ -68,16 +68,12 @@ export const getSubtitlesNow = defineNode({
           reason: `Bazarr does not know ${remote}; continuing without new subtitles`,
         };
       }
-      // Only a subtitle file counts: a track inside the video is not something to embed again,
-      // so an embedded-only language still gets requested.
+      // A track already inside the video counts too: asking again would only leave a new file
+      // next to it that the embed node then skips (re-runs of a replaced file).
       const listed = (current: BazarrItem, bazarrCode: string) => {
         const iso3 = plugin.lang.toIso3(bazarrCode) ?? bazarrCode;
         return current.subtitles.some(
-          (s) =>
-            s.external &&
-            s.language === iso3 &&
-            s.forced === settings.forced &&
-            s.sdh === settings.hi,
+          (s) => s.language === iso3 && s.forced === settings.forced && s.sdh === settings.hi,
         );
       };
       const wanted = settings.languages.filter((l) => !listed(item, l));

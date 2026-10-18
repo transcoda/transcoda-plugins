@@ -327,15 +327,11 @@ describe('bazarr:get-subtitles-now', () => {
     expect(res.reason).toBe('Bazarr unreachable: refused; continuing without new subtitles');
   });
 
-  it('still requests a language that is only embedded', async () => {
-    // the fixture lists German as a forced track inside the video: not a file, so it is wanted
-    const ctx = ctxWith(
-      lookup().concat([
-        { match: { url: EPISODE_PATCH_URL.replace('forced=False', 'forced=True') }, status: 204 },
-      ]),
-    );
-    spy(ctx, { [EPISODE_ONE_URL]: () => episodesWith([]) });
-    await run(ctx, { languages: ['de'], forced: true });
-    expect(ctx.calls.filter((c) => c.method === 'PATCH')).toHaveLength(1);
+  it('does not request a language the video already has as a track', async () => {
+    // the fixture lists German as a forced track inside the video
+    const ctx = ctxWith(lookup());
+    const res = await run(ctx, { languages: ['de'], forced: true });
+    expect(ctx.calls.filter((c) => c.method === 'PATCH')).toHaveLength(0);
+    expect(res.reason).toBe('Bazarr already has de');
   });
 });
