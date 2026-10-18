@@ -1,0 +1,43 @@
+{
+  "id": 900001,
+  "title": "Example Movie",
+  "originalTitle": "Example Movie",
+  "releaseDate": "2001-05-04",
+  "status": "Released",
+  "mediaInfo": {
+    "id": 11,
+    "tmdbId": 900001,
+    "tvdbId": null,
+    "status": 5,
+    "requests": [
+      {
+        "id": 31,
+        "status": 3,
+        "createdAt": "2026-08-01T08:00:00.000Z",
+        "updatedAt": "2026-08-01T08:30:00.000Z",
+        "type": "movie",
+        "requestedBy": {
+          "id": 3,
+          "displayName": "alex@example.invalid",
+          "email": "alex@example.invalid"
+        }
+      },
+      {
+        "id": 32,
+        "status": 2,
+        "createdAt": "2026-09-01T10:00:00.000Z",
+        "updatedAt": "2026-09-01T10:05:00.000Z",
+        "type": "movie",
+        "requestedBy": { "id": 2, "displayName": "Alex", "email": "alex@example.invalid" }
+      },
+      {
+        "id": 33,
+        "status": 1,
+        "createdAt": "2026-09-05T12:00:00.000Z",
+        "updatedAt": "2026-09-05T12:00:00.000Z",
+        "type": "movie",
+        "requestedBy": { "id": 2, "displayName": "Alex", "email": "alex@example.invalid" }
+      }
+    ]
+  }
+}

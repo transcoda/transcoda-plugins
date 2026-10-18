@@ -7,7 +7,7 @@ No test opens a socket: the fake context throws `FetchFailed` on any unscripted 
 ## How these were made
 
 Hand-written from the field lists in the M3 integrations research and the public API docs
-(Sonarr v3 API as served by 4.0.x, Radarr v3 API, the Jellyfin system endpoints, TMDB v3). They
+(Sonarr v3 API as served by 4.0.x, Radarr v3 API, the Overseerr v1 API as Seerr serves it, the Jellyfin system endpoints, TMDB v3). They
 are shaped like real responses but contain **no real server data and no keys**: the media is
 fictional (`Example Show`, `Example Movie`), addresses are documentation addresses
 (`192.0.2.x`), ids and hashes are made up. `arr/series.json` deliberately holds `Example Show` and
@@ -19,6 +19,7 @@ fictional (`Example Show`, `Example Movie`), addresses are documentation address
 | `webhooks/` | What Sonarr and Radarr POST: download, upgrade, import complete, rename, test (phase 3 reads these; recorded now so the shapes are settled) |
 | `jellyfin/` | `System/Info/Public` (no auth) and `System/Info` (authenticated) |
 | `bazarr/` | `api/system/status`, `api/series`, `api/episodes` (series 1), `api/movies`, and `api/movies` for one movie (`radarrid[]=7`); `Example Show` and `Example Show 2` again, one episode with an external `en` subtitle and an embedded forced `de` one |
+| `seerr/` | Seerr (Jellyseerr/Overseerr v1 API) `status`, `auth/me`, a requested and an unrequested movie, a requested show, and a `search` with a movie, a show and a person; users are the fictional `Alex` and `alex@example.invalid` |
 | `tmdb/` | `authentication`, movie 603, tv 1399, `find` by IMDb id, and movie/tv searches with one, many and no result |
 
 ## Replacing a fixture with a real recording

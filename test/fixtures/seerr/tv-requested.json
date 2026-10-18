@@ -1,0 +1,23 @@
+{
+  "id": 900100,
+  "name": "Example Show",
+  "originalName": "Example Show",
+  "firstAirDate": "2015-02-10",
+  "status": "Ended",
+  "mediaInfo": {
+    "id": 12,
+    "tmdbId": 900100,
+    "tvdbId": 800100,
+    "status": 5,
+    "requests": [
+      {
+        "id": 41,
+        "status": 2,
+        "createdAt": "2026-09-10T18:00:00.000Z",
+        "updatedAt": "2026-09-10T18:01:00.000Z",
+        "type": "tv",
+        "requestedBy": { "id": 2, "displayName": "Alex", "email": "alex@example.invalid" }
+      }
+    ]
+  }
+}
