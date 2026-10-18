@@ -1,0 +1,21 @@
+{
+  "name": "@transcoda/plugin-tmdb",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "description": "TMDB plugin: looks a title up on TMDB to find its original language.",
+  "license": "GPL-3.0-only",
+  "transcoda": {
+    "sdk": "^1",
+    "title": "TMDB"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "bundle": "tsdown && node ../../scripts/finalize-bundle.mjs"
+  },
+  "devDependencies": {
+    "@transcoda/sdk": "link:../../../transcoda/packages/sdk",
+    "zod": "4.6.7"
+  }
+}
