@@ -93,11 +93,22 @@ async function episodeLabel(ctx: PluginContext, seriesId: number, fileId: number
     throw e;
   }
   if (!Array.isArray(raw)) return '';
-  const eps = raw.filter(isObj).filter((e) => typeof e.episodeNumber === 'number');
+  // Sonarr answers with every episode of the series when seriesId is given (episodeFileId is
+  // ignored), so keep only the episodes held in this file.
+  const eps = raw
+    .filter(isObj)
+    .filter(
+      (e) =>
+        e.episodeFileId === fileId &&
+        typeof e.episodeNumber === 'number' &&
+        typeof e.seasonNumber === 'number',
+    )
+    .map((e) => ({ season: e.seasonNumber as number, episode: e.episodeNumber as number }))
+    .sort((a, b) => a.season - b.season || a.episode - b.episode);
   const first = eps[0];
-  if (first === undefined || typeof first.seasonNumber !== 'number') return '';
-  const numbers = eps.map((e) => pad2(e.episodeNumber as number));
-  return `S${pad2(first.seasonNumber)}E${numbers.join('E')}`;
+  if (first === undefined) return '';
+  const numbers = eps.filter((e) => e.season === first.season).map((e) => pad2(e.episode));
+  return `S${pad2(first.season)}E${numbers.join('E')}`;
 }
 
 /**

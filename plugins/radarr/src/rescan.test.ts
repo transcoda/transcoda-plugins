@@ -50,7 +50,7 @@ describe('radarr:rescan run', () => {
   it('rescans the movie and reports the file as listed', async () => {
     const ctx = ctxWith(happy());
     const res = await runFinishRun(rescan, runContext(ctx), {});
-    expect(res).toEqual({ ok: true, message: `Radarr lists ${FILE}` });
+    expect(res).toEqual({ ok: true, message: `Radarr lists ${FILE} (Example Movie (2019))` });
     const post = ctx.calls.find((c) => c.method === 'POST');
     expect(post?.body).toEqual({ name: 'RescanMovie', movieId: 11 });
     expect(post?.timeoutMs).toBe(10_000);
@@ -68,7 +68,7 @@ describe('radarr:rescan run', () => {
     ]);
     const p = runFinishRun(rescan, runContext(ctx), {});
     await vi.advanceTimersByTimeAsync(5000);
-    expect(await p).toEqual({ ok: true, message: `Radarr lists ${FILE}` });
+    expect(await p).toEqual({ ok: true, message: `Radarr lists ${FILE} (Example Movie (2019))` });
     expect(ctx.calls.filter((c) => c.url === POLL_URL)).toHaveLength(2);
   });
 
@@ -82,7 +82,7 @@ describe('radarr:rescan run', () => {
       { match: { url: FILE_URL }, body: listing(newPath) },
     ]);
     const res = await runFinishRun(rescan, runContext(ctx, { newPath }), {});
-    expect(res).toEqual({ ok: true, message: `Radarr lists ${newPath}` });
+    expect(res).toEqual({ ok: true, message: `Radarr lists ${newPath} (Example Movie (2019))` });
   });
 
   it('accepts a trailing slash difference in the listed path', async () => {
@@ -121,7 +121,7 @@ describe('radarr:rescan run', () => {
       runContext(ctx, { originalPath: local, newPath: local }),
       {},
     );
-    expect(res).toEqual({ ok: true, message: `Radarr lists ${FILE}` });
+    expect(res).toEqual({ ok: true, message: `Radarr lists ${FILE} (Example Movie (2019))` });
   });
 
   it('does nothing when Radarr does not know the file', async () => {
