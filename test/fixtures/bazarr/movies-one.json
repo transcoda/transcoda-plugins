@@ -2,7 +2,7 @@
   "data": [
     {
       "radarrId": 7,
-      "title": "Example Movie (2001)",
+      "title": "Example Movie",
       "year": "2001",
       "path": "/data/movies/Example Movie (2001)/Example Movie (2001).mkv",
       "subtitles": [
@@ -12,7 +12,10 @@
           "code3": "eng",
           "path": "/data/movies/Example Movie (2001)/Example Movie (2001).en.srt",
           "forced": false,
-          "hi": false
+          "hi": false,
+          "file_size": 1234,
+          "embedded_track_id": null,
+          "id": 1
         }
       ],
       "missing_subtitles": [

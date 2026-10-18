@@ -100,7 +100,7 @@ describe('bazarr:get-subtitles-now', () => {
     expect(ctx.calls.some((c) => c.method === 'PATCH')).toBe(false);
   });
 
-  it('asks Bazarr for the missing language and waits until it is listed', async () => {
+  it('asks Bazarr for the missing language (queued: 204 at once) and polls until it is listed', async () => {
     const ctx = ctxWith([
       ...lookup(),
       { match: { url: EPISODE_PATCH_URL, method: 'PATCH' }, status: 204 },
@@ -210,7 +210,7 @@ describe('bazarr:get-subtitles-now', () => {
       data: [
         {
           radarrId: 7,
-          title: 'Example Movie (2001)',
+          title: 'Example Movie',
           path: MOVIE_FILE,
           subtitles: [{ code2: 'de', code3: 'deu', path: '/x/de.srt', forced: false, hi: false }],
         },

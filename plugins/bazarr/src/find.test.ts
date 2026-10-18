@@ -197,7 +197,7 @@ describe('findItem: movies', () => {
     expect(await findItem(ctx, MOVIE_FILE, 'movie')).toEqual({
       kind: 'movie',
       radarrId: 7,
-      title: 'Example Movie (2001)',
+      title: 'Example Movie',
       path: MOVIE_FILE,
       subtitles: [{ language: 'eng', external: true, forced: false, sdh: false }],
     });

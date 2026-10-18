@@ -80,7 +80,7 @@ describe('bazarr:rescan run', () => {
     );
     expect(res).toEqual({
       ok: true,
-      message: `asked Bazarr to rescan Example Movie (2001); it lists ${MOVIE_FILE}`,
+      message: `asked Bazarr to rescan Example Movie; it lists ${MOVIE_FILE}`,
     });
   });
 

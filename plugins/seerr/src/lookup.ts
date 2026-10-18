@@ -40,7 +40,10 @@ function titleOf(raw: unknown): { title: string; year: number | null } | null {
   return norm(parsed.title) === '' ? null : parsed;
 }
 
-/** S4: letters, digits and single spaces only (S4's fallback for a query Seerr rejects). */
+/**
+ * S4: letters, digits and single spaces only: the retry when Seerr's "must be url encoded"
+ * validator still answers 400 for a query (a safety net; strict encoding should avoid it).
+ */
 function cleaned(s: string): string {
   return s
     .replace(/[^\p{L}\p{N}\s]+/gu, ' ')
@@ -96,6 +99,10 @@ async function byId(
   expectTitle?: string,
 ): Promise<Result> {
   const res = await seerrGet(ctx, `/api/v1/${kind}/${tmdbId}`);
+  // S3: Seerr answers 500 "Unable to retrieve movie." (or "…series.") for an id TMDB does not know.
+  if (res.status === 500) {
+    return unknown(`Seerr could not load TMDB id ${tmdbId} (unknown id, or TMDB unreachable)`);
+  }
   if (res.status < 200 || res.status >= 300) return statusFailure(res.status, `TMDB id ${tmdbId}`);
   const body = isObj(res.body) ? res.body : {};
   const name = body.title ?? body.name;
@@ -120,6 +127,8 @@ const yearOf = (hit: Record<string, JsonValue>): number | null => {
 
 async function search(ctx: PluginContext, title: string): Promise<JsonValue[] | Result> {
   let res = await seerrGet(ctx, '/api/v1/search', { query: title, page: '1' });
+  // S4: Seerr's "must be url encoded" validator answers 400 for reserved characters. Strict
+  // encoding avoids it; if a 400 still comes, retry once with the cleaned title.
   if (res.status === 400) {
     const retry = cleaned(title);
     if (retry !== '' && retry !== title) {

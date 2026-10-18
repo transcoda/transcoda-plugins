@@ -11,6 +11,17 @@ function baseUrl(ctx: PluginContext): string {
 }
 
 /**
+ * encodeURIComponent plus `! ' ( ) *`, which it leaves raw. Seerr's OpenAPI validator answers
+ * 400 "must be url encoded" for any of them unescaped (S4).
+ */
+export function strictEncode(s: string): string {
+  return encodeURIComponent(s).replace(
+    /[!'()*]/g,
+    (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`,
+  );
+}
+
+/**
  * GET a Seerr API path. The key travels only in `auth` (S1). The caller reads the status
  * (a 404 and a 400 each mean something); fetch failures throw and are classified with
  * `fetchErrorKind`.
@@ -24,7 +35,7 @@ export async function seerrGet(
     query === undefined
       ? ''
       : `?${Object.entries(query)
-          .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
+          .map(([k, v]) => `${k}=${strictEncode(v)}`)
           .join('&')}`;
   const res = await ctx.fetch({
     url: `${baseUrl(ctx)}${path}${qs}`,

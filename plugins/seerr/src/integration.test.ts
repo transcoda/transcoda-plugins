@@ -23,8 +23,8 @@ describe('seerr integration', () => {
     });
     expect(await runTest(integration, ctx)).toEqual({
       ok: true,
-      message: 'Seerr 2.7.3 at http://192.0.2.20:5055',
-      version: '2.7.3',
+      message: 'Seerr 3.5.0 at http://192.0.2.20:5055',
+      version: '3.5.0',
     });
   });
 

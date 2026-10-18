@@ -2,14 +2,14 @@ import { defineNode } from '@transcoda/sdk';
 import { z } from 'zod';
 import { describeFailure } from './client.ts';
 import { findItem, kindSetting } from './find.ts';
-import { includeSetting, summary } from './subtitles.ts';
+import { EMBEDDED_CAVEAT, includeSetting, summary } from './subtitles.ts';
 
 export const subtitlesPresent = defineNode({
   type: 'bazarr:subtitles-present',
   version: 1,
   kind: 'condition',
   title: 'Has subtitles (Bazarr)',
-  description: 'Yes when Bazarr lists a subtitle for every chosen language.',
+  description: `Yes when Bazarr lists a subtitle for every chosen language. ${EMBEDDED_CAVEAT}.`,
   icon: 'languages',
   inputs: [{ id: 'file', label: 'File', type: 'file' }],
   outputs: [

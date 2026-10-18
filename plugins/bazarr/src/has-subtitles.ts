@@ -2,7 +2,7 @@ import { defineNode, type PluginContext } from '@transcoda/sdk';
 import { z } from 'zod';
 import { describeFailure } from './client.ts';
 import { findItem, kindSetting } from './find.ts';
-import { includeSetting, summary } from './subtitles.ts';
+import { EMBEDDED_CAVEAT, includeSetting, summary } from './subtitles.ts';
 
 const UNKNOWN = { languages: 'unknown', forced: 'unknown', sdh: 'unknown' } as const;
 
@@ -11,8 +11,7 @@ export const hasSubtitles = defineNode({
   version: 1,
   kind: 'data',
   title: 'Subtitles in Bazarr',
-  description:
-    'Looks the file up in Bazarr and outputs the subtitle languages it has, and whether any is forced or SDH.',
+  description: `Looks the file up in Bazarr and outputs the subtitle languages it has, and whether any is forced or SDH. ${EMBEDDED_CAVEAT}.`,
   icon: 'languages',
   inputs: [],
   outputs: [

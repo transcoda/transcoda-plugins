@@ -49,7 +49,16 @@ describe('bazarr:has-subtitles', () => {
       {
         match: { url: EPISODES_URL },
         body: {
-          data: [{ sonarrSeriesId: 1, sonarrEpisodeId: 11, path: EPISODE_FILE, subtitles: [] }],
+          // B4: an item without a language profile lists no embedded tracks and wants nothing.
+          data: [
+            {
+              sonarrSeriesId: 1,
+              sonarrEpisodeId: 11,
+              path: EPISODE_FILE,
+              subtitles: [],
+              missing_subtitles: [],
+            },
+          ],
         },
       },
     ]);

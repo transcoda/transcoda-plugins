@@ -18,8 +18,7 @@
         "type": "movie",
         "requestedBy": {
           "id": 3,
-          "displayName": "alex@example.invalid",
-          "email": "alex@example.invalid"
+          "displayName": "alex@example.invalid"
         }
       },
       {
@@ -28,7 +27,7 @@
         "createdAt": "2026-09-01T10:00:00.000Z",
         "updatedAt": "2026-09-01T10:05:00.000Z",
         "type": "movie",
-        "requestedBy": { "id": 2, "displayName": "Alex", "email": "alex@example.invalid" }
+        "requestedBy": { "id": 2, "displayName": "Alex" }
       },
       {
         "id": 33,
@@ -36,7 +35,7 @@
         "createdAt": "2026-09-05T12:00:00.000Z",
         "updatedAt": "2026-09-05T12:00:00.000Z",
         "type": "movie",
-        "requestedBy": { "id": 2, "displayName": "Alex", "email": "alex@example.invalid" }
+        "requestedBy": { "id": 2, "displayName": "Alex" }
       }
     ]
   }

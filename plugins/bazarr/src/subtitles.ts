@@ -11,13 +11,19 @@ export interface BazarrSubtitle {
   sdh: boolean;
 }
 
+/** B4: what Bazarr hides by default; the node descriptions repeat it. */
+export const EMBEDDED_CAVEAT =
+  'Bazarr lists tracks inside the video only for languages in the item\'s language profile, unless "Show only desired embedded subtitles" is off';
+
 export const INCLUDE = ['all', 'external', 'embedded'] as const;
 export type Include = (typeof INCLUDE)[number];
 export const includeSetting = () =>
   z
     .enum(INCLUDE)
     .default('all')
-    .describe('Which subtitles count: all, files next to the video, or tracks inside it');
+    .describe(
+      `Which subtitles count: all, files next to the video, or tracks inside it (${EMBEDDED_CAVEAT})`,
+    );
 
 const isObj = (v: JsonValue | undefined): v is { [k: string]: JsonValue } =>
   typeof v === 'object' && v !== null && !Array.isArray(v);

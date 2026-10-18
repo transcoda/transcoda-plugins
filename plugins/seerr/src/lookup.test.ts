@@ -74,6 +74,13 @@ describe('lookupRequest by id', () => {
     expect(r.reason).toBe('Example Movie Two: not requested in Seerr');
   });
 
+  it('a title Seerr knows with mediaInfo.requests [] is not requested (S3)', async () => {
+    const ctx = ctxOf([get('/api/v1/movie/900002', fixture('movie-known-unrequested'))]);
+    const r = await lookupRequest(ctx, { ids: { tmdbId: 900002 }, title: null, kind: 'auto' });
+    expect(r.value).toEqual(NOT);
+    expect(r.reason).toBe('Example Movie Two: not requested in Seerr');
+  });
+
   it('a request without createdAt gives requestedAt unknown', async () => {
     const ctx = ctxOf([get('/api/v1/movie/1', withRequests([request({ createdAt: undefined })]))]);
     const r = await lookupRequest(ctx, { ids: { tmdbId: 1 }, title: null, kind: 'auto' });
@@ -102,11 +109,25 @@ describe('lookupRequest by id', () => {
     expect(r.reason).toContain('TMDB id 9');
   });
 
+  it('an id TMDB does not know (Seerr answers 500, S3) is unknown with a clear reason', async () => {
+    const body = { message: 'Unable to retrieve movie.' };
+    const ctx = ctxOf([get('/api/v1/movie/9', body, 500)]);
+    const r = await lookupRequest(ctx, { ids: { tmdbId: 9 }, title: null, kind: 'auto' });
+    expect(r).toEqual({
+      value: UNKNOWN,
+      reason: 'Seerr could not load TMDB id 9 (unknown id, or TMDB unreachable)',
+    });
+    const tv = ctxOf([get('/api/v1/tv/9', { message: 'Unable to retrieve series.' }, 500)]);
+    const r2 = await lookupRequest(tv, { ids: { tmdbId: 9 }, title: null, kind: 'tv' });
+    expect(r2.value).toEqual(UNKNOWN);
+    expect(r2.reason).toContain('could not load TMDB id 9');
+  });
+
   it('other HTTP statuses are unknown with the status in the reason', async () => {
-    const ctx = ctxOf([get('/api/v1/movie/9', null, 500)]);
+    const ctx = ctxOf([get('/api/v1/movie/9', null, 502)]);
     const r = await lookupRequest(ctx, { ids: { tmdbId: 9 }, title: null, kind: 'auto' });
     expect(r.value).toEqual(UNKNOWN);
-    expect(r.reason).toContain('500');
+    expect(r.reason).toContain('502');
     const auth = ctxOf([get('/api/v1/movie/9', null, 401)]);
     const r2 = await lookupRequest(auth, { ids: { tmdbId: 9 }, title: null, kind: 'auto' });
     expect(r2.reason).toBe('Seerr rejected the API key');
@@ -298,6 +319,26 @@ describe('lookupRequest by title', () => {
     ).toMatchObject({ requested: true });
   });
 
+  it("percent-encodes ' ( ) ! * in the query, which Seerr rejects raw (S4)", async () => {
+    const search = {
+      results: [{ id: 900100, mediaType: 'tv', name: "Example's Show (Redux)!*" }],
+    };
+    const q = 'Example%27s%20Show%20%28Redux%29%21%2A';
+    const ctx = ctxOf([get(SEARCH(q), search), get('/api/v1/tv/900100', fixture('tv-requested'))]);
+    const r = await lookupRequest(ctx, {
+      ids: { tvdbId: 800100 },
+      title: "Example's Show (Redux)!*",
+      kind: 'auto',
+    });
+    const first = urls(ctx)[0] ?? '';
+    expect(first).toBe(`${BASE}${SEARCH(q)}`);
+    expect(first).toContain('%27');
+    expect(first).toContain('%28');
+    expect(first).toContain('%29');
+    expect(first).not.toMatch(/[!'()*]/);
+    expect(r.value).toMatchObject({ requested: true });
+  });
+
   it('retries once with a cleaned title when the search answers 400 (S4)', async () => {
     const search = {
       results: [
@@ -305,7 +346,7 @@ describe('lookupRequest by title', () => {
       ],
     };
     const ctx = ctxOf([
-      get(SEARCH('Example%3A%20Movie%20Two!'), null, 400),
+      get(SEARCH('Example%3A%20Movie%20Two%21'), null, 400),
       get(SEARCH('Example%20Movie%20Two'), search),
       get('/api/v1/movie/900002', fixture('movie-unrequested')),
     ]);

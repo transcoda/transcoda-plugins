@@ -26,7 +26,10 @@
           "code3": "eng",
           "path": "/data/shows/Example Show/Season 1/Example Show - S01E03.en.srt",
           "forced": false,
-          "hi": false
+          "hi": false,
+          "file_size": 1234,
+          "embedded_track_id": null,
+          "id": 1
         },
         {
           "name": "German",
@@ -34,7 +37,10 @@
           "code3": "deu",
           "path": null,
           "forced": true,
-          "hi": false
+          "hi": false,
+          "file_size": null,
+          "embedded_track_id": 3,
+          "id": 2
         }
       ],
       "missing_subtitles": []

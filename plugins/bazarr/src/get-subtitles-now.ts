@@ -69,7 +69,9 @@ export const getSubtitlesNow = defineNode({
         };
       }
       // A track already inside the video counts too: asking again would only leave a new file
-      // next to it that the embed node then skips (re-runs of a replaced file).
+      // next to it that the embed node then skips (re-runs of a replaced file). B4: Bazarr lists
+      // such tracks only for languages in the item's language profile (by default), so a track in
+      // another language is not seen and Bazarr is asked anyway.
       const listed = (current: BazarrItem, bazarrCode: string) => {
         const iso3 = plugin.lang.toIso3(bazarrCode) ?? bazarrCode;
         return current.subtitles.some(
@@ -89,13 +91,13 @@ export const getSubtitlesNow = defineNode({
         }),
       );
       for (const result of sent) {
-        // B5: whatever Bazarr answers, the result is what it lists afterwards; only a timeout is expected.
+        // B5: Bazarr queues the search and answers 204 at once (even for an unknown id); the result is what it lists afterwards.
         if (result.status === 'rejected' && fetchErrorKind(result.reason) !== 'timeout') {
           throw result.reason;
         }
       }
 
-      // A synchronous PATCH may have finished the download: look once before sleeping.
+      // The search runs in Bazarr's job queue; look once (a fast provider may already be done), then poll.
       let current: BazarrItem = (await reloadItem(plugin, item, budget)) ?? item;
       while (wanted.some((l) => !listed(current, l))) {
         const left = deadline - Date.now();
