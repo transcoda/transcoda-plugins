@@ -47,6 +47,7 @@ export function runContext(
     containerChanged: false,
     problemsSoFar: [],
     jobUrl: null,
+    workflowName: 'Test workflow',
     ...over,
   };
 }

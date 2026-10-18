@@ -13,6 +13,7 @@ export function runContext(
   over: Partial<{
     problemsSoFar: string[];
     jobUrl: string | null;
+    workflowName: string;
     newPath: string;
     outcome: 'replaced' | 'moved' | 'copied';
   }> = {},
@@ -28,6 +29,8 @@ export function runContext(
     containerChanged: false,
     problemsSoFar: [] as string[],
     jobUrl: null as string | null,
+    // Empty = no name (an older core): the plugin falls back to its default title.
+    workflowName: '',
     ...over,
   };
 }

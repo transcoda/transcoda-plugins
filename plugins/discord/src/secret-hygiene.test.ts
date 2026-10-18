@@ -74,6 +74,7 @@ describe('secret hygiene', () => {
     containerChanged: false,
     problemsSoFar: ['p'],
     jobUrl: null,
+    workflowName: 'W',
   });
 
   it('keeps the webhook url out of everything but the request target', async () => {

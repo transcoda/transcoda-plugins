@@ -58,6 +58,7 @@ describe('secret hygiene', () => {
       containerChanged: false,
       problemsSoFar: [],
       jobUrl: null,
+      workflowName: 'Test workflow',
     };
     outputs.push(await runFinishRun(refresh, run, {}));
     outputs.push(await runFinishRun(refresh, run, {}));
@@ -94,6 +95,7 @@ describe('secret hygiene', () => {
           containerChanged: false,
           problemsSoFar: [],
           jobUrl: null,
+          workflowName: 'Test workflow',
         },
         {},
       ),

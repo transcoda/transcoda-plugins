@@ -28,6 +28,8 @@ function runCtx(
     containerChanged: false,
     problemsSoFar: [] as string[],
     jobUrl: null as string | null,
+    // Empty = no name (an older core): the plugin falls back to its default title.
+    workflowName: '',
     ...over,
   };
   return { ctx, plugin };

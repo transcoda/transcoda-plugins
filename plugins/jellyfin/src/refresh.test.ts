@@ -30,6 +30,7 @@ function runCtx(
     containerChanged: false,
     problemsSoFar: [],
     jobUrl: null,
+    workflowName: 'Test workflow',
   };
 }
 
