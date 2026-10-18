@@ -18,6 +18,7 @@ fictional (`Example Show`, `Example Movie`), addresses are documentation address
 | `arr/` | Sonarr and Radarr `system/status`, `config/mediamanagement`, `series`, `episodefile`, `episode`, `movie`, `moviefile`, and a `command` in the queued, completed and failed states |
 | `webhooks/` | What Sonarr and Radarr POST: download, upgrade, import complete, rename, test (phase 3 reads these; recorded now so the shapes are settled) |
 | `jellyfin/` | `System/Info/Public` (no auth) and `System/Info` (authenticated) |
+| `bazarr/` | `api/system/status`, `api/series`, `api/episodes` (series 1), `api/movies`, and `api/movies` for one movie (`radarrid[]=7`); `Example Show` and `Example Show 2` again, one episode with an external `en` subtitle and an embedded forced `de` one |
 | `tmdb/` | `authentication`, movie 603, tv 1399, `find` by IMDb id, and movie/tv searches with one, many and no result |
 
 ## Replacing a fixture with a real recording

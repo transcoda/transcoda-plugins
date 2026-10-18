@@ -1,0 +1,43 @@
+{
+  "data": [
+    {
+      "sonarrSeriesId": 1,
+      "sonarrEpisodeId": 10,
+      "season": 1,
+      "episode": 2,
+      "title": "Example Episode Two",
+      "path": "/data/shows/Example Show/Season 1/Example Show - S01E02.mkv",
+      "subtitles": [],
+      "missing_subtitles": [
+        { "name": "English", "code2": "en", "code3": "eng", "forced": false, "hi": false }
+      ]
+    },
+    {
+      "sonarrSeriesId": 1,
+      "sonarrEpisodeId": 11,
+      "season": 1,
+      "episode": 3,
+      "title": "Example Episode Three",
+      "path": "/data/shows/Example Show/Season 1/Example Show - S01E03.mkv",
+      "subtitles": [
+        {
+          "name": "English",
+          "code2": "en",
+          "code3": "eng",
+          "path": "/data/shows/Example Show/Season 1/Example Show - S01E03.en.srt",
+          "forced": false,
+          "hi": false
+        },
+        {
+          "name": "German",
+          "code2": "de",
+          "code3": "deu",
+          "path": null,
+          "forced": true,
+          "hi": false
+        }
+      ],
+      "missing_subtitles": []
+    }
+  ]
+}
