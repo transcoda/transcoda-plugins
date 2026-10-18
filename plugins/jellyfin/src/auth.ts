@@ -1,5 +1,12 @@
 import type { PluginContext, PluginFetchInput, PluginFetchResponse } from '@transcoda/sdk';
 
+/** Drops trailing slashes in linear time (a `/\/+$/` regex is quadratic on many slashes). */
+function stripTrailingSlashes(s: string): string {
+  let end = s.length;
+  while (end > 0 && s.charCodeAt(end - 1) === 47) end--;
+  return s.slice(0, end);
+}
+
 export type JellyfinHeader = 'mediabrowser' | 'emby';
 
 const HEADER_CACHE_KEY = 'authHeader';
@@ -19,7 +26,7 @@ export function jellyfinAuth(ctx: PluginContext, header: JellyfinHeader): Plugin
 }
 
 export function jellyfinBase(ctx: PluginContext): string {
-  return String(ctx.settings.url).replace(/\/+$/, '');
+  return stripTrailingSlashes(String(ctx.settings.url));
 }
 
 async function currentHeader(ctx: PluginContext): Promise<JellyfinHeader> {

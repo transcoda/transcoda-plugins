@@ -1,6 +1,13 @@
 import { defineIntegration, fetchErrorKind, secret, url } from '@transcoda/sdk';
 import { z } from 'zod';
 
+/** Drops trailing slashes in linear time (a `/\/+$/` regex is quadratic on many slashes). */
+function stripTrailingSlashes(s: string): string {
+  let end = s.length;
+  while (end > 0 && s.charCodeAt(end - 1) === 47) end--;
+  return s.slice(0, end);
+}
+
 const OPTIONAL_TOPIC = /^([-_A-Za-z0-9]{1,64})?$/;
 
 export const integration = defineIntegration({
@@ -60,5 +67,5 @@ export const integration = defineIntegration({
 /** The configured server without a trailing slash; the schema default applies when unset. */
 export function serverUrl(value: unknown): string {
   const raw = typeof value === 'string' && value !== '' ? value : 'https://ntfy.sh';
-  return raw.replace(/\/+$/, '');
+  return stripTrailingSlashes(raw);
 }

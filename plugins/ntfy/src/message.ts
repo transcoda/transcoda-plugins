@@ -1,3 +1,9 @@
+/** Drops trailing slashes in linear time (a `/\/+$/` regex is quadratic on many slashes). */
+function stripTrailingSlashes(s: string): string {
+  let end = s.length;
+  while (end > 0 && s.charCodeAt(end - 1) === 47) end--;
+  return s.slice(0, end);
+}
 export interface MessageInput {
   workflowName: string;
   path: string;
@@ -12,7 +18,7 @@ export interface MessageInput {
 export const MAX_MESSAGE_BYTES = 4000;
 
 export function basename(path: string): string {
-  const trimmed = path.replace(/\/+$/, '');
+  const trimmed = stripTrailingSlashes(path);
   return trimmed.slice(trimmed.lastIndexOf('/') + 1) || path;
 }
 

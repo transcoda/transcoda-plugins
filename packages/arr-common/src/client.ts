@@ -1,6 +1,13 @@
 import type { PluginContext, PluginFetchResponse } from '@transcoda/sdk';
 import type { JsonValue } from './json.ts';
 
+/** Drops trailing slashes in linear time (a `/\/+$/` regex is quadratic on many slashes). */
+function stripTrailingSlashes(s: string): string {
+  let end = s.length;
+  while (end > 0 && s.charCodeAt(end - 1) === 47) end--;
+  return s.slice(0, end);
+}
+
 export type ArrProduct = 'Sonarr' | 'Radarr';
 
 export class ArrHttpError extends Error {
@@ -16,7 +23,7 @@ export class ArrHttpError extends Error {
 
 /** `settings.url` without trailing slashes; a base path such as `/sonarr` is kept. */
 export function arrBaseUrl(settings: { url: string }): string {
-  return settings.url.replace(/\/+$/, '');
+  return stripTrailingSlashes(settings.url);
 }
 
 export interface ArrClient {

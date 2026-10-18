@@ -6,6 +6,15 @@ const SECRET = 'SENTINEL-SECRET-9f3a';
 const settings = { url: 'http://nas:8989/sonarr/', apiKey: SECRET };
 
 describe('arrBaseUrl', () => {
+  it('strips many trailing slashes quickly and keeps inner ones', () => {
+    const many = `http://nas:8989/${'/'.repeat(100_000)}x`;
+    const started = Date.now();
+    expect(arrBaseUrl({ url: many })).toBe(many);
+    expect(arrBaseUrl({ url: `http://nas:8989/sonarr${'/'.repeat(100_000)}` })).toBe(
+      'http://nas:8989/sonarr',
+    );
+    expect(Date.now() - started).toBeLessThan(500);
+  });
   it('strips trailing slashes and keeps a base path', () => {
     expect(arrBaseUrl({ url: 'http://nas:8989/' })).toBe('http://nas:8989');
     expect(arrBaseUrl({ url: 'http://nas:8989/sonarr/' })).toBe('http://nas:8989/sonarr');

@@ -1,5 +1,11 @@
+/** Drops trailing slashes in linear time (a `/\/+$/` regex is quadratic on many slashes). */
+function stripTrailingSlashes(s: string): string {
+  let end = s.length;
+  while (end > 0 && s.charCodeAt(end - 1) === 47) end--;
+  return s.slice(0, end);
+}
 function trim(p: string): string {
-  return p.length > 1 ? p.replace(/\/+$/, '') || '/' : p;
+  return p.length > 1 ? stripTrailingSlashes(p) || '/' : p;
 }
 
 const hasDotDot = (p: string) => p.split('/').includes('..');
