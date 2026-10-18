@@ -1,0 +1,21 @@
+{
+  "name": "@transcoda/plugin-ntfy",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "description": "ntfy plugin: sends a push through ntfy when a file is done, and optionally when a job fails.",
+  "license": "GPL-3.0-only",
+  "transcoda": {
+    "sdk": "^1",
+    "title": "ntfy"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "bundle": "tsdown && node ../../scripts/finalize-bundle.mjs"
+  },
+  "devDependencies": {
+    "@transcoda/sdk": "link:../../../transcoda/packages/sdk",
+    "zod": "4.6.7"
+  }
+}
