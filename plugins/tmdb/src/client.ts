@@ -52,16 +52,3 @@ export async function tmdbGet(
   if (res.status < 200 || res.status >= 300) throw new TmdbHttpError(res.status);
   return res.body;
 }
-
-const FETCH_KINDS = ['refused', 'timeout', 'rate-limited', 'failed'] as const;
-export type FetchKind = (typeof FETCH_KINDS)[number];
-
-/**
- * The `kind` of a fetch failure. The host throws its own copy of the SDK's error classes, so
- * `instanceof` cannot be trusted: classify by the `kind` field.
- */
-export function fetchKindOf(error: unknown): FetchKind | null {
-  if (typeof error !== 'object' || error === null || !('kind' in error)) return null;
-  const kind = (error as { kind: unknown }).kind;
-  return FETCH_KINDS.find((k) => k === kind) ?? null;
-}

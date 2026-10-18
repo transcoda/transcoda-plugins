@@ -1,5 +1,5 @@
-import type { PluginContext } from '@transcoda/sdk';
-import { fetchKindOf, type JsonValue, TmdbHttpError, tmdbGet } from './client.ts';
+import { fetchErrorKind, type PluginContext } from '@transcoda/sdk';
+import { type JsonValue, TmdbHttpError, tmdbGet } from './client.ts';
 import { parseTitle } from './parse-title.ts';
 
 export type LookupKind = 'auto' | 'movie' | 'tv';
@@ -257,7 +257,7 @@ export async function lookupOriginalLanguage(
           : `TMDB answered HTTP ${error.status}`,
       );
     }
-    const kind = fetchKindOf(error);
+    const kind = fetchErrorKind(error);
     if (kind === 'rate-limited') return unknown('TMDB rate limit hit; try again later');
     if (kind !== null) return unknown(`TMDB unreachable: ${kind}`);
     throw error;

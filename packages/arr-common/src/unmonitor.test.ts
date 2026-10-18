@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { arrFixture } from './fixtures.ts';
+import { arrFixture } from '../test/fixtures.ts';
 import { unmonitorWarning } from './index.ts';
 
 const sonarr = arrFixture('sonarr-mediamanagement') as Record<string, never>;

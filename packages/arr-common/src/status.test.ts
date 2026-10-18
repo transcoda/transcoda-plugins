@@ -1,6 +1,6 @@
 import { fakePluginContext } from '@transcoda/sdk/testing';
 import { describe, expect, it } from 'vitest';
-import { arrFixture } from './fixtures.ts';
+import { arrFixture } from '../test/fixtures.ts';
 import { testStatus } from './index.ts';
 
 const settings = { url: 'http://nas:8989', apiKey: 'SENTINEL-SECRET-9f3a' };

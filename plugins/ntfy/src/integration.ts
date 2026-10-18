@@ -1,4 +1,4 @@
-import { defineIntegration, secret, url } from '@transcoda/sdk';
+import { defineIntegration, fetchErrorKind, secret, url } from '@transcoda/sdk';
 import { z } from 'zod';
 
 const OPTIONAL_TOPIC = /^([-_A-Za-z0-9]{1,64})?$/;
@@ -61,18 +61,4 @@ export const integration = defineIntegration({
 export function serverUrl(value: unknown): string {
   const raw = typeof value === 'string' && value !== '' ? value : 'https://ntfy.sh';
   return raw.replace(/\/+$/, '');
-}
-
-const FETCH_KINDS: readonly string[] = ['refused', 'timeout', 'rate-limited', 'failed'];
-
-/**
- * The `kind` of a fetch failure, or null for anything else. Never `instanceof`: in a real host the
- * error is built from the host's own SDK copy, not the bundle's, so the class check is always false.
- */
-export function fetchErrorKind(error: unknown): string | null {
-  if (typeof error === 'object' && error !== null && 'kind' in error) {
-    const kind = (error as { kind: unknown }).kind;
-    if (typeof kind === 'string' && FETCH_KINDS.includes(kind)) return kind;
-  }
-  return null;
 }

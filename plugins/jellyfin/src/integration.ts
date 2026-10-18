@@ -1,7 +1,7 @@
 import {
   allowInsecureTls,
   defineIntegration,
-  FetchError,
+  fetchErrorKind,
   type IntegrationTestFail,
   type IntegrationTestOk,
   type PluginContext,
@@ -68,11 +68,12 @@ async function test(ctx: PluginContext): Promise<IntegrationTestOk | Integration
       warnings: (await usesLegacyHeader(ctx)) ? [LEGACY_HEADER_WARNING] : [],
     };
   } catch (e) {
-    if (e instanceof FetchError) {
+    const kind = fetchErrorKind(e);
+    if (kind !== null) {
       return {
         ok: false,
         kind: 'unreachable',
-        message: `Jellyfin is not reachable at ${origin}: ${e.kind}`,
+        message: `Jellyfin is not reachable at ${origin}: ${kind}`,
       };
     }
     throw e;

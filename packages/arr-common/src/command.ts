@@ -1,6 +1,5 @@
-import type { PluginContext } from '@transcoda/sdk';
+import { fetchErrorKind, type PluginContext } from '@transcoda/sdk';
 import { type ArrClient, ArrHttpError } from './client.ts';
-import { fetchKindOf } from './fetch-kind.ts';
 import type { JsonValue } from './json.ts';
 
 export type CommandOutcome =
@@ -50,7 +49,7 @@ export async function runCommand(
     try {
       res = await client.get(`/api/v3/command/${id}`);
     } catch (e) {
-      if (!(fetchKindOf(e) !== null || e instanceof ArrHttpError)) throw e;
+      if (!(fetchErrorKind(e) !== null || e instanceof ArrHttpError)) throw e;
       // A transient poll failure does not end the step; keep trying until the deadline.
       lastError = (e as Error).message;
       await sleep(Math.max(0, Math.min(pollMs, deadline - now())));

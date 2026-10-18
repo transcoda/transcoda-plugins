@@ -9,7 +9,6 @@ export {
 } from './client.ts';
 export { coalesce, coalesceReset } from './coalesce.ts';
 export { type CommandOutcome, runCommand } from './command.ts';
-export { type FetchKind, fetchKindOf } from './fetch-kind.ts';
 export { idsOf } from './ids.ts';
 export type { JsonValue } from './json.ts';
 export { originalLanguageOf } from './language.ts';

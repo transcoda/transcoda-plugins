@@ -11,8 +11,8 @@ installs into `/config/plugins` and runs in its sandboxed plugin host.
   Sonarr lists the new file. Needs Sonarr's URL and API key.
 - **Radarr**: the same for movies. Needs Radarr's URL and API key.
 - **Jellyfin**: refreshes the library after a file changes. Needs Jellyfin's URL and an API key.
-- **TMDB**: looks up a movie or show so a workflow can branch on it (original language, year,
-  ids). Needs a TMDB API key.
+- **TMDB**: looks up a movie or show on TMDB and outputs its original language, so a workflow
+  can branch on it. Needs a TMDB API key.
 - **ntfy**: sends a notification when a job finishes or needs attention. Needs an ntfy server
   URL and topic (and a token if the topic is protected).
 - **Discord**: posts the same notification to a channel through a webhook. Needs the webhook URL.

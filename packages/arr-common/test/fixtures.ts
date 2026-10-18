@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import type { JsonValue } from './json.ts';
+import type { JsonValue } from '../src/json.ts';
 
 /** Reads a recorded JSON fixture from test/fixtures/arr. */
 export function arrFixture(name: string): JsonValue {

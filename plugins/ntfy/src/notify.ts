@@ -2,10 +2,11 @@ import {
   defineNode,
   type FinishRunContext,
   type FinishRunResult,
+  fetchErrorKind,
   type PluginContext,
 } from '@transcoda/sdk';
 import { z } from 'zod';
-import { fetchErrorKind, serverUrl } from './integration.ts';
+import { serverUrl } from './integration.ts';
 import { basename, buildMessage, renderTitle } from './message.ts';
 
 const TOPIC = /^[-_A-Za-z0-9]{1,64}$/;

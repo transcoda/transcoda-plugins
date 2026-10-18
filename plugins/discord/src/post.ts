@@ -1,4 +1,4 @@
-import { FetchError, type PluginContext, type PluginFetchResponse } from '@transcoda/sdk';
+import { fetchErrorKind, type PluginContext, type PluginFetchResponse } from '@transcoda/sdk';
 import type { Embed } from './embed.ts';
 
 type JsonValue = PluginFetchResponse['body'];
@@ -7,13 +7,10 @@ type JsonValue = PluginFetchResponse['body'];
 // FetchRateLimited, and one timeoutMs deadline covers the whole call, so the plugin does not retry.
 // 70 s leaves room for the longest Retry-After the proxy honours.
 const POST_TIMEOUT_MS = 70_000;
-const KINDS = ['refused', 'timeout', 'rate-limited', 'failed'];
 
 /** The fetch error kind, or 'failed' for anything else. Never reads the message (it may hold the URL). */
 export function errorKind(e: unknown): string {
-  if (e instanceof FetchError) return e.kind;
-  const kind = (e as { kind?: unknown } | null)?.kind;
-  return typeof kind === 'string' && KINDS.includes(kind) ? kind : 'failed';
+  return fetchErrorKind(e) ?? 'failed';
 }
 
 export type PostResult = { ok: true } | { ok: false; message: string; retryable?: boolean };

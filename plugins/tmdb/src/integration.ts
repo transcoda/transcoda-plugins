@@ -1,6 +1,6 @@
-import { defineIntegration, secret } from '@transcoda/sdk';
+import { defineIntegration, fetchErrorKind, secret } from '@transcoda/sdk';
 import { z } from 'zod';
-import { credentialKind, fetchKindOf, TMDB_ORIGIN, TmdbHttpError, tmdbGet } from './client.ts';
+import { credentialKind, TMDB_ORIGIN, TmdbHttpError, tmdbGet } from './client.ts';
 
 export const integration = defineIntegration({
   id: 'tmdb',
@@ -35,7 +35,7 @@ export const integration = defineIntegration({
         }
         return { ok: false, kind: 'other', message: error.message };
       }
-      const fetchKind = fetchKindOf(error);
+      const fetchKind = fetchErrorKind(error);
       if (fetchKind !== null) {
         return { ok: false, kind: 'unreachable', message: `Could not reach TMDB (${fetchKind})` };
       }

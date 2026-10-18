@@ -1,13 +1,12 @@
 import {
   ArrHttpError,
   arrClient,
-  fetchKindOf,
   idsOf,
   type JsonValue,
   pickByPath,
   sameFile,
 } from '@transcoda/plugin-arr-common';
-import type { PluginContext } from '@transcoda/sdk';
+import { fetchErrorKind, type PluginContext } from '@transcoda/sdk';
 
 export interface SeriesRef {
   id: number;
@@ -90,7 +89,7 @@ async function episodeLabel(ctx: PluginContext, seriesId: number, fileId: number
       `/api/v3/episode?seriesId=${seriesId}&episodeFileId=${fileId}`,
     );
   } catch (e) {
-    if (e instanceof ArrHttpError || fetchKindOf(e) !== null) return '';
+    if (e instanceof ArrHttpError || fetchErrorKind(e) !== null) return '';
     throw e;
   }
   if (!Array.isArray(raw)) return '';

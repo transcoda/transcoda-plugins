@@ -1,6 +1,5 @@
-import { defineIntegration, secret } from '@transcoda/sdk';
+import { defineIntegration, fetchErrorKind, secret } from '@transcoda/sdk';
 import { z } from 'zod';
-import { errorKind } from './post.ts';
 
 const WEBHOOK_SHAPE = /^https:\/\/discord\.com\/api\/webhooks\/\d+\/[A-Za-z0-9_-]+$/;
 
@@ -59,7 +58,9 @@ export const integration = defineIntegration({
         message: `Webhook "${body.name}" in channel ${String(body.channel_id ?? 'unknown')}`,
       };
     } catch (e) {
-      return { ok: false, kind: 'unreachable', message: `Discord unreachable: ${errorKind(e)}` };
+      const kind = fetchErrorKind(e);
+      if (kind === null) throw e;
+      return { ok: false, kind: 'unreachable', message: `Discord unreachable: ${kind}` };
     }
   },
 });

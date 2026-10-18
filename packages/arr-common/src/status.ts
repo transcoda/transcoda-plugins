@@ -1,6 +1,10 @@
-import type { IntegrationTestFail, IntegrationTestOk, PluginContext } from '@transcoda/sdk';
+import {
+  fetchErrorKind,
+  type IntegrationTestFail,
+  type IntegrationTestOk,
+  type PluginContext,
+} from '@transcoda/sdk';
 import { ArrHttpError, type ArrProduct, arrClient } from './client.ts';
-import { fetchKindOf } from './fetch-kind.ts';
 
 function originOf(ctx: PluginContext): string {
   try {
@@ -26,7 +30,7 @@ export async function testStatus(
       }
       return { ok: false, kind: 'other', message: e.message };
     }
-    const fetchKind = fetchKindOf(e);
+    const fetchKind = fetchErrorKind(e);
     if (fetchKind !== null && fetchKind !== 'rate-limited') {
       return {
         ok: false,

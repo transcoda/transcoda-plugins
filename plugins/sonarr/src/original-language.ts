@@ -1,5 +1,5 @@
-import { ArrHttpError, fetchKindOf, originalLanguageOf } from '@transcoda/plugin-arr-common';
-import { defineNode } from '@transcoda/sdk';
+import { ArrHttpError, originalLanguageOf } from '@transcoda/plugin-arr-common';
+import { defineNode, fetchErrorKind } from '@transcoda/sdk';
 import { z } from 'zod';
 import { findSeriesForPath, idsOfSeries } from './find.ts';
 
@@ -37,7 +37,7 @@ export const originalLanguage = defineNode({
         reason: `${series.title}: ${lang.reason}`,
       };
     } catch (e) {
-      const kind = fetchKindOf(e);
+      const kind = fetchErrorKind(e);
       if (kind !== null) {
         return { value: { ...UNKNOWN }, reason: `Sonarr unreachable: ${kind}` };
       }

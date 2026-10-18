@@ -1,13 +1,13 @@
 import {
   ArrHttpError,
   arrClient,
-  fetchKindOf,
   testStatus,
   unmonitorWarning,
 } from '@transcoda/plugin-arr-common';
 import {
   allowInsecureTls,
   defineIntegration,
+  fetchErrorKind,
   type IntegrationTestFail,
   type IntegrationTestOk,
   type PluginContext,
@@ -32,7 +32,7 @@ async function test(ctx: PluginContext): Promise<IntegrationTestOk | Integration
     }
     return warning === null ? result : { ...result, warnings: [warning] };
   } catch (e) {
-    const kind = fetchKindOf(e);
+    const kind = fetchErrorKind(e);
     if (e instanceof ArrHttpError || kind !== null) {
       const why = e instanceof ArrHttpError ? String(e.status) : kind;
       return { ...result, warnings: [`could not read media management settings: ${why}`] };

@@ -7,6 +7,7 @@ import {
 import {
   allowInsecureTls,
   defineIntegration,
+  fetchErrorKind,
   type IntegrationTestFail,
   type IntegrationTestOk,
   type PluginContext,
@@ -15,32 +16,9 @@ import {
   url,
 } from '@transcoda/sdk';
 import { z } from 'zod';
-import { fetchKindOf } from './errors.ts';
-
-function originOf(ctx: PluginContext): string {
-  try {
-    return new URL(String(ctx.settings.url ?? '')).origin;
-  } catch {
-    return 'the configured address';
-  }
-}
 
 async function test(ctx: PluginContext): Promise<IntegrationTestOk | IntegrationTestFail> {
-  let status: IntegrationTestOk | IntegrationTestFail;
-  try {
-    status = await testStatus(ctx, 'Radarr', 4);
-  } catch (e) {
-    // testStatus recognises only this bundle's own error classes; the host throws its own.
-    const kind = fetchKindOf(e);
-    if (kind === null) throw e;
-    return kind === 'rate-limited'
-      ? { ok: false, kind: 'other', message: 'Radarr is rate limiting requests' }
-      : {
-          ok: false,
-          kind: 'unreachable',
-          message: `Radarr is not reachable at ${originOf(ctx)}: ${kind}`,
-        };
-  }
+  const status = await testStatus(ctx, 'Radarr', 4);
   if (!status.ok) return status;
   let warning: string | null;
   try {
@@ -55,7 +33,7 @@ async function test(ctx: PluginContext): Promise<IntegrationTestOk | Integration
     }
     warning = found.warning;
   } catch (e) {
-    const why = e instanceof ArrHttpError ? String(e.status) : fetchKindOf(e);
+    const why = e instanceof ArrHttpError ? String(e.status) : fetchErrorKind(e);
     if (why === null) throw e;
     warning = `could not read media management settings: ${why}`;
   }

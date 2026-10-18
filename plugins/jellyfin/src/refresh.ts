@@ -1,4 +1,4 @@
-import { defineNode, FetchError } from '@transcoda/sdk';
+import { defineNode, fetchErrorKind } from '@transcoda/sdk';
 import { z } from 'zod';
 import { jellyfinPost } from './auth.ts';
 
@@ -58,11 +58,12 @@ export const refresh = defineNode({
       }
       return { ok: false, message: `Jellyfin answered ${res.status} to the rescan request` };
     } catch (e) {
-      if (e instanceof FetchError) {
+      const kind = fetchErrorKind(e);
+      if (kind !== null) {
         return {
           ok: false,
-          retryable: e.kind !== 'refused',
-          message: `Jellyfin unreachable: ${e.kind}`,
+          retryable: kind !== 'refused',
+          message: `Jellyfin unreachable: ${kind}`,
         };
       }
       throw e;

@@ -103,7 +103,9 @@ describe('secret hygiene', () => {
     ]) {
       const results: unknown[] = [];
       const t = failing(err);
-      results.push(await runTest(integration, t));
+      // A programming error (not a fetch failure) is not turned into "unreachable": it propagates.
+      if (err.name === 'Error') await expect(runTest(integration, t)).rejects.toBe(err);
+      else results.push(await runTest(integration, t));
       const r = failing(err);
       results.push(await notify.run?.(runCtx(r), notify.settings.parse({})));
       const h = failing(err);
