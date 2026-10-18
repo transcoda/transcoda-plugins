@@ -18,7 +18,7 @@ describe('ntfy integration', () => {
     expect(parsed).toMatchObject({
       url: 'https://ntfy.sh',
       notifyOnFailed: false,
-      failedTopic: 'transcoda',
+      failedTopic: '',
     });
   });
 

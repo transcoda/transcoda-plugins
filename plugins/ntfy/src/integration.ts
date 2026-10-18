@@ -1,7 +1,7 @@
 import { defineIntegration, secret, url } from '@transcoda/sdk';
 import { z } from 'zod';
 
-const TOPIC = /^[-_A-Za-z0-9]{1,64}$/;
+const OPTIONAL_TOPIC = /^([-_A-Za-z0-9]{1,64})?$/;
 
 export const integration = defineIntegration({
   id: 'ntfy',
@@ -13,7 +13,13 @@ export const integration = defineIntegration({
       .boolean()
       .default(false)
       .describe('Also notify when a job fails (any workflow)'),
-    failedTopic: z.string().regex(TOPIC).default('transcoda').describe('Topic for failed jobs'),
+    failedTopic: z
+      .string()
+      .regex(OPTIONAL_TOPIC)
+      .default('')
+      .describe(
+        'Topic for failed jobs. Empty: failed-job pushes stay off. ntfy topics are public, so choose a name nobody can guess.',
+      ),
   }),
   allowedOrigins: ['$settings.url'],
   async test(ctx) {

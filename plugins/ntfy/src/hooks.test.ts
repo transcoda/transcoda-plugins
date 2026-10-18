@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { bodyOf, ctxWith, job, publishOk, timingOut } from './helpers.ts';
-import plugin, { hooks } from './index.ts';
+import plugin, { hooks, integration } from './index.ts';
 
 describe('onJobFailed', () => {
   it('is the only hook', () => {
@@ -26,7 +26,7 @@ describe('onJobFailed', () => {
   });
 
   it('throws "rate limited" on a 429', async () => {
-    const ctx = ctxWith({ notifyOnFailed: true }, [publishOk(429)]);
+    const ctx = ctxWith({ notifyOnFailed: true, failedTopic: 'alerts' }, [publishOk(429)]);
     await expect(hooks.onJobFailed?.(ctx, job)).rejects.toThrow('ntfy rate limited');
   });
 
@@ -49,21 +49,35 @@ describe('onJobFailed', () => {
     expect(message).toContain('Reason: ffmpeg exited 1');
   });
 
-  it('falls back to the transcoda topic and omits click without a job URL', async () => {
-    const ctx = ctxWith({ notifyOnFailed: true });
+  it('omits click without a job URL', async () => {
+    const ctx = ctxWith({ notifyOnFailed: true, failedTopic: 'alerts' });
     await hooks.onJobFailed?.(ctx, { ...job, jobUrl: null });
-    expect(ctx.calls[0]?.body).toMatchObject({ topic: 'transcoda' });
+    expect(ctx.calls[0]?.body).toMatchObject({ topic: 'alerts' });
     expect(ctx.calls[0]?.body).not.toHaveProperty('click');
   });
 
+  it('makes no call when notifyOnFailed is on but no failedTopic is set', async () => {
+    for (const settings of [{ notifyOnFailed: true }, { notifyOnFailed: true, failedTopic: '' }]) {
+      const ctx = ctxWith(settings);
+      await hooks.onJobFailed?.(ctx, job);
+      expect(ctx.calls).toHaveLength(0);
+    }
+  });
+
+  it('has no default failed topic: the schema default is empty and an empty value is valid', () => {
+    const parsed = integration.settings.parse({});
+    expect(parsed.failedTopic).toBe('');
+    expect(integration.settings.safeParse({ failedTopic: 'bad topic!' }).success).toBe(false);
+  });
+
   it('throws on a refusal so the host logs it', async () => {
-    const ctx = ctxWith({ notifyOnFailed: true }, [publishOk(413)]);
+    const ctx = ctxWith({ notifyOnFailed: true, failedTopic: 'alerts' }, [publishOk(413)]);
     await expect(hooks.onJobFailed?.(ctx, job)).rejects.toThrow('too large');
   });
 
   it('throws when the server is unreachable', async () => {
-    await expect(hooks.onJobFailed?.(timingOut({ notifyOnFailed: true }), job)).rejects.toThrow(
-      'ntfy unreachable: timeout',
-    );
+    await expect(
+      hooks.onJobFailed?.(timingOut({ notifyOnFailed: true, failedTopic: 'alerts' }), job),
+    ).rejects.toThrow('ntfy unreachable: timeout');
   });
 });

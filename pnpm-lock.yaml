@@ -169,6 +169,9 @@ importers:
       '@biomejs/biome':
         specifier: 2.5.15
         version: 2.5.15
+      '@transcoda/sdk':
+        specifier: link:../transcoda/packages/sdk
+        version: link:../transcoda/packages/sdk
       '@types/node':
         specifier: 24.19.2
         version: 24.19.2

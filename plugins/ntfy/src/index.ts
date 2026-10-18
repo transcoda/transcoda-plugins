@@ -9,12 +9,14 @@ export { buildMessage, renderTitle, truncateBytes } from './message.ts';
 export { notify } from './notify.ts';
 
 export const hooks: PluginHooks = {
-  /** Notifies about any workflow's failed job when `notifyOnFailed` is on; errors are thrown, the host logs them. */
+  /** Notifies about any workflow's failed job when `notifyOnFailed` is on and a `failedTopic` is set; errors are thrown, the host logs them. */
   async onJobFailed(ctx, job) {
     if (job.dryRun || ctx.settings.notifyOnFailed !== true) return;
+    // No default topic: ntfy topics are public, so a guessable name would leak file paths.
     const topic = ctx.settings.failedTopic;
+    if (typeof topic !== 'string' || topic === '') return;
     const result = await publish(ctx, {
-      topic: typeof topic === 'string' && topic !== '' ? topic : 'transcoda',
+      topic,
       title: 'Transcoda: job failed',
       priority: 4,
       tags: ['warning'],
