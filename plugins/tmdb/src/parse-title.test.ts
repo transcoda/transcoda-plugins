@@ -61,13 +61,7 @@ const rows: Row[] = [
     'movie',
   ],
   ['Pebble.2016.1080p.Blu-ray.DTSHD-MA.7.1.HEVC-GRP.mkv', '', 'Pebble', 2016, 'movie'],
-  [
-    'Raiders.S01E03.On.the.Edge.EAC3.5.1.1080p.WEBRip.x265-GRP.mkv',
-    '',
-    'Raiders',
-    null,
-    'tv',
-  ],
+  ['Raiders.S01E03.On.the.Edge.EAC3.5.1.1080p.WEBRip.x265-GRP.mkv', '', 'Raiders', null, 'tv'],
   [
     'For.All.Robots.S05E07.The.Moons.of.Mars.720p.HEVC.x265-GRP.mkv',
     '',
