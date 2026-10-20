@@ -1,0 +1,28 @@
+{
+  "eventType": "Test",
+  "movie": {
+    "id": 1,
+    "title": "Test Title",
+    "year": 1970,
+    "releaseDate": "1970-01-01",
+    "folderPath": "C:\\testpath",
+    "tmdbId": 0,
+    "tags": []
+  },
+  "remoteMovie": {
+    "tmdbId": 1234,
+    "imdbId": "tt1234",
+    "title": "Test title",
+    "year": 1970
+  },
+  "release": {
+    "quality": "Bluray-1080p",
+    "qualityVersion": 1,
+    "releaseGroup": "RlsGrp",
+    "releaseTitle": "Test Title",
+    "indexer": "Test Indexer",
+    "size": 9999999
+  },
+  "instanceName": "Radarr",
+  "applicationUrl": ""
+}

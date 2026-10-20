@@ -15,7 +15,7 @@ function repoWith(name, pkg) {
 const valid = {
   name: '@transcoda/plugin-sonarr',
   version: '1.2.0',
-  transcoda: { sdk: '^1' },
+  transcoda: { sdk: '^1', title: 'Sonarr' },
   scripts: { bundle: 'tsdown' },
 };
 
@@ -33,9 +33,35 @@ test('rejects runtime dependencies, install scripts, a missing sdk range and a w
       scripts: { ...valid.scripts, postinstall: 'node x.js' },
     }),
   );
-  assert.equal(errors.length, 4);
+  assert.equal(errors.length, 5);
   assert.match(errors.join('\n'), /name must be/);
   assert.match(errors.join('\n'), /transcoda\.sdk/);
+  assert.match(errors.join('\n'), /transcoda\.title/);
   assert.match(errors.join('\n'), /runtime dependencies/);
   assert.match(errors.join('\n'), /postinstall/);
+});
+
+test('rejects an sdk range that is not valid semver', () => {
+  const errors = checkPlugins(
+    repoWith('sonarr', { ...valid, transcoda: { ...valid.transcoda, sdk: 'latest-ish' } }),
+  );
+  assert.equal(errors.length, 1);
+  assert.match(errors[0], /transcoda\.sdk.*valid semver range/);
+});
+
+test('accepts a prerelease-friendly range', () => {
+  assert.deepEqual(
+    checkPlugins(
+      repoWith('sonarr', { ...valid, transcoda: { ...valid.transcoda, sdk: '>=1.0.0-rc.1 <2' } }),
+    ),
+    [],
+  );
+});
+
+test('rejects a missing or blank title', () => {
+  const errors = checkPlugins(
+    repoWith('sonarr', { ...valid, transcoda: { sdk: '^1', title: '  ' } }),
+  );
+  assert.equal(errors.length, 1);
+  assert.match(errors[0], /missing transcoda\.title/);
 });

@@ -1,0 +1,19 @@
+{
+  "name": "@transcoda/plugin-arr-common",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Shared Sonarr/Radarr code: API client, status test, command polling, path helpers. Source-only; the plugin bundles inline it.",
+  "license": "GPL-3.0-only",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@transcoda/sdk": "link:../../../transcoda/packages/sdk",
+    "zod": "4.6.7"
+  }
+}

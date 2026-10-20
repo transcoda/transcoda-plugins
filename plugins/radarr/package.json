@@ -1,0 +1,22 @@
+{
+  "name": "@transcoda/plugin-radarr",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Radarr plugin: reads a movie's original language and rescans the movie after a file is replaced.",
+  "license": "GPL-3.0-only",
+  "transcoda": {
+    "sdk": "^1",
+    "title": "Radarr"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "bundle": "tsdown && node ../../scripts/finalize-bundle.mjs"
+  },
+  "devDependencies": {
+    "@transcoda/plugin-arr-common": "workspace:*",
+    "@transcoda/sdk": "link:../../../transcoda/packages/sdk",
+    "zod": "4.6.7"
+  }
+}

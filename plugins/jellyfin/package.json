@@ -1,0 +1,21 @@
+{
+  "name": "@transcoda/plugin-jellyfin",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Jellyfin plugin: asks Jellyfin to rescan a file or the whole library after Transcoda replaces a file.",
+  "license": "GPL-3.0-only",
+  "transcoda": {
+    "sdk": "^1",
+    "title": "Jellyfin"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "bundle": "tsdown && node ../../scripts/finalize-bundle.mjs"
+  },
+  "devDependencies": {
+    "@transcoda/sdk": "link:../../../transcoda/packages/sdk",
+    "zod": "4.6.7"
+  }
+}

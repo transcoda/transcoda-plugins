@@ -1,0 +1,49 @@
+{
+  "adult": false,
+  "backdrop_path": "/backdrop.jpg",
+  "budget": 63000000,
+  "genres": [
+    {
+      "id": 28,
+      "name": "Action"
+    },
+    {
+      "id": 878,
+      "name": "Science Fiction"
+    }
+  ],
+  "homepage": "",
+  "id": 603,
+  "imdb_id": "tt0133093",
+  "original_language": "en",
+  "original_title": "The Matrix",
+  "overview": "A fictional summary for tests.",
+  "popularity": 50.1,
+  "poster_path": "/poster.jpg",
+  "release_date": "1999-03-30",
+  "revenue": 463517383,
+  "runtime": 136,
+  "status": "Released",
+  "tagline": "Welcome to the Real World.",
+  "title": "The Matrix",
+  "video": false,
+  "vote_average": 8.2,
+  "vote_count": 25000,
+  "spoken_languages": [
+    {
+      "english_name": "English",
+      "iso_639_1": "en",
+      "name": "English"
+    }
+  ],
+  "production_countries": [
+    {
+      "iso_3166_1": "US",
+      "name": "United States of America"
+    }
+  ],
+  "external_ids": {
+    "imdb_id": "tt0133093",
+    "wikidata_id": "Q83495"
+  }
+}

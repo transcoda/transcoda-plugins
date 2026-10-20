@@ -1,0 +1,25 @@
+{
+  "eventType": "Rename",
+  "series": {
+    "id": 8,
+    "title": "Example Show 2",
+    "path": "/data/shows/Example Show 2",
+    "tvdbId": 223456,
+    "tmdbId": 98766,
+    "imdbId": "tt0000002",
+    "type": "standard",
+    "year": 2022,
+    "tags": []
+  },
+  "renamedEpisodeFiles": [
+    {
+      "id": 301,
+      "relativePath": "Season 01/S01E01 - Pilot.mkv",
+      "path": "/data/shows/Example Show 2/Season 01/S01E01 - Pilot.mkv",
+      "previousRelativePath": "Season 01/S01E01.mkv",
+      "previousPath": "/data/shows/Example Show 2/Season 01/S01E01.mkv"
+    }
+  ],
+  "instanceName": "Sonarr",
+  "applicationUrl": ""
+}

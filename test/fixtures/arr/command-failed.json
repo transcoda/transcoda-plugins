@@ -1,0 +1,30 @@
+{
+  "name": "RescanSeries",
+  "commandName": "Rescan Series",
+  "body": {
+    "seriesId": 8,
+    "sendUpdatesToClient": true,
+    "updateScheduledTask": true,
+    "requiresDiskAccess": true,
+    "isExclusive": false,
+    "isTypeExempt": false,
+    "isLongRunning": false,
+    "name": "RescanSeries",
+    "trigger": "manual",
+    "suppressMessages": false
+  },
+  "priority": "normal",
+  "trigger": "manual",
+  "clientUserAgent": "Transcoda",
+  "queued": "2026-10-17T09:00:00Z",
+  "sendUpdatesToClient": true,
+  "updateScheduledTask": true,
+  "id": 4242,
+  "status": "failed",
+  "started": "2026-10-17T09:00:01Z",
+  "ended": "2026-10-17T09:00:02Z",
+  "duration": "00:00:01.0000000",
+  "stateChangeTime": "2026-10-17T09:00:02Z",
+  "message": "Series folder does not exist",
+  "exception": "System.IO.DirectoryNotFoundException"
+}

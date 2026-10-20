@@ -13,8 +13,8 @@ Thanks for contributing a Transcoda plugin! A few notes before you start:
 ## Release note
 
 <!--
-What will a user notice? Add a file `.changes/<short-name>.md` to this pull request (format in `.changes/README.md`),
-or tick the box below. Name the file after the plugin, e.g. `.changes/sonarr-verify-path.md`. CI checks that one of the two is there.
+What will a user notice? Add a file `.changes/<plugin>/<short-name>.md` to this pull request (format in `.changes/README.md`),
+or tick the box below. Put it in the plugin's folder, e.g. `.changes/sonarr/verify-path.md`. CI checks that one of the two is there.
 -->
 
 - [ ] I added a release note in `.changes/`

@@ -1,0 +1,39 @@
+[
+  {
+    "id": 501,
+    "movieId": 11,
+    "relativePath": "Example Movie (2019).mkv",
+    "path": "/data/movies/Example Movie (2019)/Example Movie (2019).mkv",
+    "size": 8000000000,
+    "dateAdded": "2026-10-01T12:00:00Z",
+    "sceneName": "Example.Movie.2019.2160p.BluRay",
+    "releaseGroup": "GROUP",
+    "languages": [
+      {
+        "id": 1,
+        "name": "English"
+      }
+    ],
+    "quality": {
+      "quality": {
+        "id": 19,
+        "name": "Bluray-2160p",
+        "source": "bluray",
+        "resolution": 2160
+      },
+      "revision": {
+        "version": 1,
+        "real": 0,
+        "isRepack": false
+      }
+    },
+    "mediaInfo": {
+      "audioChannels": 7.1,
+      "audioCodec": "TrueHD",
+      "videoCodec": "h265",
+      "resolution": "3840x2160",
+      "runTime": "01:50:00"
+    },
+    "qualityCutoffNotMet": false
+  }
+]

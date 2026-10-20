@@ -169,9 +169,15 @@ importers:
       '@biomejs/biome':
         specifier: 2.5.15
         version: 2.5.15
+      '@transcoda/sdk':
+        specifier: link:../transcoda/packages/sdk
+        version: link:../transcoda/packages/sdk
       '@types/node':
         specifier: 24.19.2
         version: 24.19.2
+      semver:
+        specifier: 7.8.5
+        version: 7.8.5
       tsdown:
         specifier: 0.23.1
         version: 0.23.1(typescript@7.0.2)
@@ -182,7 +188,76 @@ importers:
         specifier: 5.0.5
         version: 5.0.5(@types/node@24.19.2)(vite@8.3.4(@types/node@24.19.2))
 
+  packages/arr-common:
+    devDependencies:
+      '@transcoda/sdk':
+        specifier: link:../../../transcoda/packages/sdk
+        version: link:../../../transcoda/packages/sdk
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
+
+  plugins/discord:
+    devDependencies:
+      '@transcoda/sdk':
+        specifier: link:../../../transcoda/packages/sdk
+        version: link:../../../transcoda/packages/sdk
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
+
   plugins/example:
+    devDependencies:
+      '@transcoda/sdk':
+        specifier: link:../../../transcoda/packages/sdk
+        version: link:../../../transcoda/packages/sdk
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
+
+  plugins/jellyfin:
+    devDependencies:
+      '@transcoda/sdk':
+        specifier: link:../../../transcoda/packages/sdk
+        version: link:../../../transcoda/packages/sdk
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
+
+  plugins/ntfy:
+    devDependencies:
+      '@transcoda/sdk':
+        specifier: link:../../../transcoda/packages/sdk
+        version: link:../../../transcoda/packages/sdk
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
+
+  plugins/radarr:
+    devDependencies:
+      '@transcoda/plugin-arr-common':
+        specifier: workspace:*
+        version: link:../../packages/arr-common
+      '@transcoda/sdk':
+        specifier: link:../../../transcoda/packages/sdk
+        version: link:../../../transcoda/packages/sdk
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
+
+  plugins/sonarr:
+    devDependencies:
+      '@transcoda/plugin-arr-common':
+        specifier: workspace:*
+        version: link:../../packages/arr-common
+      '@transcoda/sdk':
+        specifier: link:../../../transcoda/packages/sdk
+        version: link:../../../transcoda/packages/sdk
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
+
+  plugins/tmdb:
     devDependencies:
       '@transcoda/sdk':
         specifier: link:../../../transcoda/packages/sdk
@@ -777,6 +852,11 @@ packages:
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
 
+  semver@7.8.5:
+    resolution: {integrity: sha512-Y7/KDsb8LjooZpwaqGyulO6DQlksgCncchHGk+sZIY4SBvUocMBEFH5Ur1fI4dV+Jvl0w6cjvucaIi40puRioA==}
+    engines: {node: '>=10'}
+    hasBin: true
+
   source-map-js@1.2.2:
     resolution: {integrity: sha512-KGj/8Y43x35aZVDtt+J4mK1hoLGHULMYfSkODJNQjNDC3oW1PqPoxMwo0pLUsWM/UEGzON/NxeHywEfNXNP3Vw==}
     engines: {node: '>=0.10.0'}
@@ -1320,6 +1400,8 @@ snapshots:
       '@rolldown/binding-openharmony-arm64': 1.2.14
       '@rolldown/binding-win32-arm64-msvc': 1.2.14
       '@rolldown/binding-win32-x64-msvc': 1.2.14
+
+  semver@7.8.5: {}
 
   source-map-js@1.2.2: {}
 

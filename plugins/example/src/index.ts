@@ -2,10 +2,16 @@ import { defineNode, definePlugin } from '@transcoda/sdk';
 import { z } from 'zod';
 import pkg from '../package.json' with { type: 'json' };
 
-export function extensionMatches(path: string, extensions: readonly string[]): boolean {
+/** The lower-cased last extension of the file name, or null when it has none. */
+export function extensionOf(path: string): string | null {
   const dot = path.lastIndexOf('.');
-  if (dot === -1 || dot < path.lastIndexOf('/')) return false;
-  return extensions.includes(path.slice(dot + 1).toLowerCase());
+  if (dot === -1 || dot < path.lastIndexOf('/')) return null;
+  return path.slice(dot + 1).toLowerCase();
+}
+
+export function extensionMatches(path: string, extensions: readonly string[]): boolean {
+  const ext = extensionOf(path);
+  return ext !== null && extensions.includes(ext);
 }
 
 export const extensionIs = defineNode({
@@ -27,20 +33,25 @@ export const extensionIs = defineNode({
       .default(['mkv'])
       .describe('Extensions'),
   }),
-  // EngineContext is opaque until the engine track defines it; this reads a `path`
-  // field defensively so the example stays honest about what it relies on.
   async decide(ctx, settings) {
-    const path = typeof ctx.path === 'string' ? ctx.path : '';
-    return extensionMatches(path, settings.extensions) ? 'pass' : 'else';
+    const ext = extensionOf(ctx.file.path);
+    const matched = extensionMatches(ctx.file.path, settings.extensions);
+    return {
+      port: matched ? 'pass' : 'else',
+      reason: `extension ${ext ?? '(none)'} ${matched ? 'is' : 'is not'} one of ${settings.extensions.join(', ')}`,
+      findings: { extension: ext },
+    };
   },
 });
 
-export const nodes = [extensionIs];
+const nodes = [extensionIs];
 
 export default definePlugin({
-  name: pkg.name,
+  name: 'example',
   version: pkg.version,
+  sdk: pkg.transcoda.sdk,
+  nodes,
   async setup(ctx) {
-    await ctx.log('debug', `${pkg.name} ${pkg.version} loaded`);
+    await ctx.log('debug', `example ${pkg.version} loaded`);
   },
 });

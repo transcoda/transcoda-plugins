@@ -13,13 +13,16 @@
     "lint": "biome check .",
     "format": "biome check --write .",
     "test": "vitest run",
-    "check-plugins": "node scripts/check-plugins.mjs && node --test scripts/check-plugins.test.mjs",
+    "check-plugins": "node scripts/check-plugins.mjs && node scripts/check-release-note.mjs --lint && node --test scripts/*.test.mjs",
+    "check-blocklist": "node scripts/check-blocklist.mjs",
     "bundle": "pnpm -r bundle",
-    "check": "pnpm typecheck && pnpm lint && pnpm check-plugins && pnpm test"
+    "check": "pnpm typecheck && pnpm lint && pnpm check-plugins && pnpm check-blocklist && pnpm test"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
+    "@transcoda/sdk": "link:../transcoda/packages/sdk",
     "@types/node": "24.19.2",
+    "semver": "7.8.5",
     "tsdown": "0.23.1",
     "typescript": "7.0.2",
     "vitest": "5.0.5"

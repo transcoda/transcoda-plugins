@@ -1,0 +1,71 @@
+import { defineIntegration, fetchErrorKind, secret, url } from '@transcoda/sdk';
+import { z } from 'zod';
+
+/** Drops trailing slashes in linear time (a `/\/+$/` regex is quadratic on many slashes). */
+function stripTrailingSlashes(s: string): string {
+  let end = s.length;
+  while (end > 0 && s.charCodeAt(end - 1) === 47) end--;
+  return s.slice(0, end);
+}
+
+const OPTIONAL_TOPIC = /^([-_A-Za-z0-9]{1,64})?$/;
+
+export const integration = defineIntegration({
+  id: 'ntfy',
+  title: 'ntfy',
+  settings: z.object({
+    url: url().default('https://ntfy.sh').describe('ntfy server'),
+    token: secret().optional().describe('Access token for protected topics (tk_…)'),
+    notifyOnFailed: z
+      .boolean()
+      .default(false)
+      .describe('Also notify when a job fails (any workflow)'),
+    failedTopic: z
+      .string()
+      .regex(OPTIONAL_TOPIC)
+      .default('')
+      .describe(
+        'Topic for failed jobs. Empty: failed-job pushes stay off. ntfy topics are public, so choose a name nobody can guess.',
+      ),
+  }),
+  allowedOrigins: ['$settings.url'],
+  async test(ctx) {
+    const base = serverUrl(ctx.settings.url);
+    let origin = base;
+    try {
+      origin = new URL(base).origin;
+    } catch {
+      // keep the raw value for the message
+    }
+    try {
+      // The token is not used here: a publish would spam a topic, so it is checked on first use.
+      const res = await ctx.fetch({ url: `${base}/v1/health`, timeoutMs: 10_000 });
+      const body = res.body as { healthy?: unknown } | null;
+      if (
+        res.status === 200 &&
+        body !== null &&
+        typeof body === 'object' &&
+        body.healthy === true
+      ) {
+        return { ok: true, message: `ntfy at ${origin} is healthy` };
+      }
+      return {
+        ok: false,
+        kind: 'other',
+        message: `${origin} did not report a healthy ntfy server (HTTP ${res.status})`,
+      };
+    } catch (error) {
+      const kind = fetchErrorKind(error);
+      if (kind !== null) {
+        return { ok: false, kind: 'unreachable', message: `ntfy unreachable: ${kind}` };
+      }
+      throw error;
+    }
+  },
+});
+
+/** The configured server without a trailing slash; the schema default applies when unset. */
+export function serverUrl(value: unknown): string {
+  const raw = typeof value === 'string' && value !== '' ? value : 'https://ntfy.sh';
+  return stripTrailingSlashes(raw);
+}
