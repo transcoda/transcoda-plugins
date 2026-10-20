@@ -1,6 +1,13 @@
 import type { JsonValue } from '@transcoda/plugin-arr-common';
 import { fetchErrorKind, type PluginContext } from '@transcoda/sdk';
 
+/** Drops trailing slashes in linear time (a `/\/+$/` regex is quadratic on many slashes). */
+function stripTrailingSlashes(s: string): string {
+  let end = s.length;
+  while (end > 0 && s.charCodeAt(end - 1) === 47) end--;
+  return s.slice(0, end);
+}
+
 export class BazarrHttpError extends Error {
   constructor(
     readonly status: number,
@@ -13,7 +20,7 @@ export class BazarrHttpError extends Error {
 
 /** `settings.url` without trailing slashes; a base path such as `/bazarr` is kept. */
 export function bazarrBaseUrl(ctx: PluginContext): string {
-  return String(ctx.settings.url ?? '').replace(/\/+$/, '');
+  return stripTrailingSlashes(String(ctx.settings.url ?? ''));
 }
 
 export type Query = Record<string, string | string[]>;

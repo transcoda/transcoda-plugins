@@ -1,5 +1,12 @@
 import type { PluginContext, PluginFetchResponse } from '@transcoda/sdk';
 
+/** Drops trailing slashes in linear time (a `/\/+$/` regex is quadratic on many slashes). */
+function stripTrailingSlashes(s: string): string {
+  let end = s.length;
+  while (end > 0 && s.charCodeAt(end - 1) === 47) end--;
+  return s.slice(0, end);
+}
+
 export type JsonValue = PluginFetchResponse['body'];
 
 /** Per-request timeout. */
@@ -7,7 +14,7 @@ export const REQUEST_TIMEOUT_MS = 10_000;
 
 /** `settings.url` without trailing slashes; a base path such as `/seerr` is kept. */
 function baseUrl(ctx: PluginContext): string {
-  return String(ctx.settings.url ?? '').replace(/\/+$/, '');
+  return stripTrailingSlashes(String(ctx.settings.url ?? ''));
 }
 
 /**
