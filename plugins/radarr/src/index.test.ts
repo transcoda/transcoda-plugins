@@ -6,7 +6,7 @@ describe('radarr plugin', () => {
   it('has the manifest the plan fixes', () => {
     expect(pluginManifest(plugin)).toMatchObject({
       name: 'radarr',
-      version: '1.0.0',
+      version: '1.0.1',
       sdk: '^1',
       nodes: ['radarr:original-language', 'radarr:rescan'],
       nodeVersions: [

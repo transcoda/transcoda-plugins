@@ -2,7 +2,7 @@
   "name": "@transcoda/plugin-radarr",
   "private": true,
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Radarr plugin: reads a movie's original language and rescans the movie after a file is replaced.",
   "license": "GPL-3.0-only",
   "transcoda": {

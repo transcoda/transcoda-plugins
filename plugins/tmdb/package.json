@@ -2,7 +2,7 @@
   "name": "@transcoda/plugin-tmdb",
   "private": true,
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "TMDB plugin: looks a title up on TMDB to find its original language.",
   "license": "GPL-3.0-only",
   "transcoda": {
