@@ -21,7 +21,7 @@ jobs:
       matrix:
         # Every supported core version. Placeholder until core cuts releases: replace
         # with release tags (e.g. v1.0.0, v1.1.0) and keep `main` to catch breakage early.
-        core: [m3-plugins]
+        core: [main]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup

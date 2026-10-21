@@ -14,7 +14,7 @@ permissions:
 
 env:
   # Core version the released bundle is built and tested against (newest supported).
-  CORE_REF: m3-plugins
+  CORE_REF: main
 
 jobs:
   release:
