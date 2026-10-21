@@ -101,3 +101,14 @@ test('.changes/<plugin>/README.md is not a note for --lint or the PR check', () 
   assert.equal(pr.status, 1);
   assert.match(pr.stderr, /No release note found/);
 });
+
+test('a Dependabot pull request needs no note', () => {
+  const { cwd, base, head } = repo({ 'README.md': 'x' });
+  const r = run(cwd, base, head, '[]', 'dependabot[bot]');
+  assert.equal(r.status, 0, r.stderr);
+});
+
+test('another author without a note still fails', () => {
+  const { cwd, base, head } = repo({ 'README.md': 'x' });
+  assert.equal(run(cwd, base, head, '[]', 'someone').status, 1);
+});

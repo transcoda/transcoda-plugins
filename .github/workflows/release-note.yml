@@ -23,4 +23,5 @@ jobs:
           BASE: ${{ github.event.pull_request.base.sha }}
           HEAD: ${{ github.event.pull_request.head.sha }}
           LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
-        run: node scripts/check-release-note.mjs "$BASE" "$HEAD" "$LABELS"
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: node scripts/check-release-note.mjs "$BASE" "$HEAD" "$LABELS" "$AUTHOR"
