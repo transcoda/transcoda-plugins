@@ -1,0 +1,22 @@
+{
+  "name": "@transcoda/plugin-bazarr",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Bazarr plugin: reads which subtitles Bazarr has for a file, asks it to fetch missing ones before a rewrite, and asks it to rescan after the file is replaced.",
+  "license": "GPL-3.0-only",
+  "transcoda": {
+    "sdk": "^1",
+    "title": "Bazarr"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "bundle": "tsdown && node ../../scripts/finalize-bundle.mjs"
+  },
+  "devDependencies": {
+    "@transcoda/plugin-arr-common": "workspace:*",
+    "@transcoda/sdk": "link:../../../transcoda/packages/sdk",
+    "zod": "4.6.7"
+  }
+}

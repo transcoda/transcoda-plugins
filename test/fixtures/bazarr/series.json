@@ -1,0 +1,21 @@
+{
+  "data": [
+    {
+      "sonarrSeriesId": 1,
+      "title": "Example Show",
+      "path": "/data/shows/Example Show",
+      "year": "2010",
+      "episodeFileCount": 2,
+      "episodeMissingCount": 0
+    },
+    {
+      "sonarrSeriesId": 2,
+      "title": "Example Show 2",
+      "path": "/data/shows/Example Show 2",
+      "year": "2015",
+      "episodeFileCount": 1,
+      "episodeMissingCount": 0
+    }
+  ],
+  "total": 2
+}

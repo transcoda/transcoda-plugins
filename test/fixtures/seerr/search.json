@@ -1,0 +1,25 @@
+{
+  "page": 1,
+  "totalPages": 1,
+  "totalResults": 3,
+  "results": [
+    {
+      "id": 900001,
+      "mediaType": "movie",
+      "title": "Example Movie",
+      "releaseDate": "2001-05-04",
+      "mediaInfo": { "id": 11, "tmdbId": 900001, "status": 5 }
+    },
+    {
+      "id": 900100,
+      "mediaType": "tv",
+      "name": "Example Show",
+      "firstAirDate": "2015-02-10"
+    },
+    {
+      "id": 700001,
+      "mediaType": "person",
+      "name": "Example Person"
+    }
+  ]
+}

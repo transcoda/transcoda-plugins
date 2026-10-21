@@ -80,6 +80,56 @@ describe('findSeriesForPath', () => {
     expect((await findSeriesForPath(ctx, '/data/shows/Show/a.mkv'))?.episodes).toBe('S02E03E04');
   });
 
+  it('labels only the episodes of this file when Sonarr returns the whole series', async () => {
+    // Sonarr answers /episode?seriesId=… with every episode of the series and ignores
+    // episodeFileId, so the label must come only from episodes whose episodeFileId matches.
+    const ctx = fakePluginContext({
+      settings,
+      responses: [
+        get('/api/v3/series', [SHOW]),
+        get('/api/v3/episodefile?seriesId=1', [epFile(5, 1, '/data/shows/Show/a.mkv')]),
+        get('/api/v3/episode?seriesId=1&episodeFileId=5', [
+          episode(1, 1, 9, 2, 0),
+          episode(2, 1, 0, 3, 0),
+          episode(3, 1, 7, 3),
+          episode(4, 1, 5, 4),
+          episode(5, 1, 8, 5),
+          episode(6, 1, 6, 1, 2),
+        ]),
+      ],
+    });
+    expect((await findSeriesForPath(ctx, '/data/shows/Show/a.mkv'))?.episodes).toBe('S01E04');
+  });
+
+  it('labels a multi-episode file in episode order, ignoring other files', async () => {
+    const ctx = fakePluginContext({
+      settings,
+      responses: [
+        get('/api/v3/series', [SHOW]),
+        get('/api/v3/episodefile?seriesId=1', [epFile(5, 1, '/data/shows/Show/a.mkv')]),
+        get('/api/v3/episode?seriesId=1&episodeFileId=5', [
+          episode(1, 1, 7, 3),
+          episode(2, 1, 5, 5),
+          episode(3, 1, 5, 4),
+          episode(4, 1, 8, 6),
+        ]),
+      ],
+    });
+    expect((await findSeriesForPath(ctx, '/data/shows/Show/a.mkv'))?.episodes).toBe('S01E04E05');
+  });
+
+  it('gives an empty label when no episode belongs to the file', async () => {
+    const ctx = fakePluginContext({
+      settings,
+      responses: [
+        get('/api/v3/series', [SHOW]),
+        get('/api/v3/episodefile?seriesId=1', [epFile(5, 1, '/data/shows/Show/a.mkv')]),
+        get('/api/v3/episode?seriesId=1&episodeFileId=5', [episode(1, 1, 7, 3)]),
+      ],
+    });
+    expect((await findSeriesForPath(ctx, '/data/shows/Show/a.mkv'))?.episodes).toBe('');
+  });
+
   it('gives an empty label when the episode lookup fails', async () => {
     const ctx = fakePluginContext({
       settings,

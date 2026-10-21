@@ -7,7 +7,7 @@ describe('sonarr plugin manifest', () => {
     const m = pluginManifest(plugin);
     expect(m).toMatchObject({
       name: 'sonarr',
-      version: '1.0.0',
+      version: '1.0.1',
       sdk: '^1',
       nodes: ['sonarr:original-language', 'sonarr:rescan'],
       integration: 'sonarr',

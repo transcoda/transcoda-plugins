@@ -197,6 +197,18 @@ importers:
         specifier: 4.6.7
         version: 4.6.7
 
+  plugins/bazarr:
+    devDependencies:
+      '@transcoda/plugin-arr-common':
+        specifier: workspace:*
+        version: link:../../packages/arr-common
+      '@transcoda/sdk':
+        specifier: link:../../../transcoda/packages/sdk
+        version: link:../../../transcoda/packages/sdk
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
+
   plugins/discord:
     devDependencies:
       '@transcoda/sdk':
@@ -234,6 +246,18 @@ importers:
         version: 4.6.7
 
   plugins/radarr:
+    devDependencies:
+      '@transcoda/plugin-arr-common':
+        specifier: workspace:*
+        version: link:../../packages/arr-common
+      '@transcoda/sdk':
+        specifier: link:../../../transcoda/packages/sdk
+        version: link:../../../transcoda/packages/sdk
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
+
+  plugins/seerr:
     devDependencies:
       '@transcoda/plugin-arr-common':
         specifier: workspace:*

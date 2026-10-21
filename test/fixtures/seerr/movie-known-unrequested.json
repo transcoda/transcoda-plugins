@@ -1,0 +1,8 @@
+{
+  "id": 900002,
+  "title": "Example Movie Two",
+  "originalTitle": "Example Movie Two",
+  "releaseDate": "2010-03-12",
+  "status": "Released",
+  "mediaInfo": { "id": 13, "tmdbId": 900002, "status": 5, "requests": [] }
+}

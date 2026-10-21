@@ -74,7 +74,7 @@ export const rescan = defineNode({
       const newRemote = plugin.paths.toRemote(ctx.newPath);
       const listed = (await movieFiles(plugin, movie.id)).some((f) => sameFile(f.path, newRemote));
       return listed
-        ? { ok: true, message: `Radarr lists ${newRemote}` }
+        ? { ok: true, message: `Radarr lists ${newRemote} (${label})` }
         : {
             ok: false,
             message: `Radarr does not list ${newRemote} after rescan; ${label} may show as missing`,
