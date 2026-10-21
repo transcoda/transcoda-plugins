@@ -1,7 +1,29 @@
 {
   "schema": 1,
-  "generated": "2026-10-21T11:20:21.493Z",
+  "generated": "2026-10-21T11:28:20.797Z",
   "plugins": [
+    {
+      "name": "bazarr",
+      "title": "Bazarr",
+      "description": "Bazarr plugin: reads which subtitles Bazarr has for a file, asks it to fetch missing ones before a rewrite, and asks it to rescan after the file is replaced.",
+      "latest": "1.0.0",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "sdk": "^1",
+          "coreTested": [
+            "m3-plugins"
+          ],
+          "url": "https://github.com/transcoda/transcoda-plugins/releases/download/bazarr-v1.0.0/bazarr-1.0.0.js",
+          "manifestUrl": "https://github.com/transcoda/transcoda-plugins/releases/download/bazarr-v1.0.0/bazarr-1.0.0.manifest.json",
+          "signature": "https://github.com/transcoda/transcoda-plugins/releases/download/bazarr-v1.0.0/bazarr-1.0.0.js.sig",
+          "sha256": "e8a408ce8d9368b130733998b55f036170e168cafd6ddcf0c102beac2ff7bc4a",
+          "size": 418282,
+          "attestation": "https://github.com/transcoda/transcoda-plugins/attestations/58181018",
+          "releasedAt": "2026-10-21T11:26:32.000Z"
+        }
+      ]
+    },
     {
       "name": "discord",
       "title": "Discord",
@@ -72,8 +94,22 @@
       "name": "radarr",
       "title": "Radarr",
       "description": "Radarr plugin: reads a movie's original language and rescans the movie after a file is replaced.",
-      "latest": "1.0.0",
+      "latest": "1.0.1",
       "versions": [
+        {
+          "version": "1.0.1",
+          "sdk": "^1",
+          "coreTested": [
+            "m3-plugins"
+          ],
+          "url": "https://github.com/transcoda/transcoda-plugins/releases/download/radarr-v1.0.1/radarr-1.0.1.js",
+          "manifestUrl": "https://github.com/transcoda/transcoda-plugins/releases/download/radarr-v1.0.1/radarr-1.0.1.manifest.json",
+          "signature": "https://github.com/transcoda/transcoda-plugins/releases/download/radarr-v1.0.1/radarr-1.0.1.js.sig",
+          "sha256": "d802c3631ec191bb8aa18809c72189b950ce4634aa55a264ddcc26197313908a",
+          "size": 374248,
+          "attestation": "https://github.com/transcoda/transcoda-plugins/attestations/58181014",
+          "releasedAt": "2026-10-21T11:26:29.000Z"
+        },
         {
           "version": "1.0.0",
           "sdk": "^1",
@@ -91,11 +127,47 @@
       ]
     },
     {
+      "name": "seerr",
+      "title": "Seerr",
+      "description": "Seerr plugin (Jellyseerr, Overseerr): checks whether a title was requested, by whom and when.",
+      "latest": "1.0.0",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "sdk": "^1",
+          "coreTested": [
+            "m3-plugins"
+          ],
+          "url": "https://github.com/transcoda/transcoda-plugins/releases/download/seerr-v1.0.0/seerr-1.0.0.js",
+          "manifestUrl": "https://github.com/transcoda/transcoda-plugins/releases/download/seerr-v1.0.0/seerr-1.0.0.manifest.json",
+          "signature": "https://github.com/transcoda/transcoda-plugins/releases/download/seerr-v1.0.0/seerr-1.0.0.js.sig",
+          "sha256": "06b08f48ed66dfe22acf41e3d1ae0e8e741293427bbd55c341319ee826045c27",
+          "size": 359737,
+          "attestation": "https://github.com/transcoda/transcoda-plugins/attestations/58181023",
+          "releasedAt": "2026-10-21T11:26:33.000Z"
+        }
+      ]
+    },
+    {
       "name": "sonarr",
       "title": "Sonarr",
       "description": "Sonarr plugin: reads a series' original language and rescans the series after a file is replaced.",
-      "latest": "1.0.0",
+      "latest": "1.0.1",
       "versions": [
+        {
+          "version": "1.0.1",
+          "sdk": "^1",
+          "coreTested": [
+            "m3-plugins"
+          ],
+          "url": "https://github.com/transcoda/transcoda-plugins/releases/download/sonarr-v1.0.1/sonarr-1.0.1.js",
+          "manifestUrl": "https://github.com/transcoda/transcoda-plugins/releases/download/sonarr-v1.0.1/sonarr-1.0.1.manifest.json",
+          "signature": "https://github.com/transcoda/transcoda-plugins/releases/download/sonarr-v1.0.1/sonarr-1.0.1.js.sig",
+          "sha256": "45e421fc078ce4d0bdeaa3816d45fb1166edfab62c40b7a203250f7a84a9c3a9",
+          "size": 375386,
+          "attestation": "https://github.com/transcoda/transcoda-plugins/attestations/58180846",
+          "releasedAt": "2026-10-21T11:26:16.000Z"
+        },
         {
           "version": "1.0.0",
           "sdk": "^1",
@@ -116,8 +188,22 @@
       "name": "tmdb",
       "title": "TMDB",
       "description": "TMDB plugin: looks a title up on TMDB to find its original language.",
-      "latest": "1.0.0",
+      "latest": "1.0.1",
       "versions": [
+        {
+          "version": "1.0.1",
+          "sdk": "^1",
+          "coreTested": [
+            "m3-plugins"
+          ],
+          "url": "https://github.com/transcoda/transcoda-plugins/releases/download/tmdb-v1.0.1/tmdb-1.0.1.js",
+          "manifestUrl": "https://github.com/transcoda/transcoda-plugins/releases/download/tmdb-v1.0.1/tmdb-1.0.1.manifest.json",
+          "signature": "https://github.com/transcoda/transcoda-plugins/releases/download/tmdb-v1.0.1/tmdb-1.0.1.js.sig",
+          "sha256": "56b70cdd5effbf826cfa72ad0073006ce3b44c63b3ef70b86bb7aac8cb1a2610",
+          "size": 398320,
+          "attestation": "https://github.com/transcoda/transcoda-plugins/attestations/58181034",
+          "releasedAt": "2026-10-21T11:26:37.000Z"
+        },
         {
           "version": "1.0.0",
           "sdk": "^1",
