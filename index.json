@@ -1,0 +1,138 @@
+{
+  "schema": 1,
+  "generated": "2026-10-21T11:18:04.132Z",
+  "plugins": [
+    {
+      "name": "discord",
+      "title": "Discord",
+      "description": "Discord plugin: posts a message to a channel through a webhook when a job is done, and optionally when a job fails.",
+      "latest": "1.0.0",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "sdk": "^1",
+          "coreTested": [
+            "m3-plugins"
+          ],
+          "url": "https://github.com/transcoda/transcoda-plugins/releases/download/discord-v1.0.0/discord-1.0.0.js",
+          "manifestUrl": "https://github.com/transcoda/transcoda-plugins/releases/download/discord-v1.0.0/discord-1.0.0.manifest.json",
+          "signature": "https://github.com/transcoda/transcoda-plugins/releases/download/discord-v1.0.0/discord-1.0.0.js.sig",
+          "sha256": "cf3d92dbf60214c22736bc62925b1754140dc99c8987df97a9e97bf4a37b2f84",
+          "size": 391882,
+          "attestation": "https://github.com/transcoda/transcoda-plugins/attestations/58173067",
+          "releasedAt": "2026-10-21T11:02:12.000Z"
+        }
+      ]
+    },
+    {
+      "name": "jellyfin",
+      "title": "Jellyfin",
+      "description": "Jellyfin plugin: asks Jellyfin to rescan a file or the whole library after Transcoda replaces a file.",
+      "latest": "1.0.0",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "sdk": "^1",
+          "coreTested": [
+            "m3-plugins"
+          ],
+          "url": "https://github.com/transcoda/transcoda-plugins/releases/download/jellyfin-v1.0.0/jellyfin-1.0.0.js",
+          "manifestUrl": "https://github.com/transcoda/transcoda-plugins/releases/download/jellyfin-v1.0.0/jellyfin-1.0.0.manifest.json",
+          "signature": "https://github.com/transcoda/transcoda-plugins/releases/download/jellyfin-v1.0.0/jellyfin-1.0.0.js.sig",
+          "sha256": "f0f346bcd48bd169f868cfdc0e9c13934a4984f162a05b0053612976204ebbb4",
+          "size": 353033,
+          "attestation": "https://github.com/transcoda/transcoda-plugins/attestations/58173959",
+          "releasedAt": "2026-10-21T11:04:58.000Z"
+        }
+      ]
+    },
+    {
+      "name": "ntfy",
+      "title": "ntfy",
+      "description": "ntfy plugin: sends a push through ntfy when a file is done, and optionally when a job fails.",
+      "latest": "1.0.0",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "sdk": "^1",
+          "coreTested": [
+            "m3-plugins"
+          ],
+          "url": "https://github.com/transcoda/transcoda-plugins/releases/download/ntfy-v1.0.0/ntfy-1.0.0.js",
+          "manifestUrl": "https://github.com/transcoda/transcoda-plugins/releases/download/ntfy-v1.0.0/ntfy-1.0.0.manifest.json",
+          "signature": "https://github.com/transcoda/transcoda-plugins/releases/download/ntfy-v1.0.0/ntfy-1.0.0.js.sig",
+          "sha256": "f08e8c6fe5612e626cb51b945841069e7c69d8e7a407bb9ba1304d0ad7156520",
+          "size": 402223,
+          "attestation": "https://github.com/transcoda/transcoda-plugins/attestations/58173802",
+          "releasedAt": "2026-10-21T11:04:29.000Z"
+        }
+      ]
+    },
+    {
+      "name": "radarr",
+      "title": "Radarr",
+      "description": "Radarr plugin: reads a movie's original language and rescans the movie after a file is replaced.",
+      "latest": "1.0.0",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "sdk": "^1",
+          "coreTested": [
+            "m3-plugins"
+          ],
+          "url": "https://github.com/transcoda/transcoda-plugins/releases/download/radarr-v1.0.0/radarr-1.0.0.js",
+          "manifestUrl": "https://github.com/transcoda/transcoda-plugins/releases/download/radarr-v1.0.0/radarr-1.0.0.manifest.json",
+          "signature": "https://github.com/transcoda/transcoda-plugins/releases/download/radarr-v1.0.0/radarr-1.0.0.js.sig",
+          "sha256": "3228983918be50e66c7f0cc4fd6f207770d6fea0d9861dd77031cf2bafa56d6d",
+          "size": 374237,
+          "attestation": "https://github.com/transcoda/transcoda-plugins/attestations/58173937",
+          "releasedAt": "2026-10-21T11:04:54.000Z"
+        }
+      ]
+    },
+    {
+      "name": "sonarr",
+      "title": "Sonarr",
+      "description": "Sonarr plugin: reads a series' original language and rescans the series after a file is replaced.",
+      "latest": "1.0.0",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "sdk": "^1",
+          "coreTested": [
+            "m3-plugins"
+          ],
+          "url": "https://github.com/transcoda/transcoda-plugins/releases/download/sonarr-v1.0.0/sonarr-1.0.0.js",
+          "manifestUrl": "https://github.com/transcoda/transcoda-plugins/releases/download/sonarr-v1.0.0/sonarr-1.0.0.manifest.json",
+          "signature": "https://github.com/transcoda/transcoda-plugins/releases/download/sonarr-v1.0.0/sonarr-1.0.0.js.sig",
+          "sha256": "d8808772d2f8d648c16a7b4a102a9948e08d437c9de37b70dc49a04d0f20abda",
+          "size": 375198,
+          "attestation": "https://github.com/transcoda/transcoda-plugins/attestations/58173958",
+          "releasedAt": "2026-10-21T11:04:57.000Z"
+        }
+      ]
+    },
+    {
+      "name": "tmdb",
+      "title": "TMDB",
+      "description": "TMDB plugin: looks a title up on TMDB to find its original language.",
+      "latest": "1.0.0",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "sdk": "^1",
+          "coreTested": [
+            "m3-plugins"
+          ],
+          "url": "https://github.com/transcoda/transcoda-plugins/releases/download/tmdb-v1.0.0/tmdb-1.0.0.js",
+          "manifestUrl": "https://github.com/transcoda/transcoda-plugins/releases/download/tmdb-v1.0.0/tmdb-1.0.0.manifest.json",
+          "signature": "https://github.com/transcoda/transcoda-plugins/releases/download/tmdb-v1.0.0/tmdb-1.0.0.js.sig",
+          "sha256": "887fbea205916c19508647786b3b13bd367b265d11c63a10c978e780b4118e9b",
+          "size": 398116,
+          "attestation": "https://github.com/transcoda/transcoda-plugins/attestations/58173932",
+          "releasedAt": "2026-10-21T11:04:53.000Z"
+        }
+      ]
+    }
+  ]
+}
