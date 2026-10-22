@@ -1,6 +1,7 @@
 // Release-note rules for the plugins repo (see .changes/README.md).
-//   node scripts/check-release-note.mjs <base-sha> <head-sha> <labels-json>
-//       a pull request must add or change a note, or carry the "no user-facing change" label
+//   node scripts/check-release-note.mjs <base-sha> <head-sha> <labels-json> [author-login]
+//       a pull request must add or change a note, or carry the "no user-facing change" label;
+//       pull requests opened by dependabot[bot] need neither
 //   node scripts/check-release-note.mjs --lint
 //       validates every note that exists
 // A note is .changes/<plugin>/<short-name>.md, or the flat .changes/<plugin>-<short-name>.md
@@ -73,10 +74,14 @@ if (args[0] === '--lint') {
   process.exit(report(all.filter((f) => f.endsWith('.md') && isNote(f))) ? 0 : 1);
 }
 
-const [base, head, labelsJson = '[]'] = args;
+const [base, head, labelsJson = '[]', author = ''] = args;
 if (!base || !head) {
   console.error('usage: check-release-note.mjs <base-sha> <head-sha> <labels-json> | --lint');
   process.exit(2);
+}
+if (author === 'dependabot[bot]') {
+  console.log('Opened by dependabot[bot]: no release note needed.');
+  process.exit(0);
 }
 if (JSON.parse(labelsJson).includes(NO_NOTE_LABEL)) {
   console.log(`Label "${NO_NOTE_LABEL}" present: no release note needed.`);
