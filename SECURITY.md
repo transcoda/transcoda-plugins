@@ -18,8 +18,8 @@ The plugin sandbox itself (process isolation, the fetch proxy, signature checks 
 
 ## Compromised builds
 
-If a published plugin build is found to be malicious or vulnerable, its sha256 is added to the signed blocklist (`catalog/blocklist.json`). Transcoda servers refuse to install a blocklisted build and stop it if it is already installed, at the next blocklist check (within an hour). See "Blocklisting a build" in the README.
+If a published plugin build is found to be malicious or vulnerable, its sha256 is added to the signed blocklist (`catalog/blocklist.json`). Transcoda servers refuse to install a blocklisted build and stop it if it is already installed, at the next blocklist check (within an hour). See "Blocklisting a build" in [`docs/maintaining.md`](docs/maintaining.md#blocklisting-a-build).
 
 ## Signing key
 
-Official releases, the catalog and the blocklist are signed with an ed25519 key (key id `2026-10`) whose public half is pinned in the Transcoda server. If the key is ever compromised, the rotation steps in the README ("If the key is compromised") apply.
+Official releases, the catalog and the blocklist are signed with an ed25519 key (key id `2026-10`) whose public half is pinned in the Transcoda server. If the key is ever compromised, the steps in [`docs/maintaining.md`](docs/maintaining.md#if-the-key-is-compromised) apply.
