@@ -11,7 +11,7 @@ Thanks for helping. Bug reports, fixes and new plugins are all welcome.
 
 ## Setting up
 
-You need Node 24 (see `.node-version`), pnpm (`corepack enable`) and a checkout of the core repository next to this one, because plugins build against its SDK:
+You need Node 24 (see `.node-version`), pnpm (`corepack enable`) and a checkout of the core repository next to this one: plugins get the SDK from npm ([`@transcoda/sdk`](https://www.npmjs.com/package/@transcoda/sdk)), but `pnpm check` cross-checks core's example workflow and the host check runs every bundle in core's plugin host:
 
 ```sh
 git clone https://github.com/transcoda/transcoda.git

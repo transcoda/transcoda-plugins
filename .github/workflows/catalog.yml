@@ -45,8 +45,7 @@ jobs:
         with:
           node-version-file: .node-version
           cache: pnpm
-      # The core checkout is not needed: the scripts depend only on `semver`. The `link:` SDK
-      # dependency becomes a dangling symlink, which pnpm tolerates.
+      # The core checkout is not needed: the scripts depend only on `semver`.
       - run: pnpm install --frozen-lockfile
       - run: node scripts/check-blocklist.mjs
       - name: Sign the blocklist
