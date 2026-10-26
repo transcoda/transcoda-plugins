@@ -20,7 +20,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # Holds PLUGIN_SIGNING_KEY / PLUGIN_SIGNING_KEY_ID as environment secrets (see README).
+    # Holds PLUGIN_SIGNING_KEY / PLUGIN_SIGNING_KEY_ID as environment secrets (see docs/maintaining.md).
     environment: plugin-signing
     permissions:
       contents: write
