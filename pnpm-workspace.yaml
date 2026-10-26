@@ -3,3 +3,7 @@ packages:
   - 'packages/*'
 allowBuilds:
   esbuild: false
+# Our own SDK is published from transcoda/transcoda's CI with provenance, so it
+# skips pnpm's default one-day wait for new releases. Every other package keeps it.
+minimumReleaseAgeExclude:
+  - '@transcoda/sdk'
