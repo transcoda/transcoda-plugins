@@ -1,26 +1,22 @@
 name: Setup
 description: >
-  Check out the core repo at a given ref next to this repo (the SDK is linked from
-  ../transcoda/packages/sdk until it is published), then install both workspaces.
+  Check out the core repo at a given ref next to this repo (the host check runs every bundle
+  in core's plugin host, and a test reads core's example workflow), then install both workspaces.
 
 inputs:
   core-ref:
     description: Git ref of transcoda/transcoda to build the plugins against.
-    required: true
-  core-token:
-    description: Token with read access to the (private) core repo.
     required: true
 
 runs:
   using: composite
   steps:
     # actions/checkout only writes inside the workspace, so check out into .core/ and
-    # symlink it to the sibling path the `link:` dependency expects.
+    # symlink it to the sibling path the scripts expect.
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         repository: transcoda/transcoda
         ref: ${{ inputs.core-ref }}
-        token: ${{ inputs.core-token }}
         path: .core/transcoda
         persist-credentials: false
     - shell: bash

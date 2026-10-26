@@ -27,7 +27,6 @@ jobs:
       - uses: ./.github/actions/setup
         with:
           core-ref: ${{ matrix.core }}
-          core-token: ${{ secrets.CORE_REPO_TOKEN }}
       # typecheck + lint + check-plugins + test
       - run: pnpm check
       - run: pnpm bundle

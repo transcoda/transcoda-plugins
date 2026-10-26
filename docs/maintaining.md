@@ -60,25 +60,18 @@ default export (the bare name; `package.json` keeps `@transcoda/plugin-example`)
   running core's SDK version before loading the plugin.
 - **Node types** are namespaced `<plugin>:<node>` (core uses `core:`).
 
-## The SDK dependency (temporary)
+## The SDK dependency
 
-`@transcoda/sdk` is not published yet, so plugins reference it from a checkout of the core repo
-next to this one:
+Plugins get the SDK from npm: `"@transcoda/sdk": "1.0.0"`, exact-pinned, in each plugin's
+`devDependencies` (it is bundled, so never a runtime dependency). Move the pin in one pull request
+across every package when a new SDK release is out; the SDK's own release steps are in core's
+[`docs/releasing.md`](https://github.com/transcoda/transcoda/blob/main/docs/releasing.md).
 
-```
-~/…/transcoda           core repo (branch with the SDK you build against), `pnpm install`ed
-~/…/transcoda-plugins   this repo
-```
-
-with `"@transcoda/sdk": "link:../../../transcoda/packages/sdk"` in each plugin's
-`devDependencies`. The SDK ships TypeScript source, so plugin tsconfigs set
-`allowImportingTsExtensions`. CI does the same by checking out `transcoda/transcoda` into
-`.core/` and symlinking it to `../transcoda` (a `CORE_REPO_TOKEN` secret is only needed if the
-core repo is private).
-
-Once the SDK is published to npm this becomes an exact-pinned `"@transcoda/sdk": "1.x.y"`
-devDependency, the `.github/actions/setup` core checkout goes away, and the CI matrix installs
-the SDK version of each supported core release instead.
+CI still checks out `transcoda/transcoda` into `.core/` and symlinks it to `../transcoda`, for two
+things: `scripts/host-check.mjs` runs every built bundle through core's real plugin host
+(`--check-plugin`), and `test/example-workflow.test.ts` cross-checks core's example workflow
+against the plugins' node schemas. Locally, keep a core checkout next to this repo for the same
+reason.
 
 ## Development
 

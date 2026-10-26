@@ -1,4 +1,4 @@
-// Cross-checks core's examples/workflows/track-cleanup-plugins.json against the real plugin node
+// Cross-checks core's examples/workflows/keep-my-languages-plugins.json against the real plugin node
 // definitions in this repo. Core's checkout is expected next to this one (../transcoda), as in CI.
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
@@ -30,7 +30,7 @@ const examplePath = resolve(
   'transcoda',
   'examples',
   'workflows',
-  'track-cleanup-plugins.json',
+  'keep-my-languages-plugins.json',
 );
 const example = JSON.parse(readFileSync(examplePath, 'utf8')) as {
   nodes: ExampleNode[];
@@ -47,6 +47,7 @@ const language: PortSpec = { id: 'language', label: 'Language', type: 'data:lang
 const CORE: Record<string, { inputs: PortSpec[]; outputs: PortSpec[] }> = {
   'core:input-manual': { inputs: [], outputs: [file] },
   'core:keep-languages': { inputs: [file, language], outputs: [file] },
+  'core:remove-duplicate-audio': { inputs: [file], outputs: [file] },
   'core:set-default-track': { inputs: [file], outputs: [file] },
   'core:reorder-tracks': { inputs: [file], outputs: [file] },
   'core:cover-attachments': { inputs: [file], outputs: [file] },
@@ -64,7 +65,7 @@ function portsOf(node: ExampleNode): { inputs: PortSpec[]; outputs: PortSpec[] }
   return core;
 }
 
-describe('track-cleanup-plugins example vs the real plugin definitions', () => {
+describe('keep-my-languages-plugins example vs the real plugin definitions', () => {
   it('uses plugin nodes of all three plugins it needs', () => {
     expect(pluginNodes.map((n) => n.type).sort()).toEqual([
       'jellyfin:refresh',

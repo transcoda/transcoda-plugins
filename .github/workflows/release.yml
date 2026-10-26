@@ -49,7 +49,6 @@ jobs:
       - uses: ./.github/actions/setup
         with:
           core-ref: ${{ env.CORE_REF }}
-          core-token: ${{ secrets.CORE_REPO_TOKEN }}
       - run: pnpm check
       - run: pnpm --filter "./plugins/${{ steps.tag.outputs.plugin }}" bundle
       - name: Verify checksum
