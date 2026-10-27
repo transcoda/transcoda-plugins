@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "@transcoda/plugin-arr-common": "workspace:*",
-    "@transcoda/sdk": "1.0.0",
+    "@transcoda/sdk": "1.1.0",
     "zod": "4.6.7"
   }
 }

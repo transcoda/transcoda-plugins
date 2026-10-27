@@ -170,8 +170,8 @@ importers:
         specifier: 2.6.2
         version: 2.6.2
       '@transcoda/sdk':
-        specifier: 1.0.0
-        version: 1.0.0
+        specifier: 1.1.0
+        version: 1.1.0
       '@types/node':
         specifier: 24.19.2
         version: 24.19.2
@@ -191,8 +191,8 @@ importers:
   packages/arr-common:
     devDependencies:
       '@transcoda/sdk':
-        specifier: 1.0.0
-        version: 1.0.0
+        specifier: 1.1.0
+        version: 1.1.0
       zod:
         specifier: 4.6.7
         version: 4.6.7
@@ -203,8 +203,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/arr-common
       '@transcoda/sdk':
-        specifier: 1.0.0
-        version: 1.0.0
+        specifier: 1.1.0
+        version: 1.1.0
       zod:
         specifier: 4.6.7
         version: 4.6.7
@@ -212,8 +212,8 @@ importers:
   plugins/discord:
     devDependencies:
       '@transcoda/sdk':
-        specifier: 1.0.0
-        version: 1.0.0
+        specifier: 1.1.0
+        version: 1.1.0
       zod:
         specifier: 4.6.7
         version: 4.6.7
@@ -221,8 +221,8 @@ importers:
   plugins/example:
     devDependencies:
       '@transcoda/sdk':
-        specifier: 1.0.0
-        version: 1.0.0
+        specifier: 1.1.0
+        version: 1.1.0
       zod:
         specifier: 4.6.7
         version: 4.6.7
@@ -230,8 +230,8 @@ importers:
   plugins/jellyfin:
     devDependencies:
       '@transcoda/sdk':
-        specifier: 1.0.0
-        version: 1.0.0
+        specifier: 1.1.0
+        version: 1.1.0
       zod:
         specifier: 4.6.7
         version: 4.6.7
@@ -239,8 +239,8 @@ importers:
   plugins/ntfy:
     devDependencies:
       '@transcoda/sdk':
-        specifier: 1.0.0
-        version: 1.0.0
+        specifier: 1.1.0
+        version: 1.1.0
       zod:
         specifier: 4.6.7
         version: 4.6.7
@@ -251,8 +251,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/arr-common
       '@transcoda/sdk':
-        specifier: 1.0.0
-        version: 1.0.0
+        specifier: 1.1.0
+        version: 1.1.0
       zod:
         specifier: 4.6.7
         version: 4.6.7
@@ -263,8 +263,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/arr-common
       '@transcoda/sdk':
-        specifier: 1.0.0
-        version: 1.0.0
+        specifier: 1.1.0
+        version: 1.1.0
       zod:
         specifier: 4.6.7
         version: 4.6.7
@@ -275,8 +275,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/arr-common
       '@transcoda/sdk':
-        specifier: 1.0.0
-        version: 1.0.0
+        specifier: 1.1.0
+        version: 1.1.0
       zod:
         specifier: 4.6.7
         version: 4.6.7
@@ -284,8 +284,8 @@ importers:
   plugins/tmdb:
     devDependencies:
       '@transcoda/sdk':
-        specifier: 1.0.0
-        version: 1.0.0
+        specifier: 1.1.0
+        version: 1.1.0
       zod:
         specifier: 4.6.7
         version: 4.6.7
@@ -476,8 +476,8 @@ packages:
   '@rolldown/pluginutils@1.0.1':
     resolution: {integrity: sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw==}
 
-  '@transcoda/sdk@1.0.0':
-    resolution: {integrity: sha512-lUsv9aKCD4GjDgi0pwQe7hw2u5jB/yUdqeBVP+ECURahW5qjPQlCyWHNrWYN4Io6SV4Z++s23jzn/ufRY9GRcg==}
+  '@transcoda/sdk@1.1.0':
+    resolution: {integrity: sha512-51KotkosFEwP466s4bc9DgJ5UrCovRkn0mK1i2RxWWkl9DeAH6wDyUoZjBU9YaOmATZdXSgVWjsgIqcaLeSjuw==}
     engines: {node: '>=24'}
 
   '@types/chai@5.2.3':
@@ -1184,7 +1184,7 @@ snapshots:
 
   '@rolldown/pluginutils@1.0.1': {}
 
-  '@transcoda/sdk@1.0.0':
+  '@transcoda/sdk@1.1.0':
     dependencies:
       zod: 4.6.7
 
