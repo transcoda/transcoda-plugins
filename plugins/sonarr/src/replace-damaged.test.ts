@@ -25,6 +25,7 @@ const HISTORY = '/api/v3/history/series?seriesId=1';
 const BLOCKLIST =
   '/api/v3/blocklist?page=1&pageSize=100&sortKey=date&sortDirection=descending&seriesIds=1';
 const RELEASE = 'Example.Show.S01E03E04.1080p.WEB-DL-GRP';
+const CONFIG = '/api/v3/config/mediamanagement';
 const NOW = Date.parse('2026-10-27T12:00:00Z');
 const settings = { url: BASE, apiKey: SENTINEL };
 const damaged = { outcome: 'damaged' as const, damage: { reason: 'video: cut off at 00:41:10' } };
@@ -47,8 +48,23 @@ const happy = (): ScriptedResponse[] => [
   get(BLOCKLIST, arrFixture('blocklist-series')),
   post('/api/v3/history/failed/60', null),
   del('/api/v3/episodefile/5'),
+  get(CONFIG, arrFixture('sonarr-mediamanagement')),
   post('/api/v3/command', { id: 4242, status: 'queued' }),
 ];
+
+/** Sonarr unmonitors deleted episodes: the file's episodes are set monitored before the search. */
+const unmonitoring = (): ScriptedResponse[] => {
+  const responses = happy();
+  responses[7] = get(CONFIG, {
+    ...(arrFixture('sonarr-mediamanagement') as object),
+    autoUnmonitorPreviouslyDownloadedEpisodes: true,
+  });
+  responses.splice(8, 0, {
+    match: { url: `${BASE}/api/v3/episode/monitor`, method: 'PUT' },
+    body: [] as never,
+  });
+  return responses;
+};
 
 const run = (responses: ScriptedResponse[], over = {}) => {
   const ctx = fakePluginContext({ settings, responses });
@@ -98,9 +114,55 @@ describe('sonarr:replace-damaged run', () => {
       ['GET', BLOCKLIST],
       ['POST', '/api/v3/history/failed/60'],
       ['DELETE', '/api/v3/episodefile/5'],
+      ['GET', CONFIG],
       ['POST', '/api/v3/command'],
     ]);
     expect(ctx.calls.at(-1)?.body).toEqual({ name: 'EpisodeSearch', episodeIds: [100, 101] });
+  });
+
+  it('does not mark a newer single-episode grab of one of the file’s episodes', async () => {
+    const single = {
+      id: 80,
+      seriesId: 1,
+      episodeId: 101,
+      sourceTitle: 'Example.Show.S01E04.2160p.WEB-DL-NEW',
+      eventType: 'grabbed',
+      date: '2026-10-26T08:00:00Z',
+      downloadId: '0000000000000000000000000000000000000080',
+    };
+    const responses = happy();
+    responses[3] = get(HISTORY, [...(arrFixture('history-series') as unknown[]), single]);
+    const { ctx, result } = run(responses);
+    expect((await result).ok).toBe(true);
+    expect(ctx.calls.filter((c) => c.url.includes('history/failed')).map((c) => c.url)).toEqual([
+      `${BASE}/api/v3/history/failed/60`,
+    ]);
+  });
+
+  it('with "unmonitor deleted episodes" on, sets the episodes monitored before the search', async () => {
+    const { ctx, result } = run(unmonitoring());
+    expect(await result).toEqual({
+      ok: true,
+      message: `Sonarr: found Show S01E03E04; marked the grab of "${RELEASE}" failed (blocklisted); deleted ${ORIG}; monitored the episodes again; started a search`,
+    });
+    const put = ctx.calls.find((c) => c.method === 'PUT');
+    expect(put?.url).toBe(`${BASE}/api/v3/episode/monitor`);
+    expect(put?.body).toEqual({ episodeIds: [100, 101], monitored: true });
+    expect(ctx.calls.at(-1)?.url).toBe(`${BASE}/api/v3/command`);
+  });
+
+  it('a failed re-monitor after the delete → not retryable, says what is left to do', async () => {
+    const responses = unmonitoring();
+    responses[8] = {
+      match: { url: `${BASE}/api/v3/episode/monitor`, method: 'PUT' },
+      status: 500,
+    };
+    const { ctx, result } = run(responses);
+    expect(await result).toEqual({
+      ok: false,
+      message: `Sonarr: found Show S01E03E04; marked the grab of "${RELEASE}" failed (blocklisted); deleted ${ORIG}; monitoring the episodes again failed: Sonarr answered 500 for /api/v3/episode/monitor — monitor it and search in Sonarr`,
+    });
+    expect(ctx.calls.some((c) => c.url.endsWith('/api/v3/command'))).toBe(false);
   });
 
   it('a mark within 7 days on one of the episodes → ok "already requested on <date>" and no further call', async () => {
@@ -152,14 +214,13 @@ describe('sonarr:replace-damaged run', () => {
     expect(ctx.calls.some((c) => c.url.includes('history/failed'))).toBe(false);
   });
 
-  it('delete fails with 500 → ok:false, retryable, message names the failed step and the steps done', async () => {
+  it('delete fails with 500 after the blocklist → not retryable, says what is left to do by hand', async () => {
     const responses = happy();
     responses[6] = del('/api/v3/episodefile/5', 500);
     const { ctx, result } = run(responses);
     expect(await result).toEqual({
       ok: false,
-      retryable: true,
-      message: `delete failed: Sonarr answered 500 for /api/v3/episodefile/5; done: found Show S01E03E04; marked the grab of "${RELEASE}" failed (blocklisted)`,
+      message: `Sonarr: found Show S01E03E04; marked the grab of "${RELEASE}" failed (blocklisted); deleting the file failed: Sonarr answered 500 for /api/v3/episodefile/5 — delete it and search in Sonarr`,
     });
     expect(ctx.calls.some((c) => c.url.endsWith('/api/v3/command'))).toBe(false);
   });

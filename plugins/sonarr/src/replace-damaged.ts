@@ -42,6 +42,12 @@ export const replaceDamaged = defineNode({
         remotePath: file.path,
         deletePath: `/api/v3/episodefile/${file.id}`,
         search: { name: 'EpisodeSearch', episodeIds },
+        remonitor: {
+          setting: 'episodes',
+          what: episodeIds.length === 1 ? 'the episode' : 'the episodes',
+          put: '/api/v3/episode/monitor',
+          body: { episodeIds, monitored: true },
+        },
       };
     });
   },

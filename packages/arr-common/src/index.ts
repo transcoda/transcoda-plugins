@@ -12,8 +12,9 @@ export { type CommandOutcome, runCommand } from './command.ts';
 export {
   type BlocklistItem,
   type HistoryEvent,
+  importedGrab,
   itemHistory,
-  latestGrab,
+  latestImport,
   REQUEST_WINDOW_MS,
   recentBlocklisted,
   recentMarkedFailed,

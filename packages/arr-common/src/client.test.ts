@@ -47,6 +47,17 @@ describe('arr client', () => {
     expect(ctx.calls[0]?.body).toEqual({ name: 'X' });
   });
 
+  it('puts a JSON body', async () => {
+    const ctx = fakePluginContext({
+      settings,
+      responses: [{ match: { url: /episode\/monitor$/, method: 'PUT' }, body: [] }],
+    });
+    const body = { episodeIds: [100], monitored: true };
+    expect(await arrClient(ctx, 'Sonarr').put('/api/v3/episode/monitor', body)).toEqual([]);
+    expect(ctx.calls[0]?.method).toBe('PUT');
+    expect(ctx.calls[0]?.body).toEqual(body);
+  });
+
   it('posts without a body and deletes', async () => {
     const ctx = fakePluginContext({
       settings,
