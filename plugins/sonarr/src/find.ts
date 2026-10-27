@@ -81,18 +81,27 @@ export async function listEpisodeFiles(
   return Array.isArray(raw) ? raw.map(toFile).filter((f): f is EpisodeFileRef => f !== null) : [];
 }
 
-async function episodeLabel(ctx: PluginContext, seriesId: number, fileId: number): Promise<string> {
-  // Cosmetic: a failed lookup gives an empty label and never stops the caller.
+/** The episodes held in one file: their ids and a label such as `S01E03E04`. */
+async function fileEpisodes(
+  ctx: PluginContext,
+  seriesId: number,
+  fileId: number,
+  strict: boolean,
+): Promise<{ label: string; ids: number[] }> {
+  // Cosmetic for the label: unless `strict`, a failed lookup gives no episodes and never stops
+  // the caller.
   let raw: JsonValue;
   try {
     raw = await arrClient(ctx, 'Sonarr').get(
       `/api/v3/episode?seriesId=${seriesId}&episodeFileId=${fileId}`,
     );
   } catch (e) {
-    if (e instanceof ArrHttpError || fetchErrorKind(e) !== null) return '';
+    if (!strict && (e instanceof ArrHttpError || fetchErrorKind(e) !== null)) {
+      return { label: '', ids: [] };
+    }
     throw e;
   }
-  if (!Array.isArray(raw)) return '';
+  if (!Array.isArray(raw)) return { label: '', ids: [] };
   // Sonarr answers with every episode of the series when seriesId is given (episodeFileId is
   // ignored), so keep only the episodes held in this file.
   const eps = raw
@@ -100,31 +109,45 @@ async function episodeLabel(ctx: PluginContext, seriesId: number, fileId: number
     .filter(
       (e) =>
         e.episodeFileId === fileId &&
+        typeof e.id === 'number' &&
         typeof e.episodeNumber === 'number' &&
         typeof e.seasonNumber === 'number',
     )
-    .map((e) => ({ season: e.seasonNumber as number, episode: e.episodeNumber as number }))
+    .map((e) => ({
+      id: e.id as number,
+      season: e.seasonNumber as number,
+      episode: e.episodeNumber as number,
+    }))
     .sort((a, b) => a.season - b.season || a.episode - b.episode);
   const first = eps[0];
-  if (first === undefined) return '';
+  if (first === undefined) return { label: '', ids: [] };
   const numbers = eps.filter((e) => e.season === first.season).map((e) => pad2(e.episode));
-  return `S${pad2(first.season)}E${numbers.join('E')}`;
+  return { label: `S${pad2(first.season)}E${numbers.join('E')}`, ids: eps.map((e) => e.id) };
 }
 
 /**
  * The series whose folder contains `localPath` (segment-aware, longest folder wins) and, unless
- * `lookupFile` is false, the episode file Sonarr lists at that path. Throws on a failed series or episodefile request (fetch-kind errors, ArrHttpError).
+ * `lookupFile` is false, the episode file Sonarr lists at that path with the episodes it holds.
+ * Throws on a failed series or episodefile request (fetch-kind errors, ArrHttpError); a failed
+ * episode lookup gives no episodes unless `strictEpisodes`, when it throws too.
  */
 export async function findSeriesForPath(
   ctx: PluginContext,
   localPath: string,
-  opts: { lookupFile?: boolean } = {},
-): Promise<{ series: SeriesRef; file: EpisodeFileRef | null; episodes: string } | null> {
+  opts: { lookupFile?: boolean; strictEpisodes?: boolean } = {},
+): Promise<{
+  series: SeriesRef;
+  file: EpisodeFileRef | null;
+  episodes: string;
+  episodeIds: number[];
+} | null> {
   const remotePath = ctx.paths.toRemote(localPath);
   const series = pickByPath(await allSeries(ctx), remotePath);
   if (series === null) return null;
-  if (opts.lookupFile === false) return { series, file: null, episodes: '' };
+  const none = { series, file: null, episodes: '', episodeIds: [] };
+  if (opts.lookupFile === false) return none;
   const file = (await listEpisodeFiles(ctx, series.id)).find((f) => sameFile(f.path, remotePath));
-  if (file === undefined) return { series, file: null, episodes: '' };
-  return { series, file, episodes: await episodeLabel(ctx, series.id, file.id) };
+  if (file === undefined) return none;
+  const eps = await fileEpisodes(ctx, series.id, file.id, opts.strictEpisodes === true);
+  return { series, file, episodes: eps.label, episodeIds: eps.ids };
 }

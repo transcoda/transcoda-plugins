@@ -1,0 +1,19 @@
+{
+  "page": 1,
+  "pageSize": 100,
+  "sortKey": "date",
+  "sortDirection": "descending",
+  "totalRecords": 1,
+  "records": [
+    {
+      "id": 9,
+      "seriesId": 1,
+      "episodeIds": [102],
+      "sourceTitle": "Example.Show.S01E05.1080p.WEB-DL-GRP",
+      "date": "2026-10-25T10:00:00Z",
+      "protocol": "torrent",
+      "indexer": "Example Indexer",
+      "message": "Manually marked as failed"
+    }
+  ]
+}
