@@ -1,8 +1,53 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended", ":pinAllExceptPeerDependencies", "group:allNonMajor"],
-  "schedule": ["before 6am on monday"],
-  "enabledManagers": ["npm", "dockerfile", "github-actions"],
+  "extends": ["config:recommended", ":pinAllExceptPeerDependencies", ":semanticCommits"],
+  "enabledManagers": ["npm", "nodenv", "github-actions"],
+  "timezone": "America/New_York",
+  "schedule": ["* 17-23 * * 1-5", "* * * * 0,6"],
+  "minimumReleaseAge": "3 days",
+  "minimumReleaseAgeBehaviour": "timestamp-optional",
+  "internalChecksFilter": "strict",
   "rangeStrategy": "pin",
-  "labels": ["deps"]
+  "labels": ["dependencies", "no user-facing change"],
+  "packageRules": [
+    {
+      "description": "SHA-pinned actions in one PR; Renovate rewrites the SHA and the version comment.",
+      "matchManagers": ["github-actions"],
+      "groupName": "GitHub Actions",
+      "semanticCommitType": "chore",
+      "semanticCommitScope": "ci",
+      "addLabels": ["github_actions"]
+    },
+    {
+      "description": "Repository and plugin dev dependencies (plugins ship no runtime dependencies): minor and patch in one PR, majors one by one.",
+      "matchManagers": ["npm"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "npm non-major",
+      "semanticCommitType": "chore",
+      "semanticCommitScope": "deps"
+    },
+    {
+      "matchManagers": ["npm"],
+      "matchUpdateTypes": ["major"],
+      "semanticCommitType": "chore",
+      "semanticCommitScope": "deps"
+    },
+    {
+      "description": "Our own SDK is published from transcoda/transcoda's CI with provenance: no release-age wait (as in pnpm's minimumReleaseAgeExclude).",
+      "matchPackageNames": ["@transcoda/sdk"],
+      "minimumReleaseAge": null
+    },
+    {
+      "description": "Node.js: .node-version, engines and @types/node move together on the LTS line CI runs; majors by hand.",
+      "matchPackageNames": ["node", "@types/node"],
+      "groupName": "Node.js",
+      "semanticCommitType": "chore",
+      "semanticCommitScope": "node"
+    },
+    {
+      "matchPackageNames": ["node", "@types/node"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    }
+  ]
 }
