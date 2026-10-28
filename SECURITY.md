@@ -2,7 +2,7 @@
 
 ## Reporting a vulnerability
 
-Please report security problems privately through GitHub: **Security → Report a vulnerability** on this repository (private vulnerability reporting). Do not open a public issue.
+Please report security problems privately through GitHub: [report a vulnerability](https://github.com/transcoda/transcoda-plugins/security/advisories/new) (**Security → Report a vulnerability** on this repository). Do not open a public issue.
 
 Useful to include: which plugin and version, what an attacker can do, and steps to reproduce. You will get an answer within a few days.
 
@@ -14,7 +14,7 @@ In scope:
 - The release and catalog workflows: signing, the catalog index, the blocklist and build attestations.
 - Anything that lets a plugin leak a secret (API keys, tokens, webhook URLs) into logs, messages or job results.
 
-The plugin sandbox itself (process isolation, the fetch proxy, signature checks in the server) lives in the Transcoda server repository; reports about it are welcome here too and will be forwarded.
+The plugin sandbox itself (process isolation, the fetch proxy, signature checks in the server) lives in the [Transcoda server repository](https://github.com/transcoda/transcoda); reports about it are welcome here too and will be forwarded.
 
 ## Compromised builds
 
