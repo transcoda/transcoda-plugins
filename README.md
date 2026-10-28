@@ -1,5 +1,7 @@
 # Transcoda plugins
 
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/transcoda/transcoda-plugins/badge)](https://scorecard.dev/viewer/?uri=github.com/transcoda/transcoda-plugins)
+
 Official plugins for [Transcoda](https://github.com/transcoda/transcoda). They connect your
 workflows to the apps around your media library: ask Sonarr which language a show is in, tell
 Jellyfin a file changed, get a push when a job is done.
