@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generated": "2026-10-21T11:28:20.797Z",
+  "generated": "2026-10-28T14:43:35.039Z",
   "plugins": [
     {
       "name": "bazarr",
@@ -93,9 +93,23 @@
     {
       "name": "radarr",
       "title": "Radarr",
-      "description": "Radarr plugin: reads a movie's original language and rescans the movie after a file is replaced.",
-      "latest": "1.0.1",
+      "description": "Radarr plugin: reads a movie's original language, rescans the movie after a file is replaced and replaces a damaged file.",
+      "latest": "1.1.0",
       "versions": [
+        {
+          "version": "1.1.0",
+          "sdk": "^1.1",
+          "coreTested": [
+            "main"
+          ],
+          "url": "https://github.com/transcoda/transcoda-plugins/releases/download/radarr-v1.1.0/radarr-1.1.0.js",
+          "manifestUrl": "https://github.com/transcoda/transcoda-plugins/releases/download/radarr-v1.1.0/radarr-1.1.0.manifest.json",
+          "signature": "https://github.com/transcoda/transcoda-plugins/releases/download/radarr-v1.1.0/radarr-1.1.0.js.sig",
+          "sha256": "1b4e2d72bfcfff226a758573a53178bc4dc5675ef123e50216cc86cf0cf310a3",
+          "size": 256223,
+          "attestation": "https://github.com/transcoda/transcoda-plugins/attestations/60787157",
+          "releasedAt": "2026-10-28T11:22:41.000Z"
+        },
         {
           "version": "1.0.1",
           "sdk": "^1",
@@ -151,9 +165,23 @@
     {
       "name": "sonarr",
       "title": "Sonarr",
-      "description": "Sonarr plugin: reads a series' original language and rescans the series after a file is replaced.",
-      "latest": "1.0.1",
+      "description": "Sonarr plugin: reads a series' original language, rescans the series after a file is replaced and replaces a damaged file.",
+      "latest": "1.1.0",
       "versions": [
+        {
+          "version": "1.1.0",
+          "sdk": "^1.1",
+          "coreTested": [
+            "main"
+          ],
+          "url": "https://github.com/transcoda/transcoda-plugins/releases/download/sonarr-v1.1.0/sonarr-1.1.0.js",
+          "manifestUrl": "https://github.com/transcoda/transcoda-plugins/releases/download/sonarr-v1.1.0/sonarr-1.1.0.manifest.json",
+          "signature": "https://github.com/transcoda/transcoda-plugins/releases/download/sonarr-v1.1.0/sonarr-1.1.0.js.sig",
+          "sha256": "edc4b0d43ec27bfbc53e46e2feb7d5a463b9a51f10f86499f8f5a2c9e7d635ff",
+          "size": 257982,
+          "attestation": "https://github.com/transcoda/transcoda-plugins/attestations/60786750",
+          "releasedAt": "2026-10-28T11:21:42.000Z"
+        },
         {
           "version": "1.0.1",
           "sdk": "^1",
