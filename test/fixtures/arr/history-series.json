@@ -1,0 +1,52 @@
+[
+  {
+    "id": 40,
+    "seriesId": 1,
+    "episodeId": 102,
+    "sourceTitle": "Example.Show.S01E05.1080p.WEB-DL-GRP",
+    "eventType": "grabbed",
+    "date": "2026-10-24T08:00:00Z",
+    "downloadId": "0000000000000000000000000000000000000040",
+    "data": { "indexer": "Example Indexer" }
+  },
+  {
+    "id": 50,
+    "seriesId": 1,
+    "episodeId": 102,
+    "sourceTitle": "Example.Show.S01E05.1080p.WEB-DL-GRP",
+    "eventType": "downloadFailed",
+    "date": "2026-10-25T10:00:00Z",
+    "downloadId": "0000000000000000000000000000000000000040",
+    "data": { "message": "Manually marked as failed" }
+  },
+  {
+    "id": 60,
+    "seriesId": 1,
+    "episodeId": 100,
+    "sourceTitle": "Example.Show.S01E03E04.1080p.WEB-DL-GRP",
+    "eventType": "grabbed",
+    "date": "2026-10-20T09:00:00Z",
+    "downloadId": "0000000000000000000000000000000000000060",
+    "data": { "indexer": "Example Indexer" }
+  },
+  {
+    "id": 61,
+    "seriesId": 1,
+    "episodeId": 101,
+    "sourceTitle": "Example.Show.S01E03E04.1080p.WEB-DL-GRP",
+    "eventType": "grabbed",
+    "date": "2026-10-20T09:00:00Z",
+    "downloadId": "0000000000000000000000000000000000000060",
+    "data": { "indexer": "Example Indexer" }
+  },
+  {
+    "id": 62,
+    "seriesId": 1,
+    "episodeId": 100,
+    "sourceTitle": "Example.Show.S01E03E04.1080p.WEB-DL-GRP",
+    "eventType": "downloadFolderImported",
+    "date": "2026-10-20T09:30:00Z",
+    "downloadId": "0000000000000000000000000000000000000060",
+    "data": {}
+  }
+]

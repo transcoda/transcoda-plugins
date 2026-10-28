@@ -28,7 +28,10 @@ export function arrBaseUrl(settings: { url: string }): string {
 
 export interface ArrClient {
   get(path: string): Promise<JsonValue>;
-  post(path: string, body: JsonValue): Promise<JsonValue>;
+  /** Without `body`, the request has none (e.g. `history/failed/{id}`). */
+  post(path: string, body?: JsonValue): Promise<JsonValue>;
+  put(path: string, body: JsonValue): Promise<JsonValue>;
+  delete(path: string): Promise<JsonValue>;
 }
 
 /** Per-request timeout when the caller does not pass one. */
@@ -41,7 +44,7 @@ export function arrClient(
 ): ArrClient {
   const send = async (
     path: string,
-    method: 'GET' | 'POST',
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE',
     body?: JsonValue,
   ): Promise<JsonValue> => {
     const res: PluginFetchResponse = await ctx.fetch({
@@ -58,6 +61,8 @@ export function arrClient(
   return {
     get: (path) => send(path, 'GET'),
     post: (path, body) => send(path, 'POST', body),
+    put: (path, body) => send(path, 'PUT', body),
+    delete: (path) => send(path, 'DELETE'),
   };
 }
 

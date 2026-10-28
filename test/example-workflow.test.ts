@@ -41,7 +41,8 @@ const defs = new Map<string, AnyNodeDefinition>(
   [sonarr, jellyfin, ntfy].flatMap((p) => p.nodes.map((n) => [n.type, n] as const)),
 );
 
-// The core nodes the example wires to plugin nodes (apps/server/src/nodes/core: filePort, languageInput).
+// The core nodes the example wires to plugin nodes (apps/server/src/nodes/core: filePort, languageInput,
+// render's Done and Damaged).
 const file: PortSpec = { id: 'file', label: 'File', type: 'file' };
 const language: PortSpec = { id: 'language', label: 'Language', type: 'data:language' };
 const CORE: Record<string, { inputs: PortSpec[]; outputs: PortSpec[] }> = {
@@ -51,6 +52,13 @@ const CORE: Record<string, { inputs: PortSpec[]; outputs: PortSpec[] }> = {
   'core:set-default-track': { inputs: [file], outputs: [file] },
   'core:reorder-tracks': { inputs: [file], outputs: [file] },
   'core:cover-attachments': { inputs: [file], outputs: [file] },
+  'core:render': {
+    inputs: [file],
+    outputs: [
+      { id: 'done', label: 'Done', type: 'file' },
+      { id: 'damaged', label: 'Damaged', type: 'file' },
+    ],
+  },
   'core:replace-original': { inputs: [file], outputs: [file] },
 };
 

@@ -47,6 +47,38 @@ describe('arr client', () => {
     expect(ctx.calls[0]?.body).toEqual({ name: 'X' });
   });
 
+  it('puts a JSON body', async () => {
+    const ctx = fakePluginContext({
+      settings,
+      responses: [{ match: { url: /episode\/monitor$/, method: 'PUT' }, body: [] }],
+    });
+    const body = { episodeIds: [100], monitored: true };
+    expect(await arrClient(ctx, 'Sonarr').put('/api/v3/episode/monitor', body)).toEqual([]);
+    expect(ctx.calls[0]?.method).toBe('PUT');
+    expect(ctx.calls[0]?.body).toEqual(body);
+  });
+
+  it('posts without a body and deletes', async () => {
+    const ctx = fakePluginContext({
+      settings,
+      responses: [
+        { match: { url: /history\/failed\/42$/, method: 'POST' }, body: null },
+        { match: { url: /moviefile\/7$/, method: 'DELETE' }, body: null },
+        { match: { url: /moviefile\/8$/, method: 'DELETE' }, status: 404, body: null },
+      ],
+    });
+    const client = arrClient(ctx, 'Radarr');
+    await client.post('/api/v3/history/failed/42');
+    expect(ctx.calls[0]?.method).toBe('POST');
+    expect(ctx.calls[0] !== undefined && 'body' in ctx.calls[0]).toBe(false);
+    expect(await client.delete('/api/v3/moviefile/7')).toBeNull();
+    expect(ctx.calls[1]?.method).toBe('DELETE');
+    expect(ctx.calls[1]?.auth).toEqual({ header: { name: 'X-Api-Key', value: SECRET } });
+    const err = await client.delete('/api/v3/moviefile/8').catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(ArrHttpError);
+    expect((err as ArrHttpError).message).toBe('Radarr answered 404 for /api/v3/moviefile/8');
+  });
+
   it('throws ArrHttpError with the product, status and path, without the key', async () => {
     const ctx = fakePluginContext({
       settings,

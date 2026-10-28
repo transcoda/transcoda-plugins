@@ -18,6 +18,7 @@ describe('findSeriesForPath', () => {
     expect(found?.series.id).toBe(2);
     expect(found?.file?.id).toBe(30);
     expect(found?.episodes).toBe('S01E01');
+    expect(found?.episodeIds).toEqual([1]);
     expect(ctx.calls.map((c) => c.url)).not.toContain(`${BASE}/api/v3/episodefile?seriesId=1`);
   });
 
