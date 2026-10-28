@@ -10,6 +10,7 @@ import {
   recentMarkedFailed,
 } from './history.ts';
 import type { JsonValue } from './json.ts';
+import { notKnownMessage } from './roots.ts';
 import { unmonitorWarning } from './unmonitor.ts';
 
 /** What the Replace damaged file steps act on, as the plugin found it. */
@@ -107,7 +108,9 @@ export async function replaceDamagedFile(
   try {
     const target = await step(product, 'find', find);
     if (target === null) {
-      return { ok: false, message: `${product} does not know this file; nothing was changed` };
+      const remote = ctx.plugin.paths.toRemote(ctx.originalPath);
+      const unknown = await notKnownMessage(ctx.plugin, product, remote);
+      return { ok: false, message: `${unknown}; nothing was changed` };
     }
     done.push(`found ${target.label}`);
     const episodeIds = target.episodeIds;

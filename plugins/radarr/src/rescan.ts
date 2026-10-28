@@ -2,6 +2,7 @@ import {
   arrClient,
   coalesce,
   type JsonValue,
+  notKnownMessage,
   runCommand,
   sameFile,
 } from '@transcoda/plugin-arr-common';
@@ -49,7 +50,12 @@ export const rescan = defineNode({
     try {
       const found = await findMovieForPath(plugin, ctx.originalPath);
       if (found === null || found.file === null) {
-        return { ok: false, message: 'Radarr does not know this file; nothing was rescanned' };
+        const unknown = await notKnownMessage(
+          plugin,
+          'Radarr',
+          plugin.paths.toRemote(ctx.originalPath),
+        );
+        return { ok: false, message: `${unknown}; nothing was rescanned` };
       }
       const { movie } = found;
       const label = movieLabel(movie);

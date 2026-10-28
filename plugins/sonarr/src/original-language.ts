@@ -1,4 +1,4 @@
-import { ArrHttpError, originalLanguageOf } from '@transcoda/plugin-arr-common';
+import { ArrHttpError, notKnownMessage, originalLanguageOf } from '@transcoda/plugin-arr-common';
 import { defineNode, fetchErrorKind } from '@transcoda/sdk';
 import { z } from 'zod';
 import { findSeriesForPath, idsOfSeries } from './find.ts';
@@ -25,7 +25,10 @@ export const originalLanguage = defineNode({
     try {
       const found = await findSeriesForPath(ctx.plugin, ctx.file.path, { lookupFile: false });
       if (found === null) {
-        return { value: { ...UNKNOWN }, reason: `Sonarr does not know ${remote}` };
+        return {
+          value: { ...UNKNOWN },
+          reason: await notKnownMessage(ctx.plugin, 'Sonarr', remote),
+        };
       }
       const { series } = found;
       const lang = originalLanguageOf(

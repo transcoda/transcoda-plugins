@@ -242,12 +242,13 @@ describe('sonarr:replace-damaged run', () => {
     const { ctx, result } = run([
       get('/api/v3/series', [SHOW, SHOW2]),
       get('/api/v3/episodefile?seriesId=1', []),
+      get('/api/v3/rootfolder', [{ path: '/data/shows' }]),
     ]);
     expect(await result).toEqual({
       ok: false,
-      message: 'Sonarr does not know this file; nothing was changed',
+      message: `Sonarr does not know ${ORIG}; nothing was changed`,
     });
-    expect(ctx.calls).toHaveLength(2);
+    expect(ctx.calls).toHaveLength(3);
   });
 
   it('outcome replaced → refused without any call', async () => {
