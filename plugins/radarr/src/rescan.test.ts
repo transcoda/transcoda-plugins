@@ -10,6 +10,7 @@ const MOVIE_URL = `${BASE}/api/v3/movie`;
 const FILE_URL = `${BASE}/api/v3/moviefile?movieId=11`;
 const CMD_URL = `${BASE}/api/v3/command`;
 const POLL_URL = `${BASE}/api/v3/command/4242`;
+const ROOT_URL = `${BASE}/api/v3/rootfolder`;
 const FILE = '/data/movies/Example Movie (2019)/Example Movie (2019).mkv';
 
 const queued = fixture('command-queued');
@@ -128,20 +129,33 @@ describe('radarr:rescan run', () => {
     const ctx = ctxWith([
       { match: { url: MOVIE_URL }, body: movies() },
       { match: { url: FILE_URL }, body: [] },
+      { match: { url: ROOT_URL }, body: [{ path: '/data/movies' }] },
     ]);
     const res = await runFinishRun(rescan, runContext(ctx), {});
     expect(res).toEqual({
       ok: false,
-      message: 'Radarr does not know this file; nothing was rescanned',
+      message: `Radarr does not know ${FILE}; nothing was rescanned`,
     });
     expect(ctx.calls.some((c) => c.method === 'POST')).toBe(false);
   });
 
-  it('does nothing when no movie matches the path', async () => {
+  it('does nothing when no movie matches the path, and points at a missing path mapping', async () => {
+    const ctx = ctxWith([
+      { match: { url: MOVIE_URL }, body: movies() },
+      { match: { url: ROOT_URL }, body: [{ path: '/data/movies/' }, { path: '/data/4k' }] },
+    ]);
+    const local = '/media/movies/Example Movie (2019)/Example Movie (2019).mkv';
+    const res = await runFinishRun(rescan, runContext(ctx, { originalPath: local }), {});
+    expect(res.message).toBe(
+      `Radarr does not know ${local}, which is outside its root folders (/data/movies/, /data/4k): add a path mapping in the Radarr settings; nothing was rescanned`,
+    );
+    expect(ctx.calls.some((c) => c.method === 'POST')).toBe(false);
+  });
+
+  it('without readable root folders, the message still names the path', async () => {
     const ctx = ctxWith([{ match: { url: MOVIE_URL }, body: movies() }]);
     const res = await runFinishRun(rescan, runContext(ctx, { originalPath: '/x/y.mkv' }), {});
-    expect(res.message).toBe('Radarr does not know this file; nothing was rescanned');
-    expect(ctx.calls.some((c) => c.method === 'POST')).toBe(false);
+    expect(res.message).toBe('Radarr does not know /x/y.mkv; nothing was rescanned');
   });
 
   it('a failed command is not retryable', async () => {

@@ -2,6 +2,7 @@ import {
   ArrHttpError,
   arrClient,
   coalesce,
+  notKnownMessage,
   runCommand,
   sameFile,
 } from '@transcoda/plugin-arr-common';
@@ -60,7 +61,8 @@ export const rescan = defineNode({
         }
       }
       if (found === null || (found.file === null && !viaNewPath)) {
-        return { ok: false, message: `Sonarr does not know ${oldRemote}; nothing was rescanned` };
+        const unknown = await notKnownMessage(plugin, 'Sonarr', oldRemote);
+        return { ok: false, message: `${unknown}; nothing was rescanned` };
       }
       const { series, episodes } = found;
       const label = episodes === '' ? '' : ` (${episodes})`;

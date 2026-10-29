@@ -1,4 +1,4 @@
-import { idsOf, originalLanguageOf } from '@transcoda/plugin-arr-common';
+import { idsOf, notKnownMessage, originalLanguageOf } from '@transcoda/plugin-arr-common';
 import { defineNode } from '@transcoda/sdk';
 import { z } from 'zod';
 import { describeFailure } from './errors.ts';
@@ -26,7 +26,10 @@ export const originalLanguage = defineNode({
     try {
       const movie = await findMovie(ctx.plugin, remotePath);
       if (movie === null) {
-        return { value: { ...UNKNOWN }, reason: `Radarr does not know ${remotePath}` };
+        return {
+          value: { ...UNKNOWN },
+          reason: await notKnownMessage(ctx.plugin, 'Radarr', remotePath),
+        };
       }
       const lang = originalLanguageOf(ctx.plugin, {
         originalLanguage: movie.originalLanguage ?? null,

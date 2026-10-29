@@ -347,12 +347,13 @@ describe('radarr:replace-damaged run', () => {
     const { ctx, result } = run([
       { match: { url: MOVIE_URL }, body: movies() },
       { match: { url: FILE_URL }, body: [] },
+      { match: { url: `${BASE}/api/v3/rootfolder` }, body: [{ path: '/data/movies/' }] },
     ]);
     expect(await result).toEqual({
       ok: false,
-      message: 'Radarr does not know this file; nothing was changed',
+      message: `Radarr does not know ${FILE}; nothing was changed`,
     });
-    expect(ctx.calls).toHaveLength(2);
+    expect(ctx.calls).toHaveLength(3);
   });
 
   it('outcome replaced → refused without any call', async () => {
