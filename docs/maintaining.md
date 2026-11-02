@@ -75,7 +75,7 @@ reason.
 
 ## Development
 
-Requires Node 24 and pnpm 12.6.0 (`corepack enable` picks it up from `packageManager`).
+Requires Node 24 and the pnpm version in `packageManager` (`corepack enable` picks it up).
 
 ```bash
 pnpm install
