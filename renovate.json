@@ -13,6 +13,11 @@
   "prBodyTemplate": "{{{header}}}{{{table}}}{{{warnings}}}{{{notes}}}{{{changelogs}}}{{{controls}}}",
   "packageRules": [
     {
+      "description": "House-style titles: config:recommended sets chore/fix per package, so override it here; later rules set CI and FFmpeg.",
+      "matchPackageNames": ["*"],
+      "semanticCommitType": "Dependencies"
+    },
+    {
       "description": "SHA-pinned actions in one PR; Renovate rewrites the SHA and the version comment.",
       "matchManagers": ["github-actions"],
       "groupName": "GitHub Actions",
