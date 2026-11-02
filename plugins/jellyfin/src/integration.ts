@@ -12,7 +12,7 @@ import {
 import { z } from 'zod';
 import { jellyfinBase, jellyfinGet, LEGACY_HEADER_WARNING, usesLegacyHeader } from './auth.ts';
 
-/** Jan's server: Jellyfin sees /shows and /movies, Transcoda sees /data/shows and /data/movies. */
+/** A common Docker setup: Jellyfin sees /shows and /movies, Transcoda sees /data/shows and /data/movies. */
 export const DEFAULT_MAPPINGS = [
   { local: '/data/shows', remote: '/shows' },
   { local: '/data/movies', remote: '/movies' },
@@ -89,7 +89,7 @@ export const integration = defineIntegration({
     pathMappings: pathMappings()
       .default(DEFAULT_MAPPINGS)
       .describe(
-        'Paths as Transcoda sees them → paths as Jellyfin sees them, for example /data/shows → /shows',
+        'Paths as Jellyfin sees them → paths as Transcoda sees them, for example /shows → /data/shows; leave empty when both see the same folders',
       ),
     allowInsecureTls: allowInsecureTls(),
   }),
