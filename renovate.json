@@ -4,6 +4,7 @@
   "enabledManagers": ["npm", "nodenv", "github-actions"],
   "minimumReleaseAge": "3 days",
   "minimumReleaseAgeBehaviour": "timestamp-optional",
+  "prCreation": "not-pending",
   "internalChecksFilter": "strict",
   "rangeStrategy": "pin",
   "labels": ["dependencies", "no user-facing change"],
