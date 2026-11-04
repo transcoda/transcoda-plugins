@@ -4,6 +4,7 @@
   "enabledManagers": ["npm", "nodenv", "github-actions"],
   "minimumReleaseAge": "3 days",
   "minimumReleaseAgeBehaviour": "timestamp-optional",
+  "prCreation": "not-pending",
   "internalChecksFilter": "strict",
   "rangeStrategy": "pin",
   "labels": ["dependencies", "no user-facing change"],
@@ -35,9 +36,10 @@
       "matchUpdateTypes": ["major"]
     },
     {
-      "description": "Our own SDK is published from transcoda/transcoda's CI with provenance: no release-age wait (as in pnpm's minimumReleaseAgeExclude).",
+      "description": "Our own SDK is published from transcoda/transcoda's CI with provenance: no release-age wait (as in pnpm's minimumReleaseAgeExclude), and its PR opens at once.",
       "matchPackageNames": ["@transcoda/sdk"],
-      "minimumReleaseAge": null
+      "minimumReleaseAge": null,
+      "prCreation": "immediate"
     },
     {
       "description": "Node.js: .node-version, engines and @types/node move together on the LTS line CI runs; majors by hand.",
