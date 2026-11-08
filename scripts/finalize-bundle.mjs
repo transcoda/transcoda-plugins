@@ -34,6 +34,7 @@ if (errors.length > 0) {
 // Import the bundle once, in a child that may read only the bundle and the script.
 const absolute = resolve(path);
 const script = fileURLToPath(new URL('./bundle-manifest.mjs', import.meta.url));
+const network = fileURLToPath(new URL('./plugin-network.mjs', import.meta.url));
 let announced;
 try {
   announced = JSON.parse(
@@ -43,6 +44,7 @@ try {
         '--permission',
         `--allow-fs-read=${absolute}`,
         `--allow-fs-read=${script}`,
+        `--allow-fs-read=${network}`,
         script,
         absolute,
       ],
@@ -81,6 +83,7 @@ const manifest = {
   integration: announced.integration,
   triggers: announced.triggers,
   hooks: announced.hooks,
+  network: announced.network,
 };
 writeFileSync(
   `dist/${basename(dir)}-${pkg.version}.manifest.json`,

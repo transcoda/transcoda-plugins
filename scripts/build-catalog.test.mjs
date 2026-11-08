@@ -89,6 +89,25 @@ test('builds the index: latest, order, signature url, coreTested, attestation', 
   assert.equal(other.attestation, 'https://github.com/transcoda/transcoda-plugins/attestations/1');
 });
 
+test("copies a manifest's network list into its version; a manifest without one adds none", () => {
+  const listed = release('demo', '1.1.0');
+  const network = [{ origin: 'https://discord.com' }, { setting: 'url', label: 'Demo URL' }];
+  listed.manifest.network = network;
+  const empty = release('other', '2.0.0');
+  empty.manifest.network = [];
+  const index = buildCatalog([listed, release('demo', '1.0.0'), empty], packages, now);
+  const [demo, other] = index.plugins;
+  assert.deepEqual(demo.versions[0].network, network);
+  assert.equal('network' in demo.versions[1], false);
+  assert.deepEqual(other.versions[0].network, []);
+});
+
+test('a manifest whose network is not a list fails the build', () => {
+  const bad = release('demo', '1.0.0');
+  bad.manifest.network = 'https://discord.com';
+  assert.throws(() => buildCatalog([bad], packages, now), /demo 1\.0\.0: manifest network/);
+});
+
 test('a plugin with only prereleases is omitted', () => {
   const index = buildCatalog(
     [release('demo', '1.0.0-rc.1', { prerelease: true }), release('other', '2.0.0')],
