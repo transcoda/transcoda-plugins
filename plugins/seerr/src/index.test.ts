@@ -7,7 +7,7 @@ describe('seerr plugin manifest', () => {
     const m = pluginManifest(plugin);
     expect(m).toMatchObject({
       name: 'seerr',
-      version: '1.0.0',
+      version: '1.0.1',
       sdk: '^1',
       nodes: ['seerr:request', 'seerr:is-requested'],
       integration: 'seerr',

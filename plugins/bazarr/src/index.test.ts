@@ -12,7 +12,7 @@ describe('bazarr plugin', () => {
   it('has the manifest the plan fixes', () => {
     expect(pluginManifest(plugin)).toMatchObject({
       name: 'bazarr',
-      version: '1.0.0',
+      version: '1.0.1',
       sdk: '^1',
       nodes: [
         'bazarr:has-subtitles',
