@@ -85,7 +85,7 @@ export const notify = defineNode({
   kind: 'finish',
   finishPhase: 'notify',
   title: 'Notify (ntfy)',
-  description: 'Sends a push through ntfy when the job is done.',
+  description: 'Sends a push through ntfy when a job is done.',
   icon: 'bell',
   inputs: [{ id: 'file', label: 'File', type: 'file' }],
   outputs: [],

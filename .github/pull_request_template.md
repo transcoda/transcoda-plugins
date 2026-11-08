@@ -24,9 +24,9 @@ or tick the box below. Put it in the plugin's folder, e.g. `.changes/sonarr/veri
 
 - [ ] Bug fix
 - [ ] New plugin or feature
-- [ ] Change to existing behaviour (describe what a user will notice)
+- [ ] Change to existing behavior (describe what a user will notice)
 - [ ] Docs only
-- [ ] Refactor, tests or tooling (no behaviour change)
+- [ ] Refactor, tests or tooling (no behavior change)
 
 ## How you tested it
 
@@ -45,8 +45,8 @@ For anything that talks to an external service, say which one and whether you tr
 - [ ] The plugin has its own tests, using recorded fixtures and no network access
 - [ ] The bundle stays self-contained: no install scripts, no runtime downloads
 - [ ] Secrets (API keys, tokens) are only read through the integration settings and are never logged
-- [ ] User-facing behaviour or settings changed -> the plugin's README is updated
-- [ ] UI changes work with keyboard and screen reader, and nothing relies on hover or colour alone
+- [ ] User-facing behavior or settings changed -> the plugin's README is updated
+- [ ] UI changes work with keyboard and screen reader, and nothing relies on hover or color alone
 - [ ] No secrets, tokens or personal data in code, tests, fixtures, logs or screenshots
 
 By submitting this pull request, I confirm that my contribution is my own work and may be distributed under the project's license ([GPL-3.0](../LICENSE)).

@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "version": "1.0.0",
-  "description": "ntfy plugin: sends a push through ntfy when a file is done, and optionally when a job fails.",
+  "description": "ntfy plugin: sends a push through ntfy when a job is done, and optionally when a job fails.",
   "license": "GPL-3.0-only",
   "transcoda": {
     "sdk": "^1",

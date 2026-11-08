@@ -16,7 +16,7 @@ Jellyfin a file changed, get a push when a job is done.
 | **Bazarr** | Checks which subtitles a file has, fetches missing ones before a rewrite, rescans after. | URL and API key |
 | **Seerr** | Tells you whether a title was requested, by whom and when (Jellyseerr, Overseerr). | URL and API key |
 | **TMDB** | Looks a title up on TMDB to find its original language. | TMDB API key |
-| **ntfy** | Sends a push when a file is done, and optionally when a job fails. | Server URL and topic |
+| **ntfy** | Sends a push when a job is done, and optionally when a job fails. | Server URL and topic |
 | **Discord** | Posts the same message to a channel. | Webhook URL |
 
 ## Installing

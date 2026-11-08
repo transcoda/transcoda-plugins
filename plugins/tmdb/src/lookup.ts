@@ -80,7 +80,7 @@ function languageOf(ctx: PluginContext, record: Json, how: string): string {
     throw new Unknown(`TMDB has no original language for this title (${how})`);
   }
   const language = ctx.lang.normalise(TMDB_LANGUAGE_ALIASES[raw] ?? raw);
-  if (language === 'unknown') throw new Unknown(`unrecognised TMDB language code "${raw}"`);
+  if (language === 'unknown') throw new Unknown(`unrecognized TMDB language code "${raw}"`);
   return language;
 }
 
