@@ -67,6 +67,8 @@ describe('plugin', () => {
       integration: null,
       triggers: [],
       hooks: [],
+      // SDK 1.3.0: no integration, so no requests through Transcoda's HTTP client.
+      network: [],
     });
   });
 });
