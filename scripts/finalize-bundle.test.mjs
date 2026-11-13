@@ -64,6 +64,42 @@ test('nodeVersions carries each node version and its migrations (from, to, risk 
   ]);
 });
 
+test('network lists the integration origins: fixed ones, and url settings by their label', () => {
+  const dir = plugin({
+    ...good,
+    integration: {
+      id: 'demo',
+      settings: {
+        shape: {
+          url: { description: 'Demo URL, for example http://demo:8080' },
+          other: {},
+        },
+      },
+      allowedOrigins: [
+        'https://api.example.com',
+        '$settings.url',
+        '$settings.other',
+        '$settings.url',
+      ],
+    },
+  });
+  const r = run(dir);
+  assert.equal(r.status, 0, r.stderr);
+  const manifest = JSON.parse(readFileSync(join(dir, 'dist', 'demo-1.0.0.manifest.json'), 'utf8'));
+  assert.deepEqual(manifest.network, [
+    { origin: 'https://api.example.com' },
+    { setting: 'url', label: 'Demo URL' },
+    { setting: 'other', label: 'other' },
+  ]);
+});
+
+test('a plugin without an integration reaches nothing', () => {
+  const dir = plugin(good);
+  assert.equal(run(dir).status, 0);
+  const manifest = JSON.parse(readFileSync(join(dir, 'dist', 'demo-1.0.0.manifest.json'), 'utf8'));
+  assert.deepEqual(manifest.network, []);
+});
+
 for (const [what, announce, pattern] of [
   ['name', { ...good, name: 'other' }, /manifest name 'other'/],
   ['version', { ...good, version: '1.0.1' }, /manifest version '1.0.1'/],

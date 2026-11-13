@@ -97,7 +97,12 @@ pnpm bundle
 - `node scripts/host-check.mjs` (after `pnpm bundle`): builds core's server at `../transcoda` and runs
   every bundle through `--check-plugin`; fails when a bundle does not start or its `sdk` range is not
   satisfied by core's SDK. `pnpm bundle` also writes `<name>-<version>.manifest.json` and fails when
-  the bundle's announced name, version or sdk differ from the package.
+  the bundle's announced name, version or sdk differ from the package. The manifest's `network`
+  lists where the plugin may send requests, derived from the integration's `allowedOrigins` by
+  `scripts/plugin-network.mjs` exactly as the SDK (1.3.0+) does; the catalog copies it into each
+  version and Transcoda shows it in the install dialog. Core refuses a bundle whose own list
+  differs from its manifest, so keep the two derivations identical
+  (`test/plugin-network.test.ts`).
 - `pnpm format`: apply Biome formatting and import sorting.
 - One plugin only: `pnpm --filter ./plugins/example bundle`.
 

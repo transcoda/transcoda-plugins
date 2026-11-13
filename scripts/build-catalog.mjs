@@ -42,6 +42,10 @@ export function buildCatalog(releases, packages, now) {
     if (checksum !== release.manifest.sha256) {
       throw new Error(`${label}: sha256 mismatch between the manifest and the .sha256 asset`);
     }
+    const { network } = release.manifest;
+    if (network !== undefined && !Array.isArray(network)) {
+      throw new Error(`${label}: manifest network must be a list`);
+    }
     const { coreTested, attestation } = parseBody(release.body);
     const entry = {
       version,
@@ -54,6 +58,9 @@ export function buildCatalog(releases, packages, now) {
       size: release.manifest.size,
       attestation,
       releasedAt: new Date(release.publishedAt).toISOString(),
+      // Where the build may send requests (SDK 1.3.0 manifests); core checks it against the
+      // manifest at install. Manifests built before that have none, and neither does the entry.
+      ...(network !== undefined ? { network } : {}),
     };
     const prerelease = release.prerelease || semver.prerelease(version) !== null;
     const list = byPlugin.get(name) ?? [];

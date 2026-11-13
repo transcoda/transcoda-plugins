@@ -3,6 +3,7 @@
 // finalize-bundle.mjs in a sandboxed child so building a plugin never runs it unrestricted.
 // The manifest is derived here exactly as the SDK's `pluginManifest` does (names only, no code).
 import { pathToFileURL } from 'node:url';
+import { pluginNetwork } from './plugin-network.mjs';
 
 // Keep in step with core's HOOK_EVENT_NAMES (packages/shared/src/plugins/types.ts).
 const HOOKS = ['onJobDone', 'onJobFailed', 'afterReplace'];
@@ -31,5 +32,6 @@ console.log(
     integration: plugin.integration?.id ?? null,
     triggers: (plugin.triggers ?? []).map((t) => t.id),
     hooks: HOOKS.filter((h) => typeof plugin.hooks?.[h] === 'function'),
+    network: pluginNetwork(plugin.integration),
   }),
 );

@@ -2,7 +2,7 @@
   "name": "@transcoda/plugin-sonarr",
   "private": true,
   "type": "module",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Sonarr plugin: reads a series' original language, rescans the series after a file is replaced and replaces a damaged file.",
   "license": "GPL-3.0-only",
   "transcoda": {
@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "@transcoda/plugin-arr-common": "workspace:*",
-    "@transcoda/sdk": "1.2.0",
+    "@transcoda/sdk": "1.3.0",
     "zod": "4.6.7"
   }
 }
