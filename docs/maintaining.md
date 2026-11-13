@@ -115,7 +115,9 @@ Every plugin is versioned independently with semver in its own `package.json`. T
 
 1. Bump `version` in `plugins/<name>/package.json` and merge to `main`.
 2. Tag the merge commit `<name>-v<version>` (e.g. `example-v0.1.0`, `sonarr-v1.2.0`) and push
-   the tag.
+   the tag. Push at most three tags at a time: GitHub starts no workflow for a push of more. If a
+   tag got no release run (release tags can't be deleted and pushed again), start it by hand from
+   `main`: `gh workflow run release.yml --ref main -f tag=<name>-v<version>`.
 
 The release workflow checks that the tag matches the manifest version, runs `pnpm check`, builds
 the bundle, verifies the checksum, signs the bundle, attests its build provenance
