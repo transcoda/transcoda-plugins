@@ -15,7 +15,8 @@ on:
         type: string
 
 concurrency:
-  group: release-${{ inputs.tag || github.ref }}
+  # The tag name, so a push run and a run by hand for the same tag queue behind each other.
+  group: release-${{ inputs.tag || github.ref_name }}
 
 permissions:
   contents: read
@@ -96,6 +97,7 @@ jobs:
           PLUGIN: ${{ steps.tag.outputs.plugin }}
           VERSION: ${{ steps.tag.outputs.version }}
           ATTESTATION_URL: ${{ steps.attest.outputs.attestation-url }}
+          BY_HAND: ${{ inputs.tag != '' && github.sha || '' }}
         run: |
           dist="plugins/$PLUGIN/dist"
           prerelease=()
@@ -106,6 +108,10 @@ jobs:
             echo "Built against core \`$CORE_REF\`."
             echo
             echo "Attestation: $ATTESTATION_URL"
+            if [[ -n "$BY_HAND" ]]; then
+              echo
+              echo "Released by a run started by hand from \`main\` (\`${BY_HAND:0:7}\`), so the attestation names \`main\` as its source; the bundle is built from the tag \`$TAG\`."
+            fi
             notes=$(node scripts/release-notes.mjs "$PLUGIN")
             if [[ -n "$notes" ]]; then echo; echo "$notes"; fi
           } > "$RUNNER_TEMP/release-notes.md"
