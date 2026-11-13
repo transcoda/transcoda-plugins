@@ -1,1 +1,1 @@
-{"schema":1,"alg":"ed25519","keyId":"2026-10","signature":"Z8L86BapM2q0NMqTzN4buBD0ZozpJHdW6/juFhfPt/lZRmvsFAuuW6XK8oTKxhCCQAK6e4getaBZsNh6PfTtAA=="}
+{"schema":1,"alg":"ed25519","keyId":"2026-10","signature":"vfYP22xpsfiD8WTz32WSkpXKY/P5ysp5N1GC9VWAiH+xXriF/rwBUyQ23HJkvXmSuyVcXv5xa7wlTUGw+8/HBg=="}
