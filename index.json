@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generated": "2026-11-13T16:36:22.810Z",
+  "generated": "2026-11-16T14:56:13.412Z",
   "plugins": [
     {
       "name": "bazarr",
@@ -130,9 +130,29 @@
     {
       "name": "ntfy",
       "title": "ntfy",
-      "description": "ntfy plugin: sends a push through ntfy when a file is done, and optionally when a job fails.",
-      "latest": "1.0.1",
+      "description": "ntfy plugin: sends a push through ntfy when a job is done, and optionally when a job fails.",
+      "latest": "1.0.2",
       "versions": [
+        {
+          "version": "1.0.2",
+          "sdk": "^1",
+          "coreTested": [
+            "main"
+          ],
+          "url": "https://github.com/transcoda/transcoda-plugins/releases/download/ntfy-v1.0.2/ntfy-1.0.2.js",
+          "manifestUrl": "https://github.com/transcoda/transcoda-plugins/releases/download/ntfy-v1.0.2/ntfy-1.0.2.manifest.json",
+          "signature": "https://github.com/transcoda/transcoda-plugins/releases/download/ntfy-v1.0.2/ntfy-1.0.2.js.sig",
+          "sha256": "8a43213d1afd23106512683e9580fce8f2bdc975795b5e405cee7ba2b870b6f8",
+          "size": 237358,
+          "attestation": "https://github.com/transcoda/transcoda-plugins/attestations/68147194",
+          "releasedAt": "2026-11-16T14:05:01.000Z",
+          "network": [
+            {
+              "setting": "url",
+              "label": "ntfy server"
+            }
+          ]
+        },
         {
           "version": "1.0.1",
           "sdk": "^1",
