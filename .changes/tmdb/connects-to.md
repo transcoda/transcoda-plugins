@@ -1,4 +1,0 @@
----
-type: improved
----
-Transcoda now shows where this plugin connects before you install or update it: api.themoviedb.org.
