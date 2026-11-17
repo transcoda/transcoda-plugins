@@ -30,7 +30,7 @@ export const notify = defineNode({
   kind: 'finish',
   finishPhase: 'notify',
   title: 'Notify (Discord)',
-  description: 'Posts an embed to a Discord channel through a webhook when the job is done.',
+  description: 'Posts an embed to a Discord channel through a webhook when a job is done.',
   icon: 'bell',
   inputs: [{ id: 'file', label: 'File', type: 'file' }],
   outputs: [],
