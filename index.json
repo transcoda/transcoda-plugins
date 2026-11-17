@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generated": "2026-11-16T14:56:13.412Z",
+  "generated": "2026-11-17T11:57:35.271Z",
   "plugins": [
     {
       "name": "bazarr",
@@ -48,8 +48,27 @@
       "name": "discord",
       "title": "Discord",
       "description": "Discord plugin: posts a message to a channel through a webhook when a job is done, and optionally when a job fails.",
-      "latest": "1.0.1",
+      "latest": "1.0.2",
       "versions": [
+        {
+          "version": "1.0.2",
+          "sdk": "^1",
+          "coreTested": [
+            "main"
+          ],
+          "url": "https://github.com/transcoda/transcoda-plugins/releases/download/discord-v1.0.2/discord-1.0.2.js",
+          "manifestUrl": "https://github.com/transcoda/transcoda-plugins/releases/download/discord-v1.0.2/discord-1.0.2.manifest.json",
+          "signature": "https://github.com/transcoda/transcoda-plugins/releases/download/discord-v1.0.2/discord-1.0.2.js.sig",
+          "sha256": "5bea079ed6326089423036b405f788cc7654c1402157923cf66b7b81a14e5bb9",
+          "size": 236705,
+          "attestation": "https://github.com/transcoda/transcoda-plugins/attestations/68598996",
+          "releasedAt": "2026-11-17T11:54:51.000Z",
+          "network": [
+            {
+              "origin": "https://discord.com"
+            }
+          ]
+        },
         {
           "version": "1.0.1",
           "sdk": "^1",
@@ -375,8 +394,27 @@
       "name": "tmdb",
       "title": "TMDB",
       "description": "TMDB plugin: looks a title up on TMDB to find its original language.",
-      "latest": "1.0.2",
+      "latest": "1.0.3",
       "versions": [
+        {
+          "version": "1.0.3",
+          "sdk": "^1",
+          "coreTested": [
+            "main"
+          ],
+          "url": "https://github.com/transcoda/transcoda-plugins/releases/download/tmdb-v1.0.3/tmdb-1.0.3.js",
+          "manifestUrl": "https://github.com/transcoda/transcoda-plugins/releases/download/tmdb-v1.0.3/tmdb-1.0.3.manifest.json",
+          "signature": "https://github.com/transcoda/transcoda-plugins/releases/download/tmdb-v1.0.3/tmdb-1.0.3.js.sig",
+          "sha256": "442ac2d7112de9679f5da24aa6984bab81b28772a1f2a66b1d2455638d99af55",
+          "size": 244215,
+          "attestation": "https://github.com/transcoda/transcoda-plugins/attestations/68599053",
+          "releasedAt": "2026-11-17T11:54:59.000Z",
+          "network": [
+            {
+              "origin": "https://api.themoviedb.org"
+            }
+          ]
+        },
         {
           "version": "1.0.2",
           "sdk": "^1",
