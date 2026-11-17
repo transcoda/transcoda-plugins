@@ -28,7 +28,7 @@ describe('fold', () => {
   it('folds case, punctuation and diacritics', () => {
     expect(fold('S.H.I.E.L.D.')).toBe('s h i e l d');
     expect(fold('Amélie')).toBe(fold('amelie'));
-    expect(fold('Tigger & Pooh')).toBe(fold('Tigger and Pooh'));
+    expect(fold('Otter & Finch')).toBe(fold('Otter and Finch'));
   });
 });
 
