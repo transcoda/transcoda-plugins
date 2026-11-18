@@ -14,7 +14,7 @@ export function pluginBundleConfig(configUrl: string): UserConfig {
     entry: { [`${basename(dir)}-${pkg.version}`]: 'src/index.ts' },
     format: 'esm',
     platform: 'node',
-    target: 'node24',
+    target: 'node24', // Bundles also run in hosts on Node 24 (Transcoda 0.5 and older).
     outDir: 'dist',
     clean: true,
     dts: false,
