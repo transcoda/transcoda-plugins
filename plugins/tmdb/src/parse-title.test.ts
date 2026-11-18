@@ -5,9 +5,9 @@ type Row = [file: string, folder: string, title: string, year: number | null, ki
 const rows: Row[] = [
   ['Heat.1995.1080p.BluRay.x264-GROUP.mkv', '/data/movies/Heat (1995)', 'Heat', 1995, 'movie'],
   [
-    'Tigger & Pooh - S01E03 - Title.mkv',
-    '/data/shows/Tigger & Pooh/Season 01',
-    'Tigger & Pooh',
+    'Otter & Finch - S01E03 - Title.mkv',
+    '/data/shows/Otter & Finch/Season 01',
+    'Otter & Finch',
     null,
     'tv',
   ],
