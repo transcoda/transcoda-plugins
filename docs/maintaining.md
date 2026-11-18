@@ -18,7 +18,7 @@ test/
   fixtures/                recorded-style JSON responses (see its README)
 .changes/<plugin>/         release notes, one small file per user-facing change
 scripts/
-  plugin-bundle-config.ts  shared tsdown config (ESM, node24, every dependency inlined)
+  plugin-bundle-config.ts  shared tsdown config (ESM, node24 target so older hosts still load the bundles, every dependency inlined)
   finalize-bundle.mjs      checks the bundle is self-contained, writes the sha256 file and the
                            <name>-<version>.manifest.json the catalog is built from
   bundle-manifest.mjs      prints what a built bundle announces, including each node's version and
@@ -75,7 +75,7 @@ reason.
 
 ## Development
 
-Requires Node 24 and the pnpm version in `packageManager` (`corepack enable` picks it up).
+Requires Node 26 and the pnpm version in `packageManager` (`npm i -g corepack && corepack enable` picks it up; Node 26 no longer bundles corepack).
 
 ```bash
 pnpm install
