@@ -12,7 +12,7 @@ Jellyfin a file changed, get a push when a job is done.
 | --- | --- | --- |
 | **Sonarr** | Reads a series' original language; rescans the series after a file is replaced. | URL and API key |
 | **Radarr** | The same for movies. | URL and API key |
-| **Jellyfin** | Rescans a file or the whole library after a file is replaced. | URL and API key |
+| **Jellyfin** | Rescans a file or the whole library after a file is replaced, and has Jellyfin read the new file. | URL and API key |
 | **Bazarr** | Checks which subtitles a file has, fetches missing ones before a rewrite, rescans after. | URL and API key |
 | **Seerr** | Tells you whether a title was requested, by whom and when (Jellyseerr, Overseerr). | URL and API key |
 | **TMDB** | Looks a title up on TMDB to find its original language. | TMDB API key |
