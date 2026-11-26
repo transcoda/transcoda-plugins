@@ -15,6 +15,10 @@ const MAPPINGS = [
 ];
 const UPDATED = { match: { url: `${BASE}/Library/Media/Updated`, method: 'POST' } };
 const REFRESH = { match: { url: `${BASE}/Library/Refresh`, method: 'POST' } };
+const FOLDERS = { match: { url: `${BASE}/Library/VirtualFolders`, method: 'GET' } };
+/** Jellyfin has no library holding the file, so there is no item to read again. */
+const NO_LIBRARY = { ...FOLDERS, body: [] };
+const NO_ITEM = '; Jellyfin has no item for it yet';
 
 function runCtx(
   plugin: ReturnType<typeof fakePluginContext>,
@@ -58,13 +62,13 @@ describe('jellyfin:refresh', () => {
     const plugin = fakePluginContext({
       settings,
       mappings: MAPPINGS,
-      responses: [{ ...UPDATED, status: 204 }],
+      responses: [{ ...UPDATED, status: 204 }, NO_LIBRARY],
     });
     const p = '/data/shows/Example Show/S01E01.mkv';
     const res = await runFinishRun(refresh, runCtx(plugin, { originalPath: p, newPath: p }), {});
     expect(res).toEqual({
       ok: true,
-      message: 'asked Jellyfin to rescan /shows/Example Show/S01E01.mkv',
+      message: `asked Jellyfin to rescan /shows/Example Show/S01E01.mkv${NO_ITEM}`,
     });
     expect(plugin.calls[0]?.body).toEqual({
       Updates: [{ Path: '/shows/Example Show/S01E01.mkv', UpdateType: 'Modified' }],
@@ -85,13 +89,18 @@ describe('jellyfin:refresh', () => {
       }),
       {},
     );
-    expect(res.ok).toBe(true);
+    expect(res).toEqual({
+      ok: true,
+      message: 'asked Jellyfin to rescan /shows/Example Show/S01E01.mkv',
+    });
     expect(plugin.calls[0]?.body).toEqual({
       Updates: [
         { Path: '/shows/Example Show/S01E01.mkv', UpdateType: 'Modified' },
         { Path: '/shows/Example Show/S01E01.avi', UpdateType: 'Deleted' },
       ],
     });
+    // A new path is new to Jellyfin, which reads it in full: no item lookup.
+    expect(plugin.calls).toHaveLength(1);
   });
 
   it('answers non-retryable not-ok on a 500', async () => {
@@ -102,13 +111,16 @@ describe('jellyfin:refresh', () => {
   });
 
   it('scans every library with scope library', async () => {
-    const plugin = fakePluginContext({ settings, responses: [{ ...REFRESH, status: 204 }] });
+    const plugin = fakePluginContext({
+      settings,
+      responses: [{ ...REFRESH, status: 204 }, NO_LIBRARY],
+    });
     const p = '/data/shows/a.mkv';
     const res = await runFinishRun(refresh, runCtx(plugin, { originalPath: p, newPath: p }), {
       scope: 'library',
     });
-    expect(res).toEqual({ ok: true, message: 'asked Jellyfin to rescan every library' });
-    expect(plugin.calls).toHaveLength(1);
+    expect(res).toEqual({ ok: true, message: `asked Jellyfin to rescan every library${NO_ITEM}` });
+    expect(plugin.calls).toHaveLength(2);
     expect(plugin.calls[0]?.url).toBe(`${BASE}/Library/Refresh`);
   });
 
@@ -123,10 +135,7 @@ describe('jellyfin:refresh', () => {
     const plugin = fakePluginContext({
       settings,
       mappings: MAPPINGS,
-      responses: [
-        { ...UPDATED, status: 204 },
-        { ...UPDATED, status: 204 },
-      ],
+      responses: [{ ...UPDATED, status: 204 }, NO_LIBRARY, { ...UPDATED, status: 204 }, NO_LIBRARY],
     });
     const movie = '/data/movies/Example Movie (2020)/Example Movie.mkv';
     const first = await runFinishRun(
@@ -136,11 +145,11 @@ describe('jellyfin:refresh', () => {
     );
     expect(first).toEqual({
       ok: true,
-      message: 'asked Jellyfin to rescan /movies/Example Movie (2020)/Example Movie.mkv',
+      message: `asked Jellyfin to rescan /movies/Example Movie (2020)/Example Movie.mkv${NO_ITEM}`,
     });
     const sibling = '/data/showsx/x.mkv';
     await runFinishRun(refresh, runCtx(plugin, { originalPath: sibling, newPath: sibling }), {});
-    expect(plugin.calls[1]?.body).toEqual({
+    expect(plugin.calls[2]?.body).toEqual({
       Updates: [{ Path: '/data/showsx/x.mkv', UpdateType: 'Modified' }],
     });
   });
@@ -153,5 +162,186 @@ describe('jellyfin:refresh', () => {
     const p = '/data/shows/a.mkv';
     const res = await runFinishRun(refresh, runCtx(plugin, { originalPath: p, newPath: p }), {});
     expect(res).toEqual({ ok: false, retryable: false, message: 'Jellyfin unreachable: refused' });
+  });
+  describe('reading a file replaced in place', () => {
+    const FOLDER_LIST = {
+      ...FOLDERS,
+      body: [
+        { Name: 'Shows', ItemId: 'lib-shows', Locations: ['/shows'] },
+        { Name: 'Movies', ItemId: 'lib-movies', Locations: ['/movies'] },
+      ],
+    };
+    const children = (parentId: string, items: { Id: string; Path?: string }[]) => ({
+      match: {
+        url: new RegExp(`/Items\\?parentId=${parentId}&fields=Path(?!.*recursive)`),
+        method: 'GET',
+      },
+      body: { Items: items },
+    });
+    const subtree = (parentId: string, items: { Id: string; Path?: string }[]) => ({
+      match: {
+        url: new RegExp(`/Items\\?parentId=${parentId}&.*recursive=true&filters=IsNotFolder$`),
+        method: 'GET',
+      },
+      body: { Items: items },
+    });
+    const reread = (id: string, status = 204) => ({
+      match: { url: new RegExp(`/Items/${id}/Refresh\\?`), method: 'POST' },
+      status,
+    });
+    const movie = '/data/movies/Example Movie (2020)/Example Movie.mkv';
+
+    it('finds the movie and has Jellyfin read it again without replacing metadata', async () => {
+      const plugin = fakePluginContext({
+        settings,
+        mappings: MAPPINGS,
+        responses: [
+          { ...UPDATED, status: 204 },
+          FOLDER_LIST,
+          children('lib-movies', [
+            { Id: 'other', Path: '/movies/Other Movie (2019)/Other Movie.mkv' },
+            { Id: 'movie-1', Path: '/movies/Example Movie (2020)/Example Movie.mkv' },
+          ]),
+          reread('movie-1'),
+        ],
+      });
+      const res = await runFinishRun(
+        refresh,
+        runCtx(plugin, { originalPath: movie, newPath: movie }),
+        {},
+      );
+      expect(res).toEqual({
+        ok: true,
+        message:
+          'asked Jellyfin to rescan /movies/Example Movie (2020)/Example Movie.mkv and to read the new file',
+      });
+      const call = plugin.calls.at(-1);
+      expect(call?.method).toBe('POST');
+      const q = new URL(call?.url ?? '').searchParams;
+      expect(Object.fromEntries(q)).toEqual({
+        metadataRefreshMode: 'FullRefresh',
+        imageRefreshMode: 'Default',
+        replaceAllMetadata: 'false',
+        replaceAllImages: 'false',
+        regenerateTrickplay: 'false',
+      });
+    });
+
+    it('walks series and season folders down to the episode', async () => {
+      const p = '/data/shows/Example Show/Season 01/S01E02.mkv';
+      const plugin = fakePluginContext({
+        settings,
+        mappings: MAPPINGS,
+        responses: [
+          { ...UPDATED, status: 204 },
+          FOLDER_LIST,
+          children('lib-shows', [
+            { Id: 'show-x', Path: '/shows/Example Showx' },
+            { Id: 'show-1', Path: '/shows/Example Show' },
+          ]),
+          children('show-1', [{ Id: 'season-1', Path: '/shows/Example Show/Season 01' }]),
+          children('season-1', [
+            { Id: 'ep-1', Path: '/shows/Example Show/Season 01/S01E01.mkv' },
+            { Id: 'ep-2', Path: '/shows/Example Show/Season 01/S01E02.mkv' },
+          ]),
+          reread('ep-2'),
+        ],
+      });
+      const res = await runFinishRun(refresh, runCtx(plugin, { originalPath: p, newPath: p }), {});
+      expect(res.ok).toBe(true);
+      expect(plugin.calls.at(-1)?.url).toMatch(/\/Items\/ep-2\/Refresh\?/);
+    });
+
+    it('searches the subtree when a season has no folder of its own', async () => {
+      const p = '/data/shows/Example Show/S01E02.mkv';
+      const plugin = fakePluginContext({
+        settings,
+        mappings: MAPPINGS,
+        responses: [
+          { ...UPDATED, status: 204 },
+          FOLDER_LIST,
+          children('lib-shows', [{ Id: 'show-1', Path: '/shows/Example Show' }]),
+          children('show-1', [{ Id: 'season-1' }]),
+          subtree('show-1', [
+            { Id: 'ep-1', Path: '/shows/Example Show/S01E01.mkv' },
+            { Id: 'ep-2', Path: '/shows/Example Show/S01E02.mkv' },
+          ]),
+          reread('ep-2'),
+        ],
+      });
+      const res = await runFinishRun(refresh, runCtx(plugin, { originalPath: p, newPath: p }), {});
+      expect(res.ok).toBe(true);
+      expect(plugin.calls.at(-1)?.url).toMatch(/\/Items\/ep-2\/Refresh\?/);
+    });
+
+    it('also reads the file again with scope library', async () => {
+      const plugin = fakePluginContext({
+        settings,
+        mappings: MAPPINGS,
+        responses: [
+          { ...REFRESH, status: 204 },
+          FOLDER_LIST,
+          children('lib-movies', [
+            { Id: 'movie-1', Path: '/movies/Example Movie (2020)/Example Movie.mkv' },
+          ]),
+          reread('movie-1'),
+        ],
+      });
+      const res = await runFinishRun(
+        refresh,
+        runCtx(plugin, { originalPath: movie, newPath: movie }),
+        { scope: 'library' },
+      );
+      expect(res).toEqual({
+        ok: true,
+        message: 'asked Jellyfin to rescan every library and to read the new file',
+      });
+    });
+
+    it('is not ok when Jellyfin refuses to read the item again', async () => {
+      const plugin = fakePluginContext({
+        settings,
+        mappings: MAPPINGS,
+        responses: [
+          { ...UPDATED, status: 204 },
+          FOLDER_LIST,
+          children('lib-movies', [
+            { Id: 'movie-1', Path: '/movies/Example Movie (2020)/Example Movie.mkv' },
+          ]),
+          reread('movie-1', 500),
+        ],
+      });
+      const res = await runFinishRun(
+        refresh,
+        runCtx(plugin, { originalPath: movie, newPath: movie }),
+        {},
+      );
+      expect(res).toEqual({
+        ok: false,
+        message:
+          'asked Jellyfin to rescan /movies/Example Movie (2020)/Example Movie.mkv, but Jellyfin answered 500 to the request to read it again',
+      });
+    });
+
+    it('is not ok when the item lookup fails', async () => {
+      const plugin = fakePluginContext({
+        settings,
+        mappings: MAPPINGS,
+        responses: [
+          { ...UPDATED, status: 204 },
+          { ...FOLDERS, status: 403 },
+        ],
+      });
+      const res = await runFinishRun(
+        refresh,
+        runCtx(plugin, { originalPath: movie, newPath: movie }),
+        {},
+      );
+      expect(res).toEqual({
+        ok: false,
+        message:
+          'asked Jellyfin to rescan /movies/Example Movie (2020)/Example Movie.mkv, but could not find its item: Jellyfin answered 403 to /Library/VirtualFolders',
+      });
+    });
   });
 });
