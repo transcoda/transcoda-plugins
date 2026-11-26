@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isWithin } from './find-item.ts';
+import { isWithin, parentDir } from './find-item.ts';
 
 describe('isWithin', () => {
   it('matches the folder itself and paths inside it', () => {
@@ -16,5 +16,12 @@ describe('isWithin', () => {
   it('handles backslash paths from a Windows server', () => {
     expect(isWithin('D:\\Movies\\A\\a.mkv', 'D:\\Movies')).toBe(true);
     expect(isWithin('D:\\Moviesx\\a.mkv', 'D:\\Movies')).toBe(false);
+  });
+});
+
+describe('parentDir', () => {
+  it('drops the last path segment for / and \\ paths', () => {
+    expect(parentDir('/movies/A (2020)/a.mkv')).toBe('/movies/A (2020)');
+    expect(parentDir('D:\\Movies\\A\\a.mkv')).toBe('D:\\Movies\\A');
   });
 });

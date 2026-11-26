@@ -274,6 +274,46 @@ describe('jellyfin:refresh', () => {
       expect(plugin.calls.at(-1)?.url).toMatch(/\/Items\/ep-2\/Refresh\?/);
     });
 
+    it('finds an alternate version through the media sources of the item beside it', async () => {
+      const alt = '/data/movies/Example Movie (2020)/Example Movie - 1080p.mkv';
+      const primary = {
+        Id: 'movie-1',
+        Path: '/movies/Example Movie (2020)/Example Movie - 2160p.mkv',
+      };
+      const plugin = fakePluginContext({
+        settings,
+        mappings: MAPPINGS,
+        responses: [
+          { ...UPDATED, status: 204 },
+          FOLDER_LIST,
+          children('lib-movies', [primary]),
+          subtree('lib-movies', [primary]),
+          {
+            match: { url: /\/Items\?ids=movie-1&fields=MediaSources&/, method: 'GET' },
+            body: {
+              Items: [
+                {
+                  Id: 'movie-1',
+                  MediaSources: [
+                    { Id: 'movie-1', Path: primary.Path },
+                    { Id: 'alt-1', Path: '/movies/Example Movie (2020)/Example Movie - 1080p.mkv' },
+                  ],
+                },
+              ],
+            },
+          },
+          reread('alt-1'),
+        ],
+      });
+      const res = await runFinishRun(
+        refresh,
+        runCtx(plugin, { originalPath: alt, newPath: alt }),
+        {},
+      );
+      expect(res.ok).toBe(true);
+      expect(plugin.calls.at(-1)?.url).toMatch(/\/Items\/alt-1\/Refresh\?/);
+    });
+
     it('also reads the file again with scope library', async () => {
       const plugin = fakePluginContext({
         settings,

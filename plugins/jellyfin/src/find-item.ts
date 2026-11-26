@@ -79,11 +79,53 @@ async function items(ctx: PluginContext, parentId: string, recursive: boolean): 
   return out;
 }
 
+/** The folder part of a / or \\ separated path. */
+export function parentDir(path: string): string {
+  return path.slice(0, Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\')));
+}
+
+/**
+ * Jellyfin leaves alternate versions (a second cut or resolution in the same folder) out of item
+ * lists; they appear only as media sources of the version it lists, each with its own item id.
+ */
+async function alternateVersion(
+  ctx: PluginContext,
+  remotePath: string,
+  candidates: Entry[],
+): Promise<string | null> {
+  const dir = parentDir(remotePath);
+  const ids = [
+    ...new Set(
+      candidates.filter((c) => c.path !== null && parentDir(c.path) === dir).map((c) => c.id),
+    ),
+  ];
+  if (ids.length === 0) return null;
+  const q = new URLSearchParams({
+    ids: ids.join(','),
+    fields: 'MediaSources',
+    enableImages: 'false',
+    enableUserData: 'false',
+    enableTotalRecordCount: 'false',
+  });
+  for (const it of asArray(await getJson(ctx, `/Items?${q}`), 'Items')) {
+    if (typeof it !== 'object' || it === null) continue;
+    const sources = (it as Record<string, unknown>).MediaSources;
+    if (!Array.isArray(sources)) continue;
+    for (const src of sources) {
+      if (typeof src !== 'object' || src === null) continue;
+      const rec = src as Record<string, unknown>;
+      if (str(rec.Path) === remotePath) return str(rec.Id);
+    }
+  }
+  return null;
+}
+
 /**
  * The id of the Jellyfin item whose file is `remotePath`, or null when Jellyfin has none.
  * Jellyfin cannot look items up by path, so this walks down from the library whose folder holds
  * the file, following the children whose folder contains it. Where no child's folder does (a
- * season without its own folder, say), it searches the rest of that subtree in one request.
+ * season without its own folder, say), it searches the rest of that subtree in one request. A
+ * file no listed item has is looked for among the alternate versions of the items beside it.
  */
 export async function findItemByPath(
   ctx: PluginContext,
@@ -91,16 +133,20 @@ export async function findItemByPath(
 ): Promise<string | null> {
   for (const library of await libraries(ctx, remotePath)) {
     let parent = library;
+    let children: Entry[] = [];
     for (let depth = 0; depth < MAX_DEPTH; depth++) {
-      const children = await items(ctx, parent, false);
+      children = await items(ctx, parent, false);
       const exact = children.find((c) => c.path === remotePath);
       if (exact !== undefined) return exact.id;
       const next = children.find((c) => c.path !== null && isWithin(remotePath, c.path));
       if (next === undefined) break;
       parent = next.id;
     }
-    const found = (await items(ctx, parent, true)).find((c) => c.path === remotePath);
+    const subtree = await items(ctx, parent, true);
+    const found = subtree.find((c) => c.path === remotePath);
     if (found !== undefined) return found.id;
+    const alternate = await alternateVersion(ctx, remotePath, [...children, ...subtree]);
+    if (alternate !== null) return alternate;
   }
   return null;
 }
