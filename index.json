@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generated": "2026-11-17T11:58:49.830Z",
+  "generated": "2026-11-26T23:33:18.909Z",
   "plugins": [
     {
       "name": "bazarr",
@@ -108,8 +108,28 @@
       "name": "jellyfin",
       "title": "Jellyfin",
       "description": "Jellyfin plugin: asks Jellyfin to rescan a file or the whole library after Transcoda replaces a file.",
-      "latest": "1.0.1",
+      "latest": "1.0.2",
       "versions": [
+        {
+          "version": "1.0.2",
+          "sdk": "^1",
+          "coreTested": [
+            "main"
+          ],
+          "url": "https://github.com/transcoda/transcoda-plugins/releases/download/jellyfin-v1.0.2/jellyfin-1.0.2.js",
+          "manifestUrl": "https://github.com/transcoda/transcoda-plugins/releases/download/jellyfin-v1.0.2/jellyfin-1.0.2.manifest.json",
+          "signature": "https://github.com/transcoda/transcoda-plugins/releases/download/jellyfin-v1.0.2/jellyfin-1.0.2.js.sig",
+          "sha256": "21cf3ec5dd0c332f4518d2cc37362832ee2d3dbb6ebc84e740beaf4a05b74e56",
+          "size": 240576,
+          "attestation": "https://github.com/transcoda/transcoda-plugins/attestations/72875166",
+          "releasedAt": "2026-11-26T23:26:40.000Z",
+          "network": [
+            {
+              "setting": "url",
+              "label": "Jellyfin URL"
+            }
+          ]
+        },
         {
           "version": "1.0.1",
           "sdk": "^1",
