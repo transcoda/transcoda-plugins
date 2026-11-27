@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { test } from 'node:test';
+import { it } from 'node:test';
 import { hostCheck } from './host-check.mjs';
 
 const stamp = { name: 'demo', version: '1.0.0', sdk: '^1' };
@@ -25,21 +25,21 @@ const run = (root, result, coreSdk = null) =>
     coreSdk,
   );
 
-test('passes when core accepts the bundle and agrees with the stamped manifest', () => {
+it('passes when core accepts the bundle and agrees with the stamped manifest', () => {
   assert.deepEqual(run(repo(), ok), []);
 });
 
-test('fails when core says ok:false', () => {
+it('fails when core says ok:false', () => {
   const failures = run(repo(), { ok: false, error: 'bundle has no plugin default export' });
   assert.equal(failures.length, 1);
   assert.match(failures[0], /no plugin default export/);
 });
 
-test('fails when the sdk range is not compatible', () => {
+it('fails when the sdk range is not compatible', () => {
   assert.match(run(repo(), { ...ok, compatible: false })[0], /not satisfied/);
 });
 
-test('skips a bundle whose range starts above an older core, and says so', () => {
+it('skips a bundle whose range starts above an older core, and says so', () => {
   const printed = [];
   const failures = hostCheck(
     repo({ ...stamp, sdk: '^1.1' }),
@@ -52,15 +52,15 @@ test('skips a bundle whose range starts above an older core, and says so', () =>
   assert.match(printed.join('\n'), /skipped \(sdk \^1\.1 needs a newer core than sdk 1\.0\.0\)/);
 });
 
-test('still fails when the core is newer than the range allows', () => {
+it('still fails when the core is newer than the range allows', () => {
   assert.match(run(repo(), { ...ok, compatible: false }, '2.0.0')[0], /not satisfied/);
 });
 
-test('fails when core reports a different name, version or sdk than the stamp', () => {
+it('fails when core reports a different name, version or sdk than the stamp', () => {
   assert.match(run(repo(), { ...ok, version: '1.0.1' })[0], /version '1.0.1'.*'1.0.0'/);
 });
 
-test('fails when the stamped manifest is missing or no bundle exists', () => {
+it('fails when the stamped manifest is missing or no bundle exists', () => {
   assert.match(run(repo(null), ok)[0], /manifest\.json is missing/);
   const empty = mkdtempSync(join(tmpdir(), 'host-check-'));
   mkdirSync(join(empty, 'plugins'));

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { test } from 'node:test';
+import { it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 // The host and every bundle inline their own SDK copy, so `instanceof Fetch…` is always false in a real host.
@@ -16,7 +16,7 @@ function* sources(dir) {
   }
 }
 
-test('no plugin or package source checks `instanceof Fetch…`', () => {
+it('no plugin or package source checks `instanceof Fetch…`', () => {
   const offenders = [];
   for (const group of ['plugins', 'packages']) {
     for (const pkg of readdirSync(join(root, group))) {

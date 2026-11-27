@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { test } from 'node:test';
+import { it } from 'node:test';
 import { checkPlugins } from './check-plugins.mjs';
 
 function repoWith(name, pkg, files = {}) {
@@ -26,11 +26,11 @@ const valid = {
   devDependencies: { '@transcoda/sdk': '1.3.0' },
 };
 
-test('accepts a valid plugin', () => {
+it('accepts a valid plugin', () => {
   assert.deepEqual(checkPlugins(repoWith('sonarr', valid)), []);
 });
 
-test('rejects runtime dependencies, install scripts, a missing sdk range and a wrong name', () => {
+it('rejects runtime dependencies, install scripts, a missing sdk range and a wrong name', () => {
   const errors = checkPlugins(
     repoWith('sonarr', {
       ...valid,
@@ -48,7 +48,7 @@ test('rejects runtime dependencies, install scripts, a missing sdk range and a w
   assert.match(errors.join('\n'), /postinstall/);
 });
 
-test('rejects an sdk range that is not valid semver', () => {
+it('rejects an sdk range that is not valid semver', () => {
   const errors = checkPlugins(
     repoWith('sonarr', { ...valid, transcoda: { ...valid.transcoda, sdk: 'latest-ish' } }),
   );
@@ -56,7 +56,7 @@ test('rejects an sdk range that is not valid semver', () => {
   assert.match(errors[0], /transcoda\.sdk.*valid semver range/);
 });
 
-test('accepts a prerelease-friendly range', () => {
+it('accepts a prerelease-friendly range', () => {
   assert.deepEqual(
     checkPlugins(
       repoWith('sonarr', { ...valid, transcoda: { ...valid.transcoda, sdk: '>=1.0.0-rc.1 <2' } }),
@@ -65,7 +65,7 @@ test('accepts a prerelease-friendly range', () => {
   );
 });
 
-test('rejects a missing or blank title', () => {
+it('rejects a missing or blank title', () => {
   const errors = checkPlugins(
     repoWith('sonarr', { ...valid, transcoda: { sdk: '^1', title: '  ' } }),
   );
@@ -75,7 +75,7 @@ test('rejects a missing or blank title', () => {
 
 const pinned = valid;
 
-test('rejects an sdk pin that differs from the root, in a plugin or a package', () => {
+it('rejects an sdk pin that differs from the root, in a plugin or a package', () => {
   const errors = checkPlugins(
     repoWith(
       'sonarr',
@@ -97,12 +97,12 @@ test('rejects an sdk pin that differs from the root, in a plugin or a package', 
   assert.match(errors.join('\n'), /packages\/shared: pins @transcoda\/sdk 1\.1\.0/);
 });
 
-test('rejects a plugin without the sdk devDependency', () => {
+it('rejects a plugin without the sdk devDependency', () => {
   const errors = checkPlugins(repoWith('sonarr', { ...valid, devDependencies: {} }));
   assert.deepEqual(errors, ['plugins/sonarr: missing the @transcoda/sdk devDependency']);
 });
 
-test('rejects a range the pinned sdk does not satisfy', () => {
+it('rejects a range the pinned sdk does not satisfy', () => {
   const errors = checkPlugins(
     repoWith(
       'sonarr',
@@ -116,7 +116,7 @@ test('rejects a range the pinned sdk does not satisfy', () => {
   assert.match(errors[0], /'\^2' is not satisfied by the pinned @transcoda\/sdk 1\.3\.0/);
 });
 
-test('rejects a range below the minor of a feature the code uses, also in a workspace package', () => {
+it('rejects a range below the minor of a feature the code uses, also in a workspace package', () => {
   const uses = (feature) =>
     checkPlugins(
       repoWith(
@@ -139,7 +139,7 @@ test('rejects a range below the minor of a feature the code uses, also in a work
   assert.deepEqual(uses('// damagedOnly: true would need ^1.1\n'), []);
 });
 
-test('accepts a feature when the range starts at its minor', () => {
+it('accepts a feature when the range starts at its minor', () => {
   const root = repoWith(
     'sonarr',
     { ...pinned, transcoda: { ...valid.transcoda, sdk: '^1.1' } },
@@ -151,7 +151,7 @@ test('accepts a feature when the range starts at its minor', () => {
   assert.deepEqual(checkPlugins(root), []);
 });
 
-test('a plugin with a secret setting needs src/secret-hygiene.test.ts; one without does not', () => {
+it('a plugin with a secret setting needs src/secret-hygiene.test.ts; one without does not', () => {
   const integration =
     "import { secret } from '@transcoda/sdk';\nexport const s = { apiKey: secret() };\n";
   const without = repoWith('sonarr', valid, { 'plugins/sonarr/src/integration.ts': integration });
@@ -167,7 +167,7 @@ test('a plugin with a secret setting needs src/secret-hygiene.test.ts; one witho
   assert.deepEqual(checkPlugins(noSecret), []);
 });
 
-test('test helpers live in src/test-util.ts and nothing else imports test code', () => {
+it('test helpers live in src/test-util.ts and nothing else imports test code', () => {
   const errorsFor = (files) => checkPlugins(repoWith('sonarr', valid, files));
   assert.deepEqual(
     errorsFor({
@@ -190,7 +190,7 @@ test('test helpers live in src/test-util.ts and nothing else imports test code',
   }
 });
 
-test('the test-utils package may import vitest; other packages follow the helper rules', () => {
+it('the test-utils package may import vitest; other packages follow the helper rules', () => {
   const root = repoWith('sonarr', valid, {
     'packages/test-utils/package.json': JSON.stringify({ name: '@transcoda/plugin-test-utils' }),
     'packages/test-utils/src/index.ts': "import { expect } from 'vitest';\n",

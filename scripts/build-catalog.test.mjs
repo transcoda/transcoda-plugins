@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { test } from 'node:test';
+import { it } from 'node:test';
 import { buildCatalog } from './build-catalog.mjs';
 
 const BASE = 'https://github.com/transcoda/transcoda-plugins/releases/download';
@@ -46,7 +46,7 @@ const packages = new Map([
 ]);
 const now = new Date('2026-10-17T08:00:00Z');
 
-test('builds the index: latest, order, signature url, coreTested, attestation', () => {
+it('builds the index: latest, order, signature url, coreTested, attestation', () => {
   const index = buildCatalog(
     [
       release('demo', '1.1.0-beta.1', { prerelease: true }),
@@ -89,7 +89,7 @@ test('builds the index: latest, order, signature url, coreTested, attestation', 
   assert.equal(other.attestation, 'https://github.com/transcoda/transcoda-plugins/attestations/1');
 });
 
-test("copies a manifest's network list into its version; a manifest without one adds none", () => {
+it("copies a manifest's network list into its version; a manifest without one adds none", () => {
   const listed = release('demo', '1.1.0');
   const network = [{ origin: 'https://discord.com' }, { setting: 'url', label: 'Demo URL' }];
   listed.manifest.network = network;
@@ -102,13 +102,13 @@ test("copies a manifest's network list into its version; a manifest without one 
   assert.deepEqual(other.versions[0].network, []);
 });
 
-test('a manifest whose network is not a list fails the build', () => {
+it('a manifest whose network is not a list fails the build', () => {
   const bad = release('demo', '1.0.0');
   bad.manifest.network = 'https://discord.com';
   assert.throws(() => buildCatalog([bad], packages, now), /demo 1\.0\.0: manifest network/);
 });
 
-test('a plugin with only prereleases is omitted', () => {
+it('a plugin with only prereleases is omitted', () => {
   const index = buildCatalog(
     [release('demo', '1.0.0-rc.1', { prerelease: true }), release('other', '2.0.0')],
     packages,
@@ -120,27 +120,27 @@ test('a plugin with only prereleases is omitted', () => {
   );
 });
 
-test('a release without a signature asset fails the build', () => {
+it('a release without a signature asset fails the build', () => {
   assert.throws(
     () => buildCatalog([release('demo', '1.0.0', { sig: false })], packages, now),
     /demo 1\.0\.0: no signature asset/,
   );
 });
 
-test('a manifest sha256 that differs from the .sha256 asset fails the build', () => {
+it('a manifest sha256 that differs from the .sha256 asset fails the build', () => {
   const r = release('demo', '1.0.0');
   r.checksum = `${HEX('b')}  demo-1.0.0.js\n`;
   assert.throws(() => buildCatalog([r], packages, now), /demo 1\.0\.0: sha256 mismatch/);
 });
 
-test('a plugin without package metadata fails the build', () => {
+it('a plugin without package metadata fails the build', () => {
   assert.throws(
     () => buildCatalog([release('ghost', '1.0.0')], packages, now),
     /ghost: no plugins\/ghost\/package.json/,
   );
 });
 
-test('cli: --from reads a GitHub releases dump (slurped pages) and writes the index', () => {
+it('cli: --from reads a GitHub releases dump (slurped pages) and writes the index', () => {
   const dir = mkdtempSync(join(tmpdir(), 'build-catalog-'));
   try {
     const r = release('example', '1.0.0');

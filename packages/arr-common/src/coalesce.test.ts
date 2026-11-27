@@ -27,10 +27,10 @@ describe('coalesce', () => {
       runs++;
       return new Promise<number>(() => {});
     };
-    coalesce('k', 5000, never, () => 0);
-    coalesce('k', 5000, never, () => 4999);
-    coalesce('k', 5000, never, () => 5000);
-    coalesce('other', 5000, never, () => 5000);
+    void coalesce('k', 5000, never, () => 0);
+    void coalesce('k', 5000, never, () => 4999);
+    void coalesce('k', 5000, never, () => 5000);
+    void coalesce('other', 5000, never, () => 5000);
     expect(runs).toBe(3);
   });
 
@@ -47,7 +47,7 @@ describe('coalesce', () => {
 
   it('lets an old call settling leave a newer entry alone', async () => {
     let releaseOld: (v: string) => void = () => {};
-    coalesce(
+    void coalesce(
       'k',
       1000,
       () =>
@@ -61,11 +61,11 @@ describe('coalesce', () => {
       runs++;
       return new Promise<string>(() => {});
     };
-    coalesce('k', 1000, newer, () => 2000); // window passed: replaces the entry
+    void coalesce('k', 1000, newer, () => 2000); // window passed: replaces the entry
     releaseOld('old');
     await Promise.resolve();
     await Promise.resolve();
-    coalesce('k', 1000, newer, () => 2500); // must still join the newer pending call
+    void coalesce('k', 1000, newer, () => 2500); // must still join the newer pending call
     expect(runs).toBe(1);
   });
 

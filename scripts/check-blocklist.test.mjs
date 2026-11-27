@@ -3,7 +3,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { test } from 'node:test';
+import { it } from 'node:test';
 import { checkBlocklist } from './check-blocklist.mjs';
 
 const doc = (entries) => ({ schema: 1, generated: '2026-10-17T00:00:00.000Z', entries });
@@ -17,11 +17,11 @@ const entry = (over = {}) => ({
   ...over,
 });
 
-test('the shipped blocklist passes', () => {
+it('the shipped blocklist passes', () => {
   execFileSync(process.execPath, ['scripts/check-blocklist.mjs'], { encoding: 'utf8' });
 });
 
-test('accepts sha-only and name+range entries', () => {
+it('accepts sha-only and name+range entries', () => {
   assert.deepEqual(
     checkBlocklist(
       doc([
@@ -33,25 +33,25 @@ test('accepts sha-only and name+range entries', () => {
   );
 });
 
-test('an entry with neither sha256 nor name is one problem', () => {
+it('an entry with neither sha256 nor name is one problem', () => {
   const problems = checkBlocklist(doc([entry({ name: undefined, versions: undefined })]));
   assert.equal(problems.length, 1);
   assert.match(problems[0], /entries\[0\].*sha256 or name/);
 });
 
-test('versions without name', () => {
+it('versions without name', () => {
   const problems = checkBlocklist(doc([entry({ name: undefined, sha256: 'a'.repeat(64) })]));
   assert.equal(problems.length, 1);
   assert.match(problems[0], /versions.*name/);
 });
 
-test('duplicate id', () => {
+it('duplicate id', () => {
   const problems = checkBlocklist(doc([entry(), entry({ name: 'other' })]));
   assert.equal(problems.length, 1);
   assert.match(problems[0], /duplicate id 'bl-1'/);
 });
 
-test('bad range, bad hash, bad name, long reason', () => {
+it('bad range, bad hash, bad name, long reason', () => {
   const problems = checkBlocklist(
     doc([
       entry({ id: 'a', versions: 'not a range' }),
@@ -67,7 +67,7 @@ test('bad range, bad hash, bad name, long reason', () => {
   assert.match(problems.join('\n'), /reason/);
 });
 
-test('unknown keys, empty range, added after generated, blank reason', () => {
+it('unknown keys, empty range, added after generated, blank reason', () => {
   const problems = checkBlocklist({
     ...doc([
       entry({ id: 'a', extra: 1 }),
@@ -85,12 +85,12 @@ test('unknown keys, empty range, added after generated, blank reason', () => {
   assert.match(problems.join('\n'), /entries\[3\].*reason/);
 });
 
-test('bad envelope', () => {
+it('bad envelope', () => {
   assert.ok(checkBlocklist({ schema: 2, generated: 'yesterday', entries: 'no' }).length >= 2);
   assert.deepEqual(checkBlocklist(doc([])), []);
 });
 
-test('cli exits 1 with one line per problem', () => {
+it('cli exits 1 with one line per problem', () => {
   const dir = mkdtempSync(join(tmpdir(), 'check-blocklist-'));
   try {
     const file = join(dir, 'blocklist.json');

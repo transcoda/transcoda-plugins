@@ -32,14 +32,14 @@ describe('findMovieForPath', () => {
   });
 
   it('matches only whole folder names', async () => {
-    const [m] = fixture('movie') as Array<Record<string, unknown>>;
+    const [m] = fixture('movie') as Record<string, unknown>[];
     const sibling = { ...m, id: 12, path: '/data/movies/Example Movie (2019) Extended' };
     const ctx = ctxWith([{ match: { url: MOVIE_URL }, body: [sibling] as never }]);
     expect(await findMovieForPath(ctx, FILE)).toBeNull();
   });
 
   it('prefers the exact movie file over a folder match', async () => {
-    const [m] = fixture('movie') as Array<Record<string, unknown>>;
+    const [m] = fixture('movie') as Record<string, unknown>[];
     const other = {
       ...m,
       id: 12,

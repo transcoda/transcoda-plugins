@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { test } from 'node:test';
+import { it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 const script = fileURLToPath(new URL('./finalize-bundle.mjs', import.meta.url));
@@ -25,7 +25,7 @@ function plugin(announce, pkg = { version: '1.0.0', transcoda: { sdk: '^1' } }) 
 const run = (dir) => spawnSync(process.execPath, [script], { cwd: dir, encoding: 'utf8' });
 const good = { name: 'demo', version: '1.0.0', sdk: '^1' };
 
-test('writes the checksum and a manifest when the bundle agrees with package.json', () => {
+it('writes the checksum and a manifest when the bundle agrees with package.json', () => {
   const dir = plugin(good);
   const r = run(dir);
   assert.equal(r.status, 0, r.stderr);
@@ -35,7 +35,7 @@ test('writes the checksum and a manifest when the bundle agrees with package.jso
   assert.match(manifest.sha256, /^[0-9a-f]{64}$/);
 });
 
-test('nodeVersions carries each node version and its migrations (from, to, risk only)', () => {
+it('nodeVersions carries each node version and its migrations (from, to, risk only)', () => {
   const dir = plugin({
     ...good,
     nodes: [
@@ -64,7 +64,7 @@ test('nodeVersions carries each node version and its migrations (from, to, risk 
   ]);
 });
 
-test('network lists the integration origins: fixed ones, and url settings by their label', () => {
+it('network lists the integration origins: fixed ones, and url settings by their label', () => {
   const dir = plugin({
     ...good,
     integration: {
@@ -93,7 +93,7 @@ test('network lists the integration origins: fixed ones, and url settings by the
   ]);
 });
 
-test('a plugin without an integration reaches nothing', () => {
+it('a plugin without an integration reaches nothing', () => {
   const dir = plugin(good);
   assert.equal(run(dir).status, 0);
   const manifest = JSON.parse(readFileSync(join(dir, 'dist', 'demo-1.0.0.manifest.json'), 'utf8'));
@@ -105,7 +105,7 @@ for (const [what, announce, pattern] of [
   ['version', { ...good, version: '1.0.1' }, /manifest version '1.0.1'/],
   ['sdk', { ...good, sdk: '^2' }, /manifest sdk '\^2'/],
 ]) {
-  test(`exits 1 when the bundle's ${what} differs`, () => {
+  it(`exits 1 when the bundle's ${what} differs`, () => {
     const dir = plugin(announce);
     const r = run(dir);
     assert.equal(r.status, 1);

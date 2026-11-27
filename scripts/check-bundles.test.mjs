@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { test } from 'node:test';
+import { it } from 'node:test';
 import { checkBundles } from './check-bundles.mjs';
 
 function root(code) {
@@ -12,14 +12,14 @@ function root(code) {
   return dir;
 }
 
-test('a clean bundle passes', () => {
+it('a clean bundle passes', () => {
   assert.deepEqual(
     checkBundles(root("import { join } from 'node:path';\nexport default {};\n")),
     [],
   );
 });
 
-test('node:fs is one failure naming node:fs', () => {
+it('node:fs is one failure naming node:fs', () => {
   const errors = checkBundles(root("import { readFile } from 'node:fs';\nexport default {};\n"));
   assert.equal(errors.length, 1);
   assert.match(errors[0], /node:fs/);
@@ -44,13 +44,13 @@ for (const [what, code] of [
   ['globalThis.fetch', 'globalThis.fetch(url);'],
   ['bare fetch(', 'await fetch(url);'],
 ]) {
-  test(`${what} fails`, () => {
+  it(`${what} fails`, () => {
     const errors = checkBundles(root(code));
     assert.equal(errors.length, 1, errors.join('\n'));
   });
 }
 
-test('the SDK own context.fetch text and method calls named fetch are allowed', () => {
+it('the SDK own context.fetch text and method calls named fetch are allowed', () => {
   const code = [
     'const corePluginContext = () => ({ async fetch() {',
     "  throw new FetchRefused('core nodes have no integration');",
@@ -61,14 +61,14 @@ test('the SDK own context.fetch text and method calls named fetch are allowed', 
   assert.deepEqual(checkBundles(root(code)), []);
 });
 
-test('zod own empty new Function probe is allowed', () => {
+it('zod own empty new Function probe is allowed', () => {
   assert.deepEqual(checkBundles(root('try { new Function(""); } catch (_) {}')), []);
 });
 
-test('a method or property named Function is not a Function constructor call', () => {
+it('a method or property named Function is not a Function constructor call', () => {
   assert.deepEqual(checkBundles(root('const t = x.Function(1); const u = MyFunction(2);')), []);
 });
 
-test('a repo without plugins passes', () => {
+it('a repo without plugins passes', () => {
   assert.deepEqual(checkBundles(mkdtempSync(join(tmpdir(), 'bundles-'))), []);
 });

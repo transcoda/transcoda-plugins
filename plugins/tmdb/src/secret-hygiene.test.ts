@@ -16,7 +16,7 @@ const SENTINEL = 'SENTINEL-SECRET-9f3a';
 const assertClean = (ctx: ReturnType<typeof fakePluginContext>, outputs: unknown[]) =>
   assertSecretHygiene(ctx, SENTINEL, outputs, { auth: { bearer: SENTINEL } });
 
-const scenarios: Array<[string, ScriptedResponse[]]> = [
+const scenarios: [string, ScriptedResponse[]][] = [
   ['success', [{ match: { url: /\/3\/movie\/1\?/ }, body: { original_language: 'en' } }]],
   ['401', [{ match: { url: /\/3\/movie\/1\?/ }, status: 401, body: { status_message: 'bad' } }]],
   ['429', [{ match: { url: /\/3\/movie\/1\?/ }, status: 429 }]],
@@ -79,7 +79,7 @@ describe('tmdb secret hygiene', () => {
 describe('tmdb secret hygiene with a key-shaped credential', () => {
   // A 32-hex "key" containing the sentinel text would not be hex; use a hex key and look for it.
   const KEY = 'abcdef0123456789abcdef0123456789';
-  const bad: Array<[string, ScriptedResponse[]]> = [
+  const bad: [string, ScriptedResponse[]][] = [
     [
       '401',
       [{ match: { url: /\/3\// }, status: 401, body: { status_message: 'Invalid API key' } }],
