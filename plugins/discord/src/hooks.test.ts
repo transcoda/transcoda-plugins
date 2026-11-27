@@ -33,6 +33,15 @@ describe('onJobFailed', () => {
     expect(ctx.calls).toHaveLength(0);
   });
 
+  it('makes no call for a dry run', async () => {
+    const ctx = fakePluginContext({
+      settings: { webhookUrl: HOOK, notifyOnFailed: true },
+      responses: [post()],
+    });
+    await hooks.onJobFailed?.(ctx, { ...job, dryRun: true });
+    expect(ctx.calls).toHaveLength(0);
+  });
+
   it('posts the failed embed with the reason', async () => {
     const ctx = fakePluginContext({
       settings: { webhookUrl: HOOK, notifyOnFailed: true },
