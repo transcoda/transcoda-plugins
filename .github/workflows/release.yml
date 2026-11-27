@@ -36,6 +36,9 @@ jobs:
       # Build provenance attestation for the bundle (actions/attest-build-provenance).
       id-token: write
       attestations: write
+    outputs:
+      plugin: ${{ steps.tag.outputs.plugin }}
+      notes: ${{ steps.notes.outputs.files }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -58,6 +61,17 @@ jobs:
           fi
           echo "plugin=$plugin" >> "$GITHUB_OUTPUT"
           echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: List the release notes this release publishes
+        id: notes
+        env:
+          PLUGIN: ${{ steps.tag.outputs.plugin }}
+        run: |
+          # The same files scripts/release-notes.mjs reads: .changes/<plugin>/*.md and the flat
+          # .changes/<plugin>-*.md, as they are at the tag.
+          shopt -s nullglob
+          files=(".changes/$PLUGIN"/*.md ".changes/$PLUGIN"-*.md)
+          echo "files=${files[*]}" >> "$GITHUB_OUTPUT"
+          echo "notes: ${files[*]:-(none)}"
       - uses: ./.github/actions/setup
         with:
           core-ref: ${{ env.CORE_REF }}
@@ -103,7 +117,7 @@ jobs:
           prerelease=()
           [[ "$VERSION" == *-* ]] && prerelease=(--prerelease)
           # Body: the core version, the attestation line the catalog reads, then the release notes
-          # from .changes/<plugin>/ (consumed notes are removed by hand after the release).
+          # from .changes/<plugin>/ (the remove-notes job then opens a pull request deleting them).
           {
             echo "Built against core \`$CORE_REF\`."
             echo
@@ -118,3 +132,44 @@ jobs:
           gh release create "$TAG" "$dist/$PLUGIN-$VERSION.js" "$dist/$PLUGIN-$VERSION.js.sha256" \
             "$dist/$PLUGIN-$VERSION.js.sig" "$dist/$PLUGIN-$VERSION.manifest.json" \
             --title "$PLUGIN $VERSION" --notes-file "$RUNNER_TEMP/release-notes.md" --verify-tag "${prerelease[@]}"
+
+  # Opens a pull request that deletes the notes the release just published, so the next release of
+  # the plugin does not publish them again. Runs outside the plugin-signing environment, and never
+  # fails the run: the catalog workflow publishes only after a successful Release run.
+  remove-notes:
+    needs: release
+    if: ${{ needs.release.outputs.notes != '' }}
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+      - name: Open a pull request removing the published notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag || github.ref_name }}
+          PLUGIN: ${{ needs.release.outputs.plugin }}
+          NOTES: ${{ needs.release.outputs.notes }}
+        run: |
+          # Only the notes the tag held: a note merged to main after the tag belongs to the next release.
+          read -ra notes <<< "$NOTES"
+          gone=()
+          for f in "${notes[@]}"; do [[ -f "$f" ]] && gone+=("$f"); done
+          if [[ ${#gone[@]} -eq 0 ]]; then echo "the notes are already gone from main"; exit 0; fi
+          branch="release-notes/$TAG"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git switch -c "$branch"
+          git rm -q -- "${gone[@]}"
+          git commit -q -m "Release notes: remove the notes $TAG published"
+          git push -q origin "$branch"
+          body="The $TAG release published these notes; removing them keeps the next $PLUGIN release from publishing them again."
+          if ! gh pr create --base main --head "$branch" --label 'no user-facing change' \
+              --title "Release notes: remove the notes $TAG published" --body "$body"; then
+            echo "::warning::could not open the pull request (does the repository let GitHub Actions create pull requests?); open it from branch $branch"
+          fi

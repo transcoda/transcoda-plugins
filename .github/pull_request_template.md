@@ -3,7 +3,7 @@ Thanks for contributing a Transcoda plugin! A few notes before you start:
 
 - For anything bigger than a small fix, please open an issue first so we can agree on the approach.
 - Keep one change per pull request. Small, focused PRs get reviewed faster.
-- Never include secrets, API keys, tokens, real media, personal file paths or credentials in code, tests, logs or screenshots.
+- Never include secrets, API keys, tokens, real media, personal file paths or credentials in code, tests or logs.
 -->
 
 ## What this changes
@@ -35,10 +35,6 @@ What did you run, and what did you check by hand?
 For anything that talks to an external service, say which one and whether you tried it against a real instance by hand.
 -->
 
-## Screenshots
-
-<!-- For UI changes: before/after, light and dark theme, and a narrow (phone) width if layout changed. Delete if not relevant. -->
-
 ## Checklist
 
 - [ ] `pnpm check` passes locally (typecheck, lint, plugin checks, tests)
@@ -46,7 +42,6 @@ For anything that talks to an external service, say which one and whether you tr
 - [ ] The bundle stays self-contained: no install scripts, no runtime downloads
 - [ ] Secrets (API keys, tokens) are only read through the integration settings and are never logged
 - [ ] User-facing behavior or settings changed -> the plugin's README is updated
-- [ ] UI changes work with keyboard and screen reader, and nothing relies on hover or color alone
-- [ ] No secrets, tokens or personal data in code, tests, fixtures, logs or screenshots
+- [ ] No secrets, tokens or personal data in code, tests, fixtures or logs
 
 By submitting this pull request, I confirm that my contribution is my own work and may be distributed under the project's license ([GPL-3.0](../LICENSE)).
