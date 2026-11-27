@@ -43,6 +43,14 @@
       "prCreation": "immediate"
     },
     {
+      "description": "The shared checks from transcoda/.github: the action pins and @transcoda/dev-config (a github: dependency on the same tags) move together, in one PR per release. Our own releases, so no release-age wait.",
+      "matchPackageNames": ["transcoda/.github", "@transcoda/dev-config"],
+      "groupName": "transcoda/.github",
+      "semanticCommitType": "Tooling",
+      "minimumReleaseAge": null,
+      "prCreation": "immediate"
+    },
+    {
       "description": "pnpm (the packageManager field): its own pull request, on core's Sunday-evening schedule and with the same release-age wait, so both repositories move to the same pnpm version in the same week. CI runs pnpm from this field against both checkouts.",
       "matchDepTypes": ["packageManager"],
       "matchPackageNames": ["pnpm"],
