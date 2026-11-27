@@ -35,7 +35,8 @@ its reference is core's `docs/plugin-sdk.md` and `packages/sdk/README.md`.
 All of these pass locally, in this order:
 
 ```bash
-pnpm check                      # typecheck, lint, check-plugins, release-note lint, script tests, vitest
+pnpm check                      # typecheck, lint, check-plugins, release-note lint, script tests,
+                                # blocklist, file-size budget, vitest
 pnpm bundle                     # builds plugins/<name>/dist/<name>-<version>.js
 node scripts/check-bundles.mjs  # no fs, child_process, eval, global fetch ... in a bundle
 node scripts/host-check.mjs     # starts every bundle in core's sandboxed host
@@ -45,20 +46,32 @@ If `host-check` fails with `ERR_PNPM_BAD_PM_VERSION` (core and this repo pin dif
 versions and corepack will not switch), build core's server from inside core and skip the build:
 `(cd ../transcoda && pnpm --filter @transcoda/server build) && node scripts/host-check.mjs --no-build`.
 
+The shared rules come from [transcoda/.github](https://github.com/transcoda/.github), pinned at one
+tag: `@transcoda/dev-config` (devDependency) for the Biome config (`biome.json` extends it), the
+tsconfig base (every `tsconfig.json` extends it), the release-note format and its `transcoda-release-note`
+and `transcoda-file-size` commands; and its actions in the workflows. Change a shared rule there, not
+here; `biome.json` only adds this repo's files and exceptions. The lint is strict: no default
+exports outside `plugins/*/src/index.ts`, `it` rather than `test`, `T[]` rather than `Array<T>`, no
+floating promises (`void` one on purpose), no `any`, no non-null assertions, `.ts`/`.mjs` import
+extensions. No source file grows past 1200 lines; `.github/file-size-allowlist.json` lists the
+ones already over it, and their numbers may only go down.
+
 And the pull request:
 
 - **Release note or label.** A change a user can notice adds `.changes/<plugin>/<short-name>.md`
   (format in [.changes/README.md](.changes/README.md)); one file per plugin it changes. Anything
-  else (tests, tooling, CI, docs, refactors) gets the `no user-facing change` label. CI checks one
-  of the two.
+  else (tests, tooling, CI, docs, refactors) gets the `no user-facing change` label. The
+  `release-note` check (the shared action, per-folder layout) wants one of the two; Renovate's pull
+  requests need neither. A note has no commit hashes or pull request numbers.
 - **Title in house style: `Area: sentence`.** The area is the plugin's name (`Sonarr`, `Jellyfin`,
   `Radarr, Sonarr` for both) or one of `CI`, `Tooling`, `Tests`, `Docs`, `Release notes`,
   `Dependencies`. The `pr-title` check (from `transcoda/.github`) wants the area to start with a
   capital letter or a digit (so `Ntfy`, not `ntfy`), no `(scope)`, one space after the colon and no
   full stop at the end: `Jellyfin: after an in-place replace, have Jellyfin read the new file`.
   The squash commit takes this title.
-- **CI is green.** `ci-ok` passes only when every `check (core …)` job passed: core's `main` and
-  the released cores in the matrix (see docs/maintaining.md, "Core versions CI tests against").
+- **CI is green.** `ci-ok` passes only when every `check (core …)` job passed (core's `main` and
+  the released cores in the matrix, see docs/maintaining.md, "Core versions CI tests against") and
+  the `file-size` job did, which also stops a pull request from adding or raising an allowlist entry.
 - **No version bump** unless you are releasing (below).
 
 Never put real show or film titles, personal names, e-mail addresses, host names or IP addresses
@@ -111,3 +124,12 @@ documentation addresses (`192.0.2.x`, `example.invalid`) and made-up ids.
   (`migrations` on `defineNode`).
 - Raising a plugin's `transcoda.sdk` range is a minor release; dropping an SDK major is a major one.
 - Moving the SDK pin moves every `package.json` in one pull request.
+
+## When main or the nightly goes red
+
+- A push run of CI, Catalog or Scorecard failing on `main` opens an issue labelled `main-red`
+  (`.github/workflows/main-red.yml`); it is closed when that workflow passes on `main` again.
+- The nightly (`.github/workflows/nightly.yml`, 07:47 UTC) runs only when this repo's `main` or
+  core's `main` moved since its last run. It opens an issue labelled `nightly` per failing test, and
+  one "the run failed outside its tests" issue when another step fails (typecheck, lint, bundle,
+  host check); they close when the test or the run passes again.
