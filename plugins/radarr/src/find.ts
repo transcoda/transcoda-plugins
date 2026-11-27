@@ -1,4 +1,10 @@
-import { arrClient, type JsonValue, pickByPath, sameFile } from '@transcoda/plugin-arr-common';
+import {
+  arrClient,
+  cachedItems,
+  type JsonValue,
+  pickByPath,
+  sameFile,
+} from '@transcoda/plugin-arr-common';
 import type { PluginContext } from '@transcoda/sdk';
 
 export interface MovieRef {
@@ -22,9 +28,6 @@ interface Entry extends MovieRef {
   moviePath: string | null;
 }
 
-const MOVIES_KEY = 'movies';
-const MOVIES_TTL_MS = 600_000;
-
 const isObj = (v: JsonValue | undefined): v is { [k: string]: JsonValue } =>
   typeof v === 'object' && v !== null && !Array.isArray(v);
 
@@ -35,8 +38,10 @@ export function movieLabel(m: { title: string; year: number | null }): string {
 
 function toEntry(raw: JsonValue): Entry | null {
   if (!isObj(raw)) return null;
-  const { id, title, path } = raw;
-  if (typeof id !== 'number' || typeof title !== 'string' || typeof path !== 'string') return null;
+  const { id, path } = raw;
+  if (typeof id !== 'number' || typeof path !== 'string') return null;
+  // A record without a title is still found by path; the id stands in for the title.
+  const title = typeof raw.title === 'string' ? raw.title : String(id);
   const year = typeof raw.year === 'number' && raw.year > 0 ? raw.year : null;
   const file = raw.movieFile;
   const entry: Entry = {
@@ -53,19 +58,8 @@ function toEntry(raw: JsonValue): Entry | null {
   return entry;
 }
 
-async function loadMovies(ctx: PluginContext): Promise<Entry[]> {
-  let raw = await ctx.cache.get(MOVIES_KEY);
-  if (raw === undefined) {
-    raw = await arrClient(ctx, 'Radarr').get('/api/v3/movie');
-    // Store only what the lookups use: the movie list of a big library is large.
-    const slim = (Array.isArray(raw) ? raw : []).flatMap((r) => {
-      const e = toEntry(r);
-      return e === null ? [] : [e as unknown as JsonValue];
-    });
-    await ctx.cache.set(MOVIES_KEY, slim, MOVIES_TTL_MS);
-    raw = slim;
-  }
-  return (Array.isArray(raw) ? raw : []).map((r) => r as unknown as Entry);
+function loadMovies(ctx: PluginContext): Promise<Entry[]> {
+  return cachedItems(ctx, 'Radarr', { key: 'movies', path: '/api/v3/movie', slim: toEntry });
 }
 
 export function toMovieRef(e: MovieRef): MovieRef {

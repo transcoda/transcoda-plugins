@@ -1,4 +1,4 @@
-import { coalesceReset } from '@transcoda/plugin-arr-common';
+import { coalesceReset, type JsonValue } from '@transcoda/plugin-arr-common';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { findMovieForPath } from './find.ts';
 import { BASE, ctxWith, fixture, movies } from './test-util.ts';
@@ -83,6 +83,16 @@ describe('findMovieForPath', () => {
       '/movies/Example Movie (2019)/Example Movie (2019).mkv',
     );
     expect(found?.file?.path).toBe(FILE);
+  });
+
+  it('finds a movie without a title by path and names it by its id', async () => {
+    const { title: _gone, ...untitled } = (movies() as Record<string, JsonValue>[])[0] ?? {};
+    const ctx = ctxWith([
+      { match: { url: MOVIE_URL }, body: [untitled] },
+      { match: { url: FILE_URL }, body: fixture('moviefile') },
+    ]);
+    const found = await findMovieForPath(ctx, FILE);
+    expect(found?.movie.title).toBe('11');
   });
 
   it('caches the movie list between lookups', async () => {

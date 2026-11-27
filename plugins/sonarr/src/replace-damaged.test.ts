@@ -225,6 +225,44 @@ describe('sonarr:replace-damaged run', () => {
     expect(ctx.calls.some((c) => c.url.endsWith('/api/v3/command'))).toBe(false);
   });
 
+  it('delete fails with 500 before any change (no grab) → retryable', async () => {
+    const responses = happy();
+    responses[3] = get(HISTORY, []);
+    responses.splice(5, 2, del('/api/v3/episodefile/5', 500));
+    expect(await run(responses).result).toEqual({
+      ok: false,
+      retryable: true,
+      message:
+        'delete failed: Sonarr answered 500 for /api/v3/episodefile/5; done: found Show S01E03E04; release couldn’t be blocklisted (no grab in history)',
+    });
+  });
+
+  it('a search that is not accepted fails the last step', async () => {
+    const responses = happy();
+    responses[8] = post('/api/v3/command', {});
+    expect(await run(responses).result).toEqual({
+      ok: false,
+      message: `Sonarr: found Show S01E03E04; marked the grab of "${RELEASE}" failed (blocklisted); deleted ${ORIG}; starting the search failed: command EpisodeSearch was not accepted — search in Sonarr`,
+    });
+  });
+
+  it('a search that fails with 503 after the delete is not retryable', async () => {
+    const responses = happy();
+    responses[8] = { match: { url: `${BASE}/api/v3/command`, method: 'POST' }, status: 503 };
+    expect(await run(responses).result).toEqual({
+      ok: false,
+      message: `Sonarr: found Show S01E03E04; marked the grab of "${RELEASE}" failed (blocklisted); deleted ${ORIG}; starting the search failed: Sonarr answered 503 for /api/v3/command — search in Sonarr`,
+    });
+  });
+
+  it('an unreachable Sonarr at the start → nothing done', async () => {
+    expect(await run([]).result).toEqual({
+      ok: false,
+      retryable: true,
+      message: 'find failed: Sonarr unreachable: failed; done: nothing',
+    });
+  });
+
   it('a failed episode lookup stops before any change', async () => {
     const responses = happy();
     responses[2] = get('/api/v3/episode?seriesId=1&episodeFileId=5', null, 500);
