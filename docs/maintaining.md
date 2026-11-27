@@ -188,9 +188,13 @@ Every plugin is versioned independently with semver in its own `package.json`. T
 The release workflow checks that the tag matches the manifest version, runs `pnpm check`, builds
 the bundle, verifies the checksum, signs the bundle, attests its build provenance
 (`actions/attest-build-provenance`) and creates a GitHub release with
-`<name>-<version>.js`, `<name>-<version>.js.sha256`, `<name>-<version>.js.sig` and
-`<name>-<version>.manifest.json` attached; the catalog workflow then publishes the new version
-(see "Signing and the catalog"). The release body names the core version, carries an
+`<name>-<version>.js`, `<name>-<version>.js.sha256`, `<name>-<version>.js.sig`,
+`<name>-<version>.manifest.json` and `<name>-<version>.intoto.jsonl` attached; the catalog
+workflow then publishes the new version (see "Signing and the catalog"). The `.intoto.jsonl` is
+the attestation's Sigstore bundle (the signed SLSA build provenance of the `.js`); check a
+download with `gh attestation verify <name>-<version>.js --bundle <name>-<version>.intoto.jsonl
+--repo transcoda/transcoda-plugins --signer-workflow
+transcoda/transcoda-plugins/.github/workflows/release.yml`. The release body names the core version, carries an
 `Attestation: <url>` line the catalog reads, and lists the plugin's release notes (below).
 Versions with a pre-release suffix (`-beta.1`) are marked as pre-releases.
 
