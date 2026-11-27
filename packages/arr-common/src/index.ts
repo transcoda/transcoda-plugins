@@ -25,6 +25,7 @@ export type { JsonValue } from './json.ts';
 export { originalLanguageOf } from './language.ts';
 export { isUnder, pickByPath, sameFile } from './paths.ts';
 export { type ReplaceTarget, replaceDamagedFile } from './replace.ts';
+export { type RescanTarget, rescanAndVerify } from './rescan.ts';
 export { notKnownMessage, rootFolders } from './roots.ts';
 export { arrIntegrationTest, testStatus } from './status.ts';
 export { unmonitorWarning } from './unmonitor.ts';

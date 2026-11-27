@@ -114,6 +114,39 @@ describe('radarr:rescan run', () => {
     expect(res.message).toContain('may show as missing');
   });
 
+  it('still rescans via the new path when Radarr already dropped the old file', async () => {
+    const newPath = '/data/movies/Example Movie (2019)/Example Movie (2019).mp4';
+    const ctx = ctxWith([
+      { match: { url: MOVIE_URL }, body: movies() },
+      { match: { url: FILE_URL }, body: [] },
+      { match: { url: FILE_URL }, body: [] },
+      { match: { url: CMD_URL, method: 'POST' }, body: { id: 4242, status: 'queued' } },
+      { match: { url: POLL_URL }, body: completed },
+      { match: { url: FILE_URL }, body: listing(newPath) },
+    ]);
+    const res = await runFinishRun(rescan, runContext(ctx, { newPath }), {});
+    expect(res).toEqual({ ok: true, message: `Radarr lists ${newPath} (Example Movie (2019))` });
+    expect(ctx.calls.filter((c) => c.method === 'POST')).toHaveLength(1);
+  });
+
+  it('says nothing was rescanned when neither the old nor the new path has a movie', async () => {
+    const ctx = ctxWith([
+      { match: { url: MOVIE_URL }, body: movies() },
+      { match: { url: ROOT_URL }, body: [{ path: '/data/movies' }] },
+    ]);
+    const res = await runFinishRun(
+      rescan,
+      runContext(ctx, { originalPath: '/data/other/a.mkv', newPath: '/data/other/a.mp4' }),
+      {},
+    );
+    expect(res).toEqual({
+      ok: false,
+      message:
+        'Radarr does not know /data/other/a.mkv, which is outside its root folders (/data/movies): add a path mapping in the Radarr settings; nothing was rescanned',
+    });
+    expect(ctx.calls.some((c) => c.method === 'POST')).toBe(false);
+  });
+
   it('applies the path mapping to the messages and the comparison', async () => {
     const ctx = ctxWith(happy(), { mappings: [{ remote: '/data/movies', local: '/movies' }] });
     const local = '/movies/Example Movie (2019)/Example Movie (2019).mkv';
@@ -145,7 +178,11 @@ describe('radarr:rescan run', () => {
       { match: { url: ROOT_URL }, body: [{ path: '/data/movies/' }, { path: '/data/4k' }] },
     ]);
     const local = '/media/movies/Example Movie (2019)/Example Movie (2019).mkv';
-    const res = await runFinishRun(rescan, runContext(ctx, { originalPath: local }), {});
+    const res = await runFinishRun(
+      rescan,
+      runContext(ctx, { originalPath: local, newPath: local }),
+      {},
+    );
     expect(res.message).toBe(
       `Radarr does not know ${local}, which is outside its root folders (/data/movies/, /data/4k): add a path mapping in the Radarr settings; nothing was rescanned`,
     );
@@ -154,7 +191,11 @@ describe('radarr:rescan run', () => {
 
   it('without readable root folders, the message still names the path', async () => {
     const ctx = ctxWith([{ match: { url: MOVIE_URL }, body: movies() }]);
-    const res = await runFinishRun(rescan, runContext(ctx, { originalPath: '/x/y.mkv' }), {});
+    const res = await runFinishRun(
+      rescan,
+      runContext(ctx, { originalPath: '/x/y.mkv', newPath: '/x/y.mkv' }),
+      {},
+    );
     expect(res.message).toBe('Radarr does not know /x/y.mkv; nothing was rescanned');
   });
 
@@ -167,6 +208,18 @@ describe('radarr:rescan run', () => {
       /^Radarr rescan of Example Movie \(2019\) failed: command RescanMovie ended failed/,
     );
     expect('retryable' in res && res.retryable).toBeFalsy();
+  });
+
+  it('a command whose status stays unknown until the deadline is retryable', async () => {
+    vi.useFakeTimers();
+    const responses = happy().slice(0, 3);
+    const p = runFinishRun(rescan, runContext(ctxWith(responses)), { timeoutSeconds: 30 });
+    await vi.advanceTimersByTimeAsync(40_000);
+    const res = await p;
+    expect(res).toMatchObject({ ok: false, retryable: true });
+    expect(res.message).toMatch(
+      /^Radarr rescan of Example Movie \(2019\) failed: command RescanMovie status unknown/,
+    );
   });
 
   it('a command that is not accepted fails the step', async () => {

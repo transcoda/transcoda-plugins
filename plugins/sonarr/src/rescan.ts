@@ -1,16 +1,7 @@
-import {
-  arrClient,
-  coalesce,
-  describeFailure,
-  notKnownMessage,
-  runCommand,
-  sameFile,
-} from '@transcoda/plugin-arr-common';
+import { rescanAndVerify } from '@transcoda/plugin-arr-common';
 import { defineNode } from '@transcoda/sdk';
 import { z } from 'zod';
 import { findSeriesForPath, listEpisodeFiles } from './find.ts';
-
-const COALESCE_MS = 5000;
 
 export const rescan = defineNode({
   type: 'sonarr:rescan',
@@ -44,63 +35,21 @@ export const rescan = defineNode({
       reason: 'rescan after the write',
     };
   },
-  async run(ctx, s) {
+  async run(ctx, settings) {
     const plugin = ctx.plugin;
-    const oldRemote = plugin.paths.toRemote(ctx.originalPath);
-    const newRemote = plugin.paths.toRemote(ctx.newPath);
-    try {
-      let viaNewPath = false;
-      let found = await findSeriesForPath(plugin, ctx.originalPath);
-      if ((found === null || found.file === null) && ctx.newPath !== ctx.originalPath) {
-        // A container change can leave Sonarr without the old entry already; the series is
-        // still found by folder, and the rescan is what makes Sonarr list the new file.
-        const viaNew = await findSeriesForPath(plugin, ctx.newPath);
-        if (viaNew !== null) {
-          found = viaNew;
-          viaNewPath = true;
-        }
-      }
-      if (found === null || (found.file === null && !viaNewPath)) {
-        const unknown = await notKnownMessage(plugin, 'Sonarr', oldRemote);
-        return { ok: false, message: `${unknown}; nothing was rescanned` };
-      }
+    return rescanAndVerify(ctx, 'Sonarr', settings.timeoutSeconds, async (localPath) => {
+      const found = await findSeriesForPath(plugin, localPath);
+      if (found === null) return null;
       const { series, episodes } = found;
-      const label = episodes === '' ? '' : ` (${episodes})`;
-      const missing = episodes === '' ? '' : `; episode ${episodes} may show as missing`;
-      const outcome = await coalesce(`series:${series.id}`, COALESCE_MS, () =>
-        runCommand(
-          plugin,
-          arrClient(plugin, 'Sonarr'),
-          { name: 'RescanSeries', seriesId: series.id },
-          { timeoutMs: s.timeoutSeconds * 1000 },
-        ),
-      );
-      if (outcome.status === 'failed') {
-        return {
-          ok: false,
-          ...(outcome.retryable ? { retryable: true } : {}),
-          message: `Sonarr rescan of ${series.title} failed: ${outcome.message}`,
-        };
-      }
-      if (outcome.status === 'timeout') {
-        return {
-          ok: false,
-          retryable: true,
-          message: `Sonarr rescan of ${series.title} did not finish within ${s.timeoutSeconds} s`,
-        };
-      }
-      const files = await listEpisodeFiles(plugin, series.id);
-      if (files.some((f) => sameFile(f.path, newRemote))) {
-        return { ok: true, message: `Sonarr lists ${newRemote}${label}` };
-      }
       return {
-        ok: false,
-        message: `Sonarr does not list ${newRemote} after rescan${missing}`,
+        hasFile: found.file !== null,
+        key: `series:${series.id}`,
+        command: { name: 'RescanSeries', seriesId: series.id },
+        label: series.title,
+        listedSuffix: episodes === '' ? '' : ` (${episodes})`,
+        missingSuffix: episodes === '' ? '' : `; episode ${episodes} may show as missing`,
+        files: () => listEpisodeFiles(plugin, series.id),
       };
-    } catch (e) {
-      const failure = describeFailure('Sonarr', e);
-      if (failure === null) throw e;
-      return { ok: false, retryable: failure.retryable, message: failure.message };
-    }
+    });
   },
 });

@@ -1,17 +1,7 @@
-import {
-  arrClient,
-  coalesce,
-  describeFailure,
-  type JsonValue,
-  notKnownMessage,
-  runCommand,
-  sameFile,
-} from '@transcoda/plugin-arr-common';
+import { rescanAndVerify } from '@transcoda/plugin-arr-common';
 import { defineNode } from '@transcoda/sdk';
 import { z } from 'zod';
 import { findMovieForPath, movieFiles, movieLabel } from './find.ts';
-
-const COALESCE_MS = 5000;
 
 export const rescan = defineNode({
   type: 'radarr:rescan',
@@ -47,48 +37,20 @@ export const rescan = defineNode({
   },
   async run(ctx, settings) {
     const plugin = ctx.plugin;
-    try {
-      const found = await findMovieForPath(plugin, ctx.originalPath);
-      if (found === null || found.file === null) {
-        const unknown = await notKnownMessage(
-          plugin,
-          'Radarr',
-          plugin.paths.toRemote(ctx.originalPath),
-        );
-        return { ok: false, message: `${unknown}; nothing was rescanned` };
-      }
+    return rescanAndVerify(ctx, 'Radarr', settings.timeoutSeconds, async (localPath) => {
+      const found = await findMovieForPath(plugin, localPath);
+      if (found === null) return null;
       const { movie } = found;
       const label = movieLabel(movie);
-      const client = arrClient(plugin, 'Radarr');
-      const body: { name: string } & Record<string, JsonValue> = {
-        name: 'RescanMovie',
-        movieId: movie.id,
+      return {
+        hasFile: found.file !== null,
+        key: `movie:${movie.id}`,
+        command: { name: 'RescanMovie', movieId: movie.id },
+        label,
+        listedSuffix: ` (${label})`,
+        missingSuffix: `; ${label} may show as missing`,
+        files: () => movieFiles(plugin, movie.id),
       };
-      const outcome = await coalesce(`movie:${movie.id}`, COALESCE_MS, () =>
-        runCommand(plugin, client, body, { timeoutMs: settings.timeoutSeconds * 1000 }),
-      );
-      if (outcome.status === 'failed') {
-        return { ok: false, message: `Radarr rescan of ${label} failed: ${outcome.message}` };
-      }
-      if (outcome.status === 'timeout') {
-        return {
-          ok: false,
-          retryable: true,
-          message: `Radarr rescan of ${label} did not finish within ${settings.timeoutSeconds} s`,
-        };
-      }
-      const newRemote = plugin.paths.toRemote(ctx.newPath);
-      const listed = (await movieFiles(plugin, movie.id)).some((f) => sameFile(f.path, newRemote));
-      return listed
-        ? { ok: true, message: `Radarr lists ${newRemote} (${label})` }
-        : {
-            ok: false,
-            message: `Radarr does not list ${newRemote} after rescan; ${label} may show as missing`,
-          };
-    } catch (e) {
-      const failure = describeFailure('Radarr', e);
-      if (failure === null) throw e;
-      return { ok: false, retryable: failure.retryable, message: failure.message };
-    }
+    });
   },
 });
