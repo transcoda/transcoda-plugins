@@ -1,3 +1,4 @@
+import { assertSecretHygiene } from '@transcoda/plugin-test-utils';
 import {
   fakePluginContext,
   runData,
@@ -5,7 +6,7 @@ import {
   runTest,
   type ScriptedResponse,
 } from '@transcoda/sdk/testing';
-import { describe, expect, it } from 'vitest';
+import { describe, it } from 'vitest';
 import { integration } from './integration.ts';
 import { isRequested } from './is-requested.ts';
 import { request } from './request.ts';
@@ -13,17 +14,10 @@ import { BASE, dataCtx, fixture, get, SENTINEL } from './test-util.ts';
 
 const settings = { url: BASE, apiKey: SENTINEL };
 
-function assertClean(ctx: ReturnType<typeof fakePluginContext>, texts: string[]) {
-  for (const [, line] of ctx.logs) expect(line).not.toContain(SENTINEL);
-  for (const t of texts) expect(t).not.toContain(SENTINEL);
-  expect(ctx.calls.length).toBeGreaterThan(0);
-  for (const c of ctx.calls) {
-    expect(c.url).not.toContain(SENTINEL);
-    expect(JSON.stringify(c.headers ?? {})).not.toContain(SENTINEL);
-    expect(JSON.stringify(c.body ?? null)).not.toContain(SENTINEL);
-    expect(c.auth).toEqual({ header: { name: 'X-Api-Key', value: SENTINEL } });
-  }
-}
+const assertClean = (ctx: ReturnType<typeof fakePluginContext>, texts: string[]) =>
+  assertSecretHygiene(ctx, SENTINEL, texts, {
+    auth: { header: { name: 'X-Api-Key', value: SENTINEL } },
+  });
 
 const lookups: ScriptedResponse[][] = [
   [get('/api/v1/movie/900001', fixture('movie-requested'))],

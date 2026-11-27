@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { bodyOf, ctxWith, job, publishOk, timingOut } from './helpers.ts';
 import plugin, { hooks, integration } from './index.ts';
+import { bodyOf, ctxWith, job, publishOk, timingOut } from './test-util.ts';
 
 describe('onJobFailed', () => {
   it('is the only hook', () => {

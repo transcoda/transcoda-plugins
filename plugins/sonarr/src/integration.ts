@@ -1,45 +1,6 @@
-import {
-  ArrHttpError,
-  arrClient,
-  testStatus,
-  unmonitorWarning,
-} from '@transcoda/plugin-arr-common';
-import {
-  allowInsecureTls,
-  defineIntegration,
-  fetchErrorKind,
-  type IntegrationTestFail,
-  type IntegrationTestOk,
-  type PluginContext,
-  pathMappings,
-  secret,
-  url,
-} from '@transcoda/sdk';
+import { arrIntegrationTest } from '@transcoda/plugin-arr-common';
+import { allowInsecureTls, defineIntegration, pathMappings, secret, url } from '@transcoda/sdk';
 import { z } from 'zod';
-
-async function test(ctx: PluginContext): Promise<IntegrationTestOk | IntegrationTestFail> {
-  const result = await testStatus(ctx, 'Sonarr', 4);
-  if (!result.ok) return result;
-  try {
-    const config = await arrClient(ctx, 'Sonarr').get('/api/v3/config/mediamanagement');
-    const { warning, fieldSeen } = unmonitorWarning(config, 'episodes');
-    if (fieldSeen === null) {
-      const keys =
-        typeof config === 'object' && config !== null && !Array.isArray(config)
-          ? Object.keys(config).join(', ')
-          : '(not an object)';
-      await ctx.log('debug', `unmonitor setting not found in mediamanagement; keys: ${keys}`);
-    }
-    return warning === null ? result : { ...result, warnings: [warning] };
-  } catch (e) {
-    const kind = fetchErrorKind(e);
-    if (e instanceof ArrHttpError || kind !== null) {
-      const why = e instanceof ArrHttpError ? String(e.status) : kind;
-      return { ...result, warnings: [`could not read media management settings: ${why}`] };
-    }
-    throw e;
-  }
-}
 
 export const integration = defineIntegration({
   id: 'sonarr',
@@ -54,5 +15,5 @@ export const integration = defineIntegration({
   }),
   allowedOrigins: ['$settings.url'],
   requires: { product: 'sonarr', minVersion: '4.0.0' },
-  test,
+  test: (ctx) => arrIntegrationTest(ctx, 'Sonarr'),
 });

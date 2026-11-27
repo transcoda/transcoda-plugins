@@ -9,6 +9,7 @@ export {
 } from './client.ts';
 export { coalesce, coalesceReset } from './coalesce.ts';
 export { type CommandOutcome, runCommand } from './command.ts';
+export { describeFailure } from './errors.ts';
 export {
   type BlocklistItem,
   type HistoryEvent,
@@ -25,5 +26,5 @@ export { originalLanguageOf } from './language.ts';
 export { isUnder, pickByPath, sameFile } from './paths.ts';
 export { type ReplaceTarget, replaceDamagedFile } from './replace.ts';
 export { notKnownMessage, rootFolders } from './roots.ts';
-export { testStatus } from './status.ts';
+export { arrIntegrationTest, testStatus } from './status.ts';
 export { unmonitorWarning } from './unmonitor.ts';

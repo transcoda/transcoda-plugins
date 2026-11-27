@@ -1,7 +1,11 @@
-import { idsOf, notKnownMessage, originalLanguageOf } from '@transcoda/plugin-arr-common';
+import {
+  describeFailure,
+  idsOf,
+  notKnownMessage,
+  originalLanguageOf,
+} from '@transcoda/plugin-arr-common';
 import { defineNode } from '@transcoda/sdk';
 import { z } from 'zod';
-import { describeFailure } from './errors.ts';
 import { findMovie, movieLabel } from './find.ts';
 
 const UNKNOWN = { language: 'unknown', title: 'unknown', ids: 'unknown' } as const;
@@ -40,7 +44,7 @@ export const originalLanguage = defineNode({
       };
     } catch (e) {
       // Never throws for an expected failure, so the trace shows the reason.
-      const failure = describeFailure(e);
+      const failure = describeFailure('Radarr', e);
       if (failure === null) throw e;
       return { value: { ...UNKNOWN }, reason: failure.message };
     }

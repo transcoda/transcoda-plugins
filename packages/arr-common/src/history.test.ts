@@ -1,6 +1,5 @@
 import { fakePluginContext } from '@transcoda/sdk/testing';
 import { describe, expect, it } from 'vitest';
-import { arrFixture } from '../test/fixtures.ts';
 import { arrClient } from './client.ts';
 import {
   type HistoryEvent,
@@ -11,6 +10,7 @@ import {
   recentBlocklisted,
   recentMarkedFailed,
 } from './history.ts';
+import { arrFixture } from './test-util.ts';
 
 const BASE = 'http://radarr:7878';
 const settings = { url: BASE, apiKey: 'SENTINEL-SECRET-9f3a' };

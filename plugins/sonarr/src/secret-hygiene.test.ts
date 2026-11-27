@@ -1,4 +1,5 @@
 import { coalesceReset } from '@transcoda/plugin-arr-common';
+import { assertSecretHygiene } from '@transcoda/plugin-test-utils';
 import {
   fakeHookContext,
   fakePluginContext,
@@ -6,7 +7,7 @@ import {
   runFinishRun,
   runTest,
 } from '@transcoda/sdk/testing';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, it } from 'vitest';
 import { integration } from './integration.ts';
 import { originalLanguage } from './original-language.ts';
 import { rescan } from './rescan.ts';
@@ -28,17 +29,10 @@ const ORIG = '/data/shows/Show/S01E03.mkv';
 
 beforeEach(coalesceReset);
 
-function assertClean(ctx: ReturnType<typeof fakePluginContext>, texts: string[]) {
-  for (const [, line] of ctx.logs) expect(line).not.toContain(SENTINEL);
-  for (const t of texts) expect(t).not.toContain(SENTINEL);
-  expect(ctx.calls.length).toBeGreaterThan(0);
-  for (const c of ctx.calls) {
-    expect(c.url).not.toContain(SENTINEL);
-    expect(JSON.stringify(c.headers ?? {})).not.toContain(SENTINEL);
-    expect(JSON.stringify(c.body ?? null)).not.toContain(SENTINEL);
-    expect(c.auth).toEqual({ header: { name: 'X-Api-Key', value: SENTINEL } });
-  }
-}
+const assertClean = (ctx: ReturnType<typeof fakePluginContext>, texts: string[]) =>
+  assertSecretHygiene(ctx, SENTINEL, texts, {
+    auth: { header: { name: 'X-Api-Key', value: SENTINEL } },
+  });
 
 describe('secret hygiene', () => {
   it('test() carries the key only in auth', async () => {

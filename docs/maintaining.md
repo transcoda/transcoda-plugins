@@ -9,9 +9,11 @@ How this repository is laid out, built, released and signed. For using the plugi
 plugins/<name>/            one plugin per directory (kebab-case; also the release tag prefix)
   package.json             @transcoda/plugin-<name>, version, "transcoda": { "sdk": "^1" }
   src/index.ts             default export: definePlugin(...); named export `nodes`
+  src/test-util.ts         the plugin's test helpers, imported only by its tests
   tsdown.config.ts         uses scripts/plugin-bundle-config.ts
 packages/<name>/           shared code (for example arr-common for Sonarr and Radarr); inlined
                            into the bundles that use it, never released on its own
+packages/test-utils/       test-only helpers (assertSecretHygiene); plugin source never imports it
 test/
   setup.ts                 runs before every test file; stubs the global fetch so tests cannot
                            reach the network
@@ -29,7 +31,8 @@ scripts/
   release-notes.mjs        turns .changes/<plugin>/ into the release body, grouped by type
   check-plugins.mjs        manifest rules (name, semver, transcoda.sdk range, no runtime deps), the
                            one SDK pin, the range against the pin and the SDK features the code
-                           uses, and secret-hygiene.test.ts for every plugin with a secret setting
+                           uses, secret-hygiene.test.ts for every plugin with a secret setting,
+                           and test helpers only in src/test-util.ts
   host-check.mjs           starts every built bundle in core's sandboxed host (--check-plugin)
   sign.mjs                 ed25519 keygen / sign / verify (bundles, catalog index, blocklist)
   build-catalog.mjs        GitHub releases -> catalog index.json (one signed entry per version)
@@ -69,8 +72,9 @@ default export (the bare name; `package.json` keeps `@transcoda/plugin-example`)
   `pluginNetwork` in the plugin's source and the workspace packages it uses; it cannot find
   `roots` reliably, so check that one by hand.
 - **Secret hygiene.** A plugin with a `secret()` setting has `src/secret-hygiene.test.ts`, which
-  runs `test()` and every node on success and failure and checks the secret travels only in
-  `auth` (`pnpm check-plugins` requires the file).
+  runs `test()` and every node on success and failure and checks, with `assertSecretHygiene`
+  from `packages/test-utils`, that the secret travels only in `auth` (`pnpm check-plugins`
+  requires the file).
 - **Node types** are namespaced `<plugin>:<node>` (core uses `core:`).
 
 ## The SDK dependency

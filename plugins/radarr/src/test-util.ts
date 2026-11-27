@@ -1,8 +1,8 @@
 // Test-only helpers. Nothing here is imported by index.ts, so none of it reaches the bundle.
 import type { JsonValue } from '@transcoda/plugin-arr-common';
+import { arrFixture } from '@transcoda/plugin-arr-common/test-util';
 import type { FinishRunContext } from '@transcoda/sdk';
 import { type FakePluginContext, fakeHookContext, fakePluginContext } from '@transcoda/sdk/testing';
-import { arrFixture } from '../../../packages/arr-common/test/fixtures.ts';
 
 export const SENTINEL = 'SENTINEL-SECRET-9f3a';
 export const BASE = 'http://radarr:7878';

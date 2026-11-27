@@ -1,7 +1,7 @@
 import { runTest } from '@transcoda/sdk/testing';
 import { describe, expect, it } from 'vitest';
 import { integration } from './integration.ts';
-import { BASE, ctxWith, fixture } from './test-support.ts';
+import { BASE, ctxWith, fixture } from './test-util.ts';
 
 const STATUS = `${BASE}/api/v3/system/status`;
 const CONFIG = `${BASE}/api/v3/config/mediamanagement`;

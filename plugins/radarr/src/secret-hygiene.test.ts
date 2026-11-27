@@ -1,11 +1,12 @@
 import { coalesceReset } from '@transcoda/plugin-arr-common';
+import { assertSecretHygiene } from '@transcoda/plugin-test-utils';
 import { fakeHookContext, runData, runFinishRun, runTest } from '@transcoda/sdk/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 import plugin from './index.ts';
 import { integration } from './integration.ts';
 import { originalLanguage } from './original-language.ts';
 import { rescan } from './rescan.ts';
-import { BASE, ctxWith, fixture, movies, runContext, SENTINEL } from './test-support.ts';
+import { BASE, ctxWith, fixture, movies, runContext, SENTINEL } from './test-util.ts';
 
 const FILE = '/data/movies/Example Movie (2019)/Example Movie (2019).mkv';
 const MOVIE_URL = `${BASE}/api/v3/movie`;
@@ -15,18 +16,11 @@ beforeEach(() => coalesceReset());
 
 type Ctx = ReturnType<typeof ctxWith>;
 
-function assertClean(ctx: Ctx, outputs: unknown[]) {
-  expect(ctx.calls.length).toBeGreaterThan(0);
-  for (const [, line] of ctx.logs) expect(line).not.toContain(SENTINEL);
-  expect(JSON.stringify(outputs)).not.toContain(SENTINEL);
-  for (const call of ctx.calls) {
-    expect(call.url).not.toContain(SENTINEL);
-    expect(JSON.stringify(call.headers ?? {})).not.toContain(SENTINEL);
-    expect(JSON.stringify(call.body ?? null)).not.toContain(SENTINEL);
-    // Every request authenticates through the structured field.
-    expect(call.auth).toEqual({ header: { name: 'X-Api-Key', value: SENTINEL } });
-  }
-}
+// Every request authenticates through the structured field.
+const assertClean = (ctx: Ctx, outputs: unknown[]) =>
+  assertSecretHygiene(ctx, SENTINEL, outputs, {
+    auth: { header: { name: 'X-Api-Key', value: SENTINEL } },
+  });
 
 const happy = () => [
   { match: { url: `${BASE}/api/v3/system/status` }, body: fixture('radarr-status') },

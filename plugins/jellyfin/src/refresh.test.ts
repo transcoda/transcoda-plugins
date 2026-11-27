@@ -6,8 +6,8 @@ import {
   runFinishRun,
 } from '@transcoda/sdk/testing';
 import { describe, expect, it } from 'vitest';
-import { BASE, settings } from '../test/fixtures.ts';
 import { refresh } from './refresh.ts';
+import { BASE, settings } from './test-util.ts';
 
 const MAPPINGS = [
   { local: '/data/shows', remote: '/shows' },

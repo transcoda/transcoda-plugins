@@ -1,7 +1,8 @@
+import { assertSecretHygiene } from '@transcoda/plugin-test-utils';
 import { runFinish, runFinishRun, runTest } from '@transcoda/sdk/testing';
 import { describe, expect, it } from 'vitest';
-import { ctxWith, job, publishOk, runContext, SENTINEL, timingOut } from './helpers.ts';
 import { hooks, integration, notify } from './index.ts';
+import { ctxWith, job, publishOk, runContext, SENTINEL, timingOut } from './test-util.ts';
 
 const health = (status: number) => ({
   match: { url: 'https://ntfy.example/v1/health' },
@@ -9,19 +10,9 @@ const health = (status: number) => ({
   body: {},
 });
 
-function assertClean(
-  ctx: ReturnType<typeof ctxWith>,
-  texts: string[],
-  thrown: string[] = [],
-): void {
-  for (const [, line] of ctx.logs) expect(line).not.toContain(SENTINEL);
-  for (const text of [...texts, ...thrown]) expect(text).not.toContain(SENTINEL);
-  for (const call of ctx.calls) {
-    expect(call.url).not.toContain(SENTINEL);
-    expect(JSON.stringify(call.headers ?? {})).not.toContain(SENTINEL);
-    expect(JSON.stringify(call.body ?? null)).not.toContain(SENTINEL);
-  }
-}
+// The finish hook and some failures make no request at all, so calls are not required.
+const assertClean = (ctx: ReturnType<typeof ctxWith>, texts: string[], thrown: string[] = []) =>
+  assertSecretHygiene(ctx, SENTINEL, [...texts, ...thrown], { requireCalls: false });
 
 describe('secret hygiene (token only ever in auth.bearer)', () => {
   const withToken = { token: SENTINEL, notifyOnFailed: true };

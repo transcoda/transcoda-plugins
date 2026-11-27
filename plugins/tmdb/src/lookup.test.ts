@@ -1,7 +1,7 @@
 import { fakePluginContext, type ScriptedResponse } from '@transcoda/sdk/testing';
 import { describe, expect, it } from 'vitest';
-import { readFixture } from './fixture.ts';
 import { fold, lookupOriginalLanguage } from './lookup.ts';
+import { readFixture } from './test-util.ts';
 
 const KEY = '0123456789abcdef0123456789abcdef';
 const ctxWith = (responses: ScriptedResponse[]) =>

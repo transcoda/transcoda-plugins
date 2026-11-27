@@ -1,7 +1,7 @@
 import { coalesceReset } from '@transcoda/plugin-arr-common';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { findMovieForPath } from './find.ts';
-import { BASE, ctxWith, fixture, movies } from './test-support.ts';
+import { BASE, ctxWith, fixture, movies } from './test-util.ts';
 
 const MOVIE_URL = `${BASE}/api/v3/movie`;
 const FILE_URL = `${BASE}/api/v3/moviefile?movieId=11`;

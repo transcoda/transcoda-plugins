@@ -6,7 +6,8 @@
   "description": "Shared Sonarr/Radarr code: API client, status test, command polling, path helpers. Source-only; the plugin bundles inline it.",
   "license": "GPL-3.0-only",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./test-util": "./src/test-util.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

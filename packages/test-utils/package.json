@@ -1,0 +1,19 @@
+{
+  "name": "@transcoda/plugin-test-utils",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Test helpers every plugin's tests share (secret hygiene). Test-only: no plugin source imports it, so it never reaches a bundle.",
+  "license": "GPL-3.0-only",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@transcoda/sdk": "1.3.0",
+    "vitest": "5.1.1"
+  }
+}

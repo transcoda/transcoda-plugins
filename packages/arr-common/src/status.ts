@@ -5,6 +5,7 @@ import {
   type PluginContext,
 } from '@transcoda/sdk';
 import { ArrHttpError, type ArrProduct, arrClient } from './client.ts';
+import { unmonitorWarning } from './unmonitor.ts';
 
 function originOf(ctx: PluginContext): string {
   try {
@@ -61,4 +62,34 @@ export async function testStatus(
     };
   }
   return { ok: true, message: `${product} ${version} at ${origin}`, version };
+}
+
+const UNMONITOR_SETTING = { Sonarr: 'episodes', Radarr: 'movies' } as const;
+
+/**
+ * The integration test for Sonarr and Radarr: the status check, then a warning when the service
+ * unmonitors what it deletes (or when its media management settings cannot be read).
+ */
+export async function arrIntegrationTest(
+  ctx: PluginContext,
+  product: ArrProduct,
+): Promise<IntegrationTestOk | IntegrationTestFail> {
+  const result = await testStatus(ctx, product, 4);
+  if (!result.ok) return result;
+  try {
+    const config = await arrClient(ctx, product).get('/api/v3/config/mediamanagement');
+    const { warning, fieldSeen } = unmonitorWarning(config, UNMONITOR_SETTING[product]);
+    if (fieldSeen === null) {
+      const keys =
+        typeof config === 'object' && config !== null && !Array.isArray(config)
+          ? Object.keys(config).join(', ')
+          : '(not an object)';
+      await ctx.log('debug', `unmonitor setting not found in mediamanagement; keys: ${keys}`);
+    }
+    return warning === null ? result : { ...result, warnings: [warning] };
+  } catch (e) {
+    const why = e instanceof ArrHttpError ? String(e.status) : fetchErrorKind(e);
+    if (why === null) throw e;
+    return { ...result, warnings: [`could not read media management settings: ${why}`] };
+  }
 }

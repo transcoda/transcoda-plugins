@@ -166,3 +166,38 @@ test('a plugin with a secret setting needs src/secret-hygiene.test.ts; one witho
   const noSecret = repoWith('sonarr', valid, { 'plugins/sonarr/src/index.ts': 'export {};\n' });
   assert.deepEqual(checkPlugins(noSecret), []);
 });
+
+test('test helpers live in src/test-util.ts and nothing else imports test code', () => {
+  const errorsFor = (files) => checkPlugins(repoWith('sonarr', valid, files));
+  assert.deepEqual(
+    errorsFor({
+      'plugins/sonarr/src/test-util.ts':
+        "import { fakePluginContext } from '@transcoda/sdk/testing';\n",
+      'plugins/sonarr/src/find.test.ts': "import { BASE } from './test-util.ts';\n",
+    }),
+    [],
+  );
+  assert.deepEqual(errorsFor({ 'plugins/sonarr/src/test-support.ts': 'export {};\n' }), [
+    'plugins/sonarr: src/test-support.ts looks like a test helper; name it src/test-util.ts',
+  ]);
+  assert.deepEqual(errorsFor({ 'plugins/sonarr/test/fixtures.ts': 'export {};\n' }), [
+    'plugins/sonarr: test helpers go in src/test-util.ts, not a test/ directory',
+  ]);
+  for (const from of ['vitest', '@transcoda/plugin-test-utils', './test-util.ts']) {
+    const errors = errorsFor({ 'plugins/sonarr/src/index.ts': `import { x } from '${from}';\n` });
+    assert.equal(errors.length, 1, from);
+    assert.match(errors[0], /src\/index\.ts imports test code/);
+  }
+});
+
+test('the test-utils package may import vitest; other packages follow the helper rules', () => {
+  const root = repoWith('sonarr', valid, {
+    'packages/test-utils/package.json': JSON.stringify({ name: '@transcoda/plugin-test-utils' }),
+    'packages/test-utils/src/index.ts': "import { expect } from 'vitest';\n",
+    'packages/shared/package.json': JSON.stringify({ name: '@transcoda/plugin-shared' }),
+    'packages/shared/test/fixtures.ts': 'export {};\n',
+  });
+  assert.deepEqual(checkPlugins(root), [
+    'packages/shared: test helpers go in src/test-util.ts, not a test/ directory',
+  ]);
+});

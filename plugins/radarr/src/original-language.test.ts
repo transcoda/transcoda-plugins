@@ -2,7 +2,7 @@ import { coalesceReset } from '@transcoda/plugin-arr-common';
 import { fakeHookContext, runData } from '@transcoda/sdk/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { originalLanguage } from './original-language.ts';
-import { BASE, ctxWith, fixture, movies } from './test-support.ts';
+import { BASE, ctxWith, fixture, movies } from './test-util.ts';
 
 const MOVIE_URL = `${BASE}/api/v3/movie`;
 const FILE = '/data/movies/Example Movie (2019)/Example Movie (2019).mkv';

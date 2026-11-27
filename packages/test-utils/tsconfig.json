@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    // The SDK ships TypeScript source with `.ts` import specifiers.
+    "allowImportingTsExtensions": true,
+    "types": ["node"]
+  },
+  "include": ["src", "vitest.config.ts"]
+}

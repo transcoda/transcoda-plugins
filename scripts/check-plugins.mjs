@@ -8,7 +8,9 @@
 // - `@transcoda/sdk` pinned to the root package.json's exact version, in every plugin and package;
 // - that pin satisfies `transcoda.sdk`, and the range does not start below the SDK minor of a
 //   feature the plugin's code (or a workspace package it uses) relies on (SDK_FEATURES);
-// - a plugin with a secret setting (`secret()`) has src/secret-hygiene.test.ts.
+// - a plugin with a secret setting (`secret()`) has src/secret-hygiene.test.ts;
+// - test helpers live in src/test-util.ts in every plugin and package: no test/ directory, no
+//   other helper file names, and no other non-test file imports test code (so none is bundled).
 // Exports checkPlugins(root) for tests; the CLI runs only when executed directly.
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
@@ -62,6 +64,33 @@ function workspacePackages(root) {
   return byName;
 }
 
+const TEST_IMPORT =
+  /from\s+['"](vitest|@transcoda\/sdk\/testing|@transcoda\/plugin-test-utils|[^'"]*\/test-util(\.ts)?)['"]/;
+const HELPER_NAMES = /^(test-?support|test-?helpers?|test-?utils|testing|fixtures?)\.ts$/;
+/** The one package whose own source is test code. */
+const TEST_PACKAGE = '@transcoda/plugin-test-utils';
+
+/** Layout rules for test helpers in one plugin or package directory. */
+function testHelperErrors(at, dir) {
+  const errors = [];
+  if (existsSync(join(dir, 'test')) && readdirSync(join(dir, 'test')).length > 0) {
+    errors.push(`${at}: test helpers go in src/test-util.ts, not a test/ directory`);
+  }
+  for (const file of sourceFiles(join(dir, 'src'))) {
+    const rel = relative(dir, file);
+    if (rel === join('src', 'test-util.ts')) continue;
+    const base = rel.split('/').pop() ?? rel;
+    if (HELPER_NAMES.test(base)) {
+      errors.push(`${at}: ${rel} looks like a test helper; name it src/test-util.ts`);
+    } else if (TEST_IMPORT.test(code(file))) {
+      errors.push(
+        `${at}: ${rel} imports test code; only *.test.ts and src/test-util.ts may (bundles must not)`,
+      );
+    }
+  }
+  return errors;
+}
+
 function sdkPin(pkg) {
   return pkg.devDependencies?.[SDK] ?? pkg.dependencies?.[SDK];
 }
@@ -73,7 +102,8 @@ export function checkPlugins(root) {
   const rootPkgPath = join(root, 'package.json');
   const rootPin = existsSync(rootPkgPath) ? sdkPin(readJson(rootPkgPath)) : undefined;
   const packages = workspacePackages(root);
-  for (const dir of packages.values()) {
+  for (const [pkgName, dir] of packages) {
+    if (pkgName !== TEST_PACKAGE) errors.push(...testHelperErrors(relative(root, dir), dir));
     const pin = sdkPin(readJson(join(dir, 'package.json')));
     if (rootPin !== undefined && pin !== undefined && pin !== rootPin) {
       errors.push(`${relative(root, dir)}: pins ${SDK} ${pin}; the root pins ${rootPin}`);
@@ -104,6 +134,7 @@ export function checkPlugins(root) {
     }
     if (!pkg.scripts?.bundle) errors.push(`${at}: missing bundle script`);
     errors.push(...sdkErrors(at, pkg, rootPin, join(pluginsDir, name), packages));
+    errors.push(...testHelperErrors(at, join(pluginsDir, name)));
     const sources = sourceFiles(join(pluginsDir, name, 'src'));
     const hasSecret = sources.some((f) => /\bsecret\(/.test(code(f)));
     if (hasSecret && !existsSync(join(pluginsDir, name, 'src', 'secret-hygiene.test.ts'))) {

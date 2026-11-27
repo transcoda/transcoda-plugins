@@ -12,8 +12,11 @@ plugins/<name>/          one plugin each: bazarr, discord, example, jellyfin, nt
   package.json           @transcoda/plugin-<name>, version, transcoda.sdk range, transcoda.title
   src/index.ts           default export definePlugin(...); everything the bundle holds starts here
   src/*.test.ts          tests, next to the code they test
-packages/arr-common/     code Sonarr and Radarr share (client, commands, paths, replace); inlined into
-                         their bundles, never released on its own
+  src/test-util.ts       the plugin's test helpers (the only name allowed; index.ts never imports it)
+packages/arr-common/     code Sonarr and Radarr share (client, commands, errors, integration test,
+                         paths, replace); inlined into their bundles, never released on its own
+packages/test-utils/     test-only helpers every plugin's tests share (assertSecretHygiene); never
+                         imported by plugin source, so never in a bundle
 test/                    setup.ts (stubs fetch: no test reaches the network), fixtures/<service>/
                          (invented, recorded-style JSON), cross-plugin tests
 scripts/                 check-plugins, check-bundles, host-check, release notes, signing, catalog
@@ -71,8 +74,9 @@ documentation addresses (`192.0.2.x`, `example.invalid`) and made-up ids.
    Keep `@transcoda/sdk` at the same exact version as the root `package.json`; add `zod` as a
    devDependency if the plugin has settings. No `dependencies` and no install scripts.
 2. **Pick the SDK range.** `^1` unless the plugin uses a later SDK minor's feature: `damagedOnly` or
-   an output's `shownWhen` needs `^1.1`; an integration test result's `roots` needs `^1.2`. CI
-   checks the range against old cores (the host check), not the features you use: get it right.
+   an output's `shownWhen` needs `^1.1`, an integration test result's `roots` `^1.2`,
+   `pluginNetwork` `^1.3`. `pnpm check-plugins` finds all of these but `roots`, so check that one
+   yourself; CI then runs the bundle in the oldest core the range allows.
 3. **Write the plugin.** `src/index.ts` default-exports `definePlugin({ name: '<name>', version:
    pkg.version, sdk: pkg.transcoda.sdk, ... })`; node types are `<name>:<node>`. A service
    integration goes in `src/integration.ts` (`defineIntegration`, secrets through `secret()`,
@@ -80,10 +84,14 @@ documentation addresses (`192.0.2.x`, `example.invalid`) and made-up ids.
    style code belongs in `packages/`, not copied between plugins.
 4. **Tests.** Next to each module (`src/<module>.test.ts`), on `@transcoda/sdk/testing`
    (`fakePluginContext`, `runDecide`, `runFinishRun`, ...). Shared test helpers go in
-   `src/test-util.ts`, which `src/index.ts` never imports. A plugin with a secret setting has a
-   `src/secret-hygiene.test.ts` that runs `test()` and every node on success and on every failure
-   (401, 500, unreachable) and checks the secret appears only in `auth`, never in a URL, header,
-   body, log line or result; copy the pattern from `plugins/sonarr`.
+   `src/test-util.ts` and nowhere else (no `test/` folder, no `fixtures.ts`); only tests import
+   it. `pnpm check-plugins` enforces both.
+   A plugin with a `secret()` setting must have `src/secret-hygiene.test.ts` (also enforced). It
+   runs `test()` and every node and hook on success and on each failure (401, 500, unreachable,
+   a thrown fetch error) and passes each context to `assertSecretHygiene(ctx, SECRET, outputs,
+   { auth })` from `@transcoda/plugin-test-utils` (add it as a `workspace:*` devDependency).
+   That fails when the secret is in a URL, header, body, log line or result, or a request lacks
+   the expected `auth`. `plugins/sonarr/src/secret-hygiene.test.ts` is a short example.
 5. **Fixtures.** Recorded-style responses in `test/fixtures/<service>/*.json`, listed in
    `test/fixtures/README.md`. Invented data only (see above).
 6. **Release note.** `.changes/<name>/<short-name>.md`, `type: new`.
