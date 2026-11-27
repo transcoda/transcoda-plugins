@@ -42,7 +42,7 @@ Never put API keys, tokens, webhook URLs or real media file names in code, tests
 - A maintainer squash-merges it: the pull request title becomes the commit message.
 - A maintainer releases the plugin when it's ready (each plugin has its own version; see [`docs/maintaining.md`](docs/maintaining.md#versioning-and-releases)).
 
-Every night, when this repo's `main` or core's `main` moved, the same checks run against core's `main` (`.github/workflows/nightly.yml`). A failing test gets an issue labelled `nightly`, closed once it passes again.
+Every night, when this repo's `main` or core's `main` moved, the same checks run against core's `main` (`.github/workflows/nightly.yml`). A failing test gets an issue labelled `nightly`, closed once it passes again. A workflow that fails on `main` itself gets an issue labelled `main-red`.
 
 ## License
 

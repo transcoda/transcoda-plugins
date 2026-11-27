@@ -188,6 +188,9 @@ importers:
       '@biomejs/biome':
         specifier: 2.6.8
         version: 2.6.8
+      '@transcoda/dev-config':
+        specifier: github:transcoda/.github#v1.1.0
+        version: https://codeload.github.com/transcoda/.github/tar.gz/43cbb990910eca37108711aedaa1b939835a1941
       '@transcoda/sdk':
         specifier: 1.3.0
         version: 1.3.0
@@ -647,6 +650,11 @@ packages:
 
   '@rolldown/pluginutils@1.0.1':
     resolution: {integrity: sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw==}
+
+  '@transcoda/dev-config@https://codeload.github.com/transcoda/.github/tar.gz/43cbb990910eca37108711aedaa1b939835a1941':
+    resolution: {gitHosted: true, integrity: sha512-ldRCggAXleJn8gN421NveOwgcRZLGnb1Dovnsw2sj5OkxNud7XP6fVP5ovQE978XsOYAG6SALb6iLTMXPcTq+w==, tarball: https://codeload.github.com/transcoda/.github/tar.gz/43cbb990910eca37108711aedaa1b939835a1941}
+    version: 1.1.0
+    hasBin: true
 
   '@transcoda/sdk@1.3.0':
     resolution: {integrity: sha512-uPEavvbSAxFTsJCwGJ7RPlCdx0693VHpTkmd/Bb3trIbzSWeetc8QXMYaZJpCaNTCwfw3UOBrq/kEnzh9acCaA==}
@@ -1396,6 +1404,8 @@ snapshots:
     optional: true
 
   '@rolldown/pluginutils@1.0.1': {}
+
+  '@transcoda/dev-config@https://codeload.github.com/transcoda/.github/tar.gz/43cbb990910eca37108711aedaa1b939835a1941': {}
 
   '@transcoda/sdk@1.3.0':
     dependencies:

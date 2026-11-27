@@ -27,8 +27,8 @@ scripts/
                            migrations (run sandboxed by finalize-bundle)
   check-bundles.mjs        fails when a built bundle uses node:fs, child_process, worker_threads,
                            vm, inspector, process.binding, eval, new Function or the global fetch
-  check-release-note.mjs   release-note rules: a PR adds a note or carries the label; --lint
-  release-notes.mjs        turns .changes/<plugin>/ into the release body, grouped by type
+  release-notes.mjs        turns .changes/<plugin>/ into the release body, grouped by type (the
+                           note format comes from @transcoda/dev-config/changes)
   check-plugins.mjs        manifest rules (name, semver, transcoda.sdk range, no runtime deps), the
                            one SDK pin, the range against the pin and the SDK features the code
                            uses, secret-hygiene.test.ts for every plugin with a secret setting,
@@ -47,7 +47,9 @@ catalog/
   workflows/release.yml    builds, signs, attests and releases one plugin per tag, then opens a
                            pull request removing the release notes it published
   workflows/nightly.yml    every check against core's main, nightly; files an issue per failing test
+  workflows/main-red.yml   an issue (label `main-red`) while CI, Catalog or Scorecard fails on main
   workflows/release-note.yml  PR check: a release note or the `no user-facing change` label
+  file-size-allowlist.json source files over the 1200-line budget, with their line counts
   workflows/catalog.yml    builds and signs index.json and blocklist.json, pushes to branch `catalog`
 ```
 
@@ -129,7 +131,7 @@ pnpm bundle
 ```
 
 - `pnpm check`: typecheck, lint (Biome), manifest rules, release-note lint, script tests,
-  tests (Vitest).
+  blocklist, file-size budget, tests (Vitest).
 - `node scripts/check-bundles.mjs` (after `pnpm bundle`): static check of every built bundle.
 - `pnpm bundle`: builds every plugin to `plugins/<name>/dist/<name>-<version>.js` plus
   `<name>-<version>.js.sha256` (`sha256sum` format; verify with `sha256sum --check`).
@@ -144,6 +146,11 @@ pnpm bundle
   (`test/plugin-network.test.ts`).
 - `pnpm format`: apply Biome formatting and import sorting.
 - One plugin only: `pnpm --filter ./plugins/example bundle`.
+
+Biome, the tsconfig base, the release-note format and the file-size budget come from
+`@transcoda/dev-config`, and the release-note, PR-title, nightly, main-red and file-size checks
+from the actions in [transcoda/.github](https://github.com/transcoda/.github), all at the same tag.
+Renovate moves the package and the action pins together in one pull request.
 
 pnpm 12 blocks dependency install scripts; `allowBuilds` in `pnpm-workspace.yaml` lists the
 ones that are deliberately left disabled.

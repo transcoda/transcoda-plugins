@@ -5,7 +5,8 @@ name: Nightly
 # its plugin host) would otherwise show only on the next plugin pull request.
 # A failing test gets a GitHub issue labelled `nightly`, and a failing step that is not a test
 # (typecheck, lint, bundle, host check) one "the run failed outside its tests" issue; an issue
-# whose test passes again is closed. The issues come from core's scripts/nightly-issues.ts.
+# whose test passes again is closed. Deciding whether to run and filing the issues are the
+# nightly-changed and nightly-issues actions from transcoda/.github.
 # Run it by hand from the Actions tab: that always runs.
 
 on:
@@ -28,34 +29,14 @@ jobs:
     permissions:
       actions: read
     outputs:
-      run: ${{ steps.check.outputs.run }}
+      run: ${{ steps.changed.outputs.run }}
     steps:
-      - id: check
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -eu
-          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
-            echo run=true >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          last=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/nightly.yml/runs?branch=main&status=completed&per_page=1" \
-            --jq '.workflow_runs[0] // {} | [.head_sha // "", .run_started_at // ""] | @tsv')
-          sha=$(printf '%s' "$last" | cut -f1)
-          since=$(printf '%s' "$last" | cut -f2)
-          if [ "$sha" != "$GITHUB_SHA" ] || [ -z "$since" ]; then
-            echo "main moved since the last nightly"
-            echo run=true >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          core=$(gh api "repos/transcoda/transcoda/commits?sha=main&since=$since&per_page=1" --jq length)
-          if [ "$core" -gt 0 ]; then
-            echo "core's main moved since the last nightly ($since)"
-            echo run=true >> "$GITHUB_OUTPUT"
-          else
-            echo "neither main moved since the last nightly ($since): nothing to test"
-            echo run=false >> "$GITHUB_OUTPUT"
-          fi
+      # 'true' when this repo's main moved since the last completed nightly, when core's main got a
+      # commit since that run started, when there is no earlier run, or for a run by hand.
+      - id: changed
+        uses: transcoda/.github/actions/nightly-changed@43cbb990910eca37108711aedaa1b939835a1941 # v1.1.0
+        with:
+          also-watch: transcoda/transcoda
 
   check:
     needs: changed
@@ -84,6 +65,9 @@ jobs:
       - id: check-blocklist
         if: ${{ !cancelled() }}
         run: pnpm check-blocklist
+      - id: check-file-size
+        if: ${{ !cancelled() }}
+        run: pnpm check-file-size
       - if: ${{ !cancelled() }}
         run: pnpm test --reporter=default --reporter=json --outputFile.json=.nightly/vitest.json
       - id: bundle
@@ -104,6 +88,7 @@ jobs:
           FAILED: >-
             ${{ steps.typecheck.outcome == 'failure' || steps.lint.outcome == 'failure'
             || steps.check-plugins.outcome == 'failure' || steps.check-blocklist.outcome == 'failure'
+            || steps.check-file-size.outcome == 'failure'
             || steps.bundle.outcome == 'failure' || steps.check-bundles.outcome == 'failure'
             || steps.host-check.outcome == 'failure' }}
         run: echo "step-failed=$FAILED" >> "$GITHUB_OUTPUT"
@@ -123,32 +108,17 @@ jobs:
     permissions:
       issues: write
     steps:
-      # Only the issue script, from core's main.
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: transcoda/transcoda
-          ref: main
-          path: core
-          sparse-checkout: |
-            scripts/nightly-issues.ts
-            .node-version
-          sparse-checkout-cone-mode: false
-          persist-credentials: false
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version-file: core/.node-version
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: nightly-vitest
           path: .nightly
+        # No report when the check job failed before the tests: the action counts the missing file
+        # as a run that failed.
         continue-on-error: true
-      - name: Open, update and close the nightly issues
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          SHA: ${{ github.sha }}
-          RUN_FAILED: ${{ needs.check.result != 'success' }}
-          STEP_FAILED: ${{ needs.check.outputs.step-failed == 'true' }}
-          # The check job's checkout: vitest's paths are made relative to it.
-          TEST_ROOT: ${{ github.workspace }}
-        run: node core/scripts/nightly-issues.ts .nightly/vitest.json
+      - uses: transcoda/.github/actions/nightly-issues@43cbb990910eca37108711aedaa1b939835a1941 # v1.1.0
+        with:
+          reports: .nightly/vitest.json
+          run-failed: ${{ needs.check.result != 'success' }}
+          step-failed: ${{ needs.check.outputs.step-failed == 'true' }}
+          # test-root stays at its default, the workspace: the check job's checkout sits at the
+          # same path, so vitest's paths are made relative to it.

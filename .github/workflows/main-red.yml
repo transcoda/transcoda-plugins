@@ -1,0 +1,27 @@
+name: Main red
+
+# Opens one issue (label `main-red`) when a push run of a watched workflow fails on main, comments
+# on it while that workflow keeps failing there, and closes it once the workflow passes on main
+# again. Pull request runs, other branches and other triggers are ignored. The nightly files its
+# own issues (label `nightly`).
+# GitHub reads workflow_run workflows from the default branch only, so this starts once merged.
+# No concurrency group: GitHub would cancel the runs it queues.
+on:
+  workflow_run:
+    # The `name:` of each workflow to watch.
+    workflows: [CI, Catalog, Scorecard]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  alert:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions:
+      actions: read
+      issues: write
+    steps:
+      - uses: transcoda/.github/actions/main-red@43cbb990910eca37108711aedaa1b939835a1941 # v1.1.0

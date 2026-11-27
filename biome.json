@@ -1,12 +1,13 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "extends": ["@transcoda/dev-config/biome"],
   "files": {
     "includes": ["**", "!**/dist", "!**/node_modules", "!.core", "!pnpm-lock.yaml"]
   },
-  "formatter": { "indentStyle": "space", "lineWidth": 100 },
-  "javascript": { "formatter": { "quoteStyle": "single" } },
-  "markdown": { "formatter": { "enabled": false } },
-  "yaml": { "formatter": { "enabled": false } },
-  "linter": { "rules": { "preset": "recommended" } },
-  "assist": { "actions": { "source": { "organizeImports": "on" } } }
+  "overrides": [
+    {
+      "includes": ["plugins/*/src/index.ts"],
+      "linter": { "rules": { "style": { "noDefaultExport": "off" } } }
+    }
+  ]
 }
