@@ -142,7 +142,7 @@ describe('radarr:replace-damaged run', () => {
   });
 
   it('no grab shares the import’s downloadId → not blocklisted; delete and search still happen', async () => {
-    const history = (fixture('history-movie') as Array<Record<string, unknown>>).map((e) =>
+    const history = (fixture('history-movie') as Record<string, unknown>[]).map((e) =>
       e.eventType === 'grabbed' ? { ...e, downloadId: 'ffff' } : e,
     );
     const responses = happy();

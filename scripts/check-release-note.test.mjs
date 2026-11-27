@@ -3,7 +3,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { test } from 'node:test';
+import { it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 const script = fileURLToPath(new URL('./check-release-note.mjs', import.meta.url));
@@ -34,39 +34,39 @@ const note = (type = 'improved', body = 'Sonarr now verifies the path.') =>
 const run = (cwd, ...args) =>
   spawnSync(process.execPath, [script, ...args], { cwd, encoding: 'utf8' });
 
-test('a note under .changes/<plugin>/ passes', () => {
+it('a note under .changes/<plugin>/ passes', () => {
   const { cwd, base, head } = repo({ '.changes/sonarr/verify.md': note() });
   const r = run(cwd, base, head, '[]');
   assert.equal(r.status, 0, r.stderr);
 });
 
-test("main's flat .changes/<plugin>-<name>.md convention still passes", () => {
+it("main's flat .changes/<plugin>-<name>.md convention still passes", () => {
   const { cwd, base, head } = repo({ '.changes/sonarr-verify.md': note('fixed') });
   const r = run(cwd, base, head, '[]');
   assert.equal(r.status, 0, r.stderr);
 });
 
-test('a note outside a plugin folder fails', () => {
+it('a note outside a plugin folder fails', () => {
   const { cwd, base, head } = repo({ '.changes/x.md': note() });
   const r = run(cwd, base, head, '[]');
   assert.equal(r.status, 1);
   assert.match(r.stderr, /must be \.changes\/<plugin>\//);
 });
 
-test('a note for a plugin that does not exist fails', () => {
+it('a note for a plugin that does not exist fails', () => {
   const { cwd, base, head } = repo({ '.changes/nope/x.md': note() });
   const r = run(cwd, base, head, '[]');
   assert.equal(r.status, 1);
   assert.match(r.stderr, /no plugins\/nope/);
 });
 
-test('no note fails, the label passes', () => {
+it('no note fails, the label passes', () => {
   const { cwd, base, head } = repo({ 'README.md': 'x' });
   assert.equal(run(cwd, base, head, '[]').status, 1);
   assert.equal(run(cwd, base, head, '["no user-facing change"]').status, 0);
 });
 
-test('a bad type or an empty body fails', () => {
+it('a bad type or an empty body fails', () => {
   const bad = repo({ '.changes/sonarr/a.md': note('cool') });
   const r = run(bad.cwd, bad.base, bad.head, '[]');
   assert.equal(r.status, 1);
@@ -77,14 +77,14 @@ test('a bad type or an empty body fails', () => {
   assert.match(e.stderr, /empty/);
 });
 
-test('--lint validates every existing note and ignores the README', () => {
+it('--lint validates every existing note and ignores the README', () => {
   const ok = repo({ '.changes/README.md': '# x', '.changes/sonarr/a.md': note() });
   assert.equal(run(ok.cwd, '--lint').status, 0);
   const bad = repo({ '.changes/sonarr/a.md': note('nope') });
   assert.equal(run(bad.cwd, '--lint').status, 1);
 });
 
-test('--lint and the PR check both reject a note nested deeper than .changes/<plugin>/', () => {
+it('--lint and the PR check both reject a note nested deeper than .changes/<plugin>/', () => {
   const { cwd, base, head } = repo({ '.changes/sonarr/sub/deep.md': note() });
   const lint = run(cwd, '--lint');
   assert.equal(lint.status, 1, lint.stderr);
@@ -94,7 +94,7 @@ test('--lint and the PR check both reject a note nested deeper than .changes/<pl
   assert.match(pr.stderr, /deep\.md/);
 });
 
-test('.changes/<plugin>/README.md is not a note for --lint or the PR check', () => {
+it('.changes/<plugin>/README.md is not a note for --lint or the PR check', () => {
   const { cwd, base, head } = repo({ '.changes/sonarr/README.md': '# not a note' });
   assert.equal(run(cwd, '--lint').status, 0);
   const pr = run(cwd, base, head, '[]');
@@ -102,13 +102,13 @@ test('.changes/<plugin>/README.md is not a note for --lint or the PR check', () 
   assert.match(pr.stderr, /No release note found/);
 });
 
-test('a Renovate pull request needs no note', () => {
+it('a Renovate pull request needs no note', () => {
   const { cwd, base, head } = repo({ 'README.md': 'x' });
   const r = run(cwd, base, head, '[]', 'renovate[bot]');
   assert.equal(r.status, 0, r.stderr);
 });
 
-test('another author without a note still fails', () => {
+it('another author without a note still fails', () => {
   const { cwd, base, head } = repo({ 'README.md': 'x' });
   assert.equal(run(cwd, base, head, '[]', 'someone').status, 1);
 });

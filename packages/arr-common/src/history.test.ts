@@ -30,7 +30,7 @@ const movieEvents = async () => {
   return itemHistory(arrClient(ctx, 'Radarr'), '/api/v3/history/movie?movieId=11');
 };
 const seriesEvents = () =>
-  (arrFixture('history-series') as Array<Record<string, unknown>>).map((e) => ({
+  (arrFixture('history-series') as Record<string, unknown>[]).map((e) => ({
     id: e.id as number,
     eventType: e.eventType as string,
     date: e.date as string,

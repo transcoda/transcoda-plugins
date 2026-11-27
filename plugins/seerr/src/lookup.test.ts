@@ -9,7 +9,7 @@ const UNKNOWN = { requested: 'unknown', requestedBy: 'unknown', requestedAt: 'un
 const NOT = { requested: false, requestedBy: '', requestedAt: '' };
 
 const movie = fixture('movie-requested') as {
-  mediaInfo: { requests: Array<Record<string, unknown>> };
+  mediaInfo: { requests: Record<string, unknown>[] };
 };
 const withRequests = (requests: unknown[]) => ({
   ...fixture('movie-requested'),

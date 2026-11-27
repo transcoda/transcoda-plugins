@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { test } from 'node:test';
+import { it } from 'node:test';
 import { releaseNotes } from './release-notes.mjs';
 
 function root(files) {
@@ -15,7 +15,7 @@ function root(files) {
 }
 const note = (type, body) => `---\ntype: ${type}\n---\n${body}\n`;
 
-test('groups one plugin notes by type and ignores other plugins and the README', () => {
+it('groups one plugin notes by type and ignores other plugins and the README', () => {
   const dir = root({
     '.changes/README.md': '# x',
     '.changes/sonarr/a.md': note('fixed', 'Fixed a thing.'),
@@ -29,7 +29,7 @@ test('groups one plugin notes by type and ignores other plugins and the README',
   );
 });
 
-test('no notes gives an empty string', () => {
+it('no notes gives an empty string', () => {
   assert.equal(releaseNotes(root({}), 'sonarr'), '');
   assert.equal(releaseNotes(root({ '.changes/radarr/a.md': note('new', 'x') }), 'sonarr'), '');
 });

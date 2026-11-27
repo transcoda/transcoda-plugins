@@ -4,7 +4,7 @@ import { generateKeyPairSync } from 'node:crypto';
 import { mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { test } from 'node:test';
+import { it } from 'node:test';
 import { publicKeyHex, signFile, verifyFile } from './sign.mjs';
 
 const SCRIPT = 'scripts/sign.mjs';
@@ -27,7 +27,7 @@ function withTmp(fn) {
   }
 }
 
-test('round trip', () => {
+it('round trip', () => {
   withTmp((dir) => {
     const { hex, pem } = keygen(dir);
     assert.match(publicKeyHex(pem), /^[0-9a-f]{64}$/);
@@ -37,7 +37,7 @@ test('round trip', () => {
   });
 });
 
-test('tampered bytes fail', () => {
+it('tampered bytes fail', () => {
   withTmp((dir) => {
     const { hex, pem } = keygen(dir);
     const sig = signFile(Buffer.from('hello'), pem, 'test-1');
@@ -48,7 +48,7 @@ test('tampered bytes fail', () => {
   });
 });
 
-test('wrong key fails', () => {
+it('wrong key fails', () => {
   withTmp((dir) => {
     const a = keygen(join(dir));
     const otherDir = mkdtempSync(join(dir, 'other-'));
@@ -61,7 +61,7 @@ test('wrong key fails', () => {
   });
 });
 
-test('malformed sig file', () => {
+it('malformed sig file', () => {
   const hex = 'a'.repeat(64);
   const r = verifyFile(Buffer.from('x'), '{"schema":2}', hex);
   assert.equal(r.ok, false);
@@ -71,7 +71,7 @@ test('malformed sig file', () => {
   assert.match(notJson.reason, /^malformed signature file/);
 });
 
-test('sig file shape', () => {
+it('sig file shape', () => {
   withTmp((dir) => {
     const { pem } = keygen(dir);
     const text = signFile(Buffer.from('hello'), pem, 'test-1');
@@ -88,7 +88,7 @@ test('sig file shape', () => {
   });
 });
 
-test('keygen writes a 0600 key and never prints it', () => {
+it('keygen writes a 0600 key and never prints it', () => {
   withTmp((dir) => {
     const { stdout } = keygen(dir);
     assert.equal(statSync(join(dir, 'signing-key.pem')).mode & 0o777, 0o600);
@@ -96,14 +96,14 @@ test('keygen writes a 0600 key and never prints it', () => {
   });
 });
 
-test('rejects a bad key id', () => {
+it('rejects a bad key id', () => {
   withTmp((dir) => {
     const { pem } = keygen(dir);
     assert.throws(() => signFile(Buffer.from('x'), pem, 'bad id!'), /key id/);
   });
 });
 
-test('cli', () => {
+it('cli', () => {
   withTmp((dir) => {
     const a = keygen(dir);
     const otherDir = mkdtempSync(join(dir, 'other-'));
@@ -131,7 +131,7 @@ test('cli', () => {
   });
 });
 
-test('cli sign reads the key from PLUGIN_SIGNING_KEY', () => {
+it('cli sign reads the key from PLUGIN_SIGNING_KEY', () => {
   withTmp((dir) => {
     const a = keygen(dir);
     const file = join(dir, 'doc.json');
@@ -150,7 +150,7 @@ function sigWith(pem, patch) {
   return JSON.stringify(doc);
 }
 
-test('strict signature file validation', () => {
+it('strict signature file validation', () => {
   withTmp((dir) => {
     const { hex, pem } = keygen(dir);
     const good = JSON.parse(signFile(Buffer.from('x'), pem, 'k1'));
@@ -170,7 +170,7 @@ test('strict signature file validation', () => {
   });
 });
 
-test('keygen refuses to overwrite an existing key', () => {
+it('keygen refuses to overwrite an existing key', () => {
   withTmp((dir) => {
     keygen(dir);
     assert.throws(
@@ -180,7 +180,7 @@ test('keygen refuses to overwrite an existing key', () => {
   });
 });
 
-test('cli sign with no key available fails', () => {
+it('cli sign with no key available fails', () => {
   withTmp((dir) => {
     const file = join(dir, 'doc');
     writeFileSync(file, 'x');
@@ -197,7 +197,7 @@ test('cli sign with no key available fails', () => {
   });
 });
 
-test('cli verify with a missing .sig', () => {
+it('cli verify with a missing .sig', () => {
   withTmp((dir) => {
     const file = join(dir, 'doc');
     writeFileSync(file, 'x');
@@ -211,7 +211,7 @@ test('cli verify with a missing .sig', () => {
   });
 });
 
-test('non-ed25519 key is refused', () => {
+it('non-ed25519 key is refused', () => {
   const { privateKey } = generateKeyPairSync('ec', { namedCurve: 'P-256' });
   const pem = privateKey.export({ type: 'pkcs8', format: 'pem' });
   assert.throws(() => signFile(Buffer.from('x'), pem, 'k1'), /ed25519/);

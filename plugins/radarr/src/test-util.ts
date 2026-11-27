@@ -54,6 +54,6 @@ export function runContext(
 
 /** A movie with a movieFile and an original language, on top of the recorded fixture. */
 export function movies(extra: Record<string, JsonValue> = {}): JsonValue {
-  const [m] = fixture('movie') as Array<Record<string, JsonValue>>;
+  const [m] = fixture('movie') as Record<string, JsonValue>[];
   return [{ ...m, originalLanguage: { id: 8, name: 'Japanese' }, ...extra }];
 }

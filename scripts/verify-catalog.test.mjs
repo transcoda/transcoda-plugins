@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash, generateKeyPairSync } from 'node:crypto';
-import { test } from 'node:test';
+import { it } from 'node:test';
 import { publicKeyHex, signFile } from './sign.mjs';
 import { verifyCatalog } from './verify-catalog.mjs';
 
@@ -29,12 +29,12 @@ const serve = (files) => async (url) =>
     ? { ok: false, status: 404 }
     : { ok: true, arrayBuffer: async () => Buffer.from(files[url]) };
 
-test('good bundle and signature pass', async () => {
+it('good bundle and signature pass', async () => {
   const f = serve({ 'https://x/b.js': bytes, 'https://x/b.js.sig': signFile(bytes, pem, 'k1') });
   assert.deepEqual(await verifyCatalog(index(), pub, f), []);
 });
 
-test('sha mismatch, bad signature and a missing signature each fail', async () => {
+it('sha mismatch, bad signature and a missing signature each fail', async () => {
   const sig = signFile(bytes, pem, 'k1');
   assert.match(
     (

@@ -48,7 +48,7 @@ const frFile = { ...deFile, code2: 'fr', code3: 'fra', path: '/x/fr.srt' };
 
 /** Records `[method, url, time]` of every fetch and answers `url` from `always` without consuming it. */
 function spy(ctx: ReturnType<typeof ctxWith>, always: Record<string, () => JsonValue> = {}) {
-  const log: Array<[string, string, number]> = [];
+  const log: [string, string, number][] = [];
   const inner = ctx.fetch;
   ctx.fetch = async (input) => {
     log.push([input.method ?? 'GET', input.url, Date.now() - START]);
@@ -278,7 +278,7 @@ describe('bazarr:get-subtitles-now', () => {
 
   it('caps every request at what is left of the wait budget', async () => {
     const ctx = ctxWith(lookup().concat([{ match: { url: EPISODE_PATCH_URL }, status: 204 }]));
-    const seen: Array<[string, number | undefined, number]> = [];
+    const seen: [string, number | undefined, number][] = [];
     const inner = ctx.fetch;
     ctx.fetch = async (input) => {
       seen.push([input.url, input.timeoutMs, Date.now() - START]);
