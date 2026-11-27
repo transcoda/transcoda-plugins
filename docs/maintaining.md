@@ -27,7 +27,9 @@ scripts/
                            vm, inspector, process.binding, eval, new Function or the global fetch
   check-release-note.mjs   release-note rules: a PR adds a note or carries the label; --lint
   release-notes.mjs        turns .changes/<plugin>/ into the release body, grouped by type
-  check-plugins.mjs        manifest rules (name, semver, transcoda.sdk range, no runtime deps)
+  check-plugins.mjs        manifest rules (name, semver, transcoda.sdk range, no runtime deps), the
+                           one SDK pin, the range against the pin and the SDK features the code
+                           uses, and secret-hygiene.test.ts for every plugin with a secret setting
   host-check.mjs           starts every built bundle in core's sandboxed host (--check-plugin)
   sign.mjs                 ed25519 keygen / sign / verify (bundles, catalog index, blocklist)
   build-catalog.mjs        GitHub releases -> catalog index.json (one signed entry per version)
@@ -56,8 +58,16 @@ default export (the bare name; `package.json` keeps `@transcoda/plugin-example`)
   `devDependencies`) and no install scripts. `pnpm check-plugins` and the bundle step enforce
   this.
 - **SDK compatibility.** `"transcoda": { "sdk": "<semver range>" }` in the plugin's
-  `package.json` declares the SDK major it is built for; the plugin host checks it against the
-  running core's SDK version before loading the plugin.
+  `package.json` declares the SDK versions it runs on; the plugin host checks it against the
+  running core's SDK version before loading the plugin. The range starts at the SDK minor whose
+  features the plugin uses: `^1.1` for `damagedOnly` or an output's `shownWhen`, `^1.2` for
+  `roots` in an integration test result, `^1.3` for `pluginNetwork`. `pnpm check-plugins` checks
+  that the pinned SDK satisfies the range and finds `damagedOnly`, `shownWhen` and
+  `pluginNetwork` in the plugin's source and the workspace packages it uses; it cannot find
+  `roots` reliably, so check that one by hand.
+- **Secret hygiene.** A plugin with a `secret()` setting has `src/secret-hygiene.test.ts`, which
+  runs `test()` and every node on success and failure and checks the secret travels only in
+  `auth` (`pnpm check-plugins` requires the file).
 - **Node types** are namespaced `<plugin>:<node>` (core uses `core:`).
 
 ## The SDK dependency

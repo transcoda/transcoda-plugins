@@ -4,24 +4,85 @@
 // - `transcoda.sdk` declares the supported SDK range;
 // - `transcoda.title` is the display name the catalog shows;
 // - no runtime `dependencies` (bundles inline everything; plugins are never npm-installed);
-// - no install scripts.
+// - no install scripts;
+// - `@transcoda/sdk` pinned to the root package.json's exact version, in every plugin and package;
+// - that pin satisfies `transcoda.sdk`, and the range does not start below the SDK minor of a
+//   feature the plugin's code (or a workspace package it uses) relies on (SDK_FEATURES);
+// - a plugin with a secret setting (`secret()`) has src/secret-hygiene.test.ts.
 // Exports checkPlugins(root) for tests; the CLI runs only when executed directly.
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { join, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import semver from 'semver';
 
 const SEMVER = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
 const INSTALL_SCRIPTS = ['preinstall', 'install', 'postinstall', 'prepare'];
+const SDK = '@transcoda/sdk';
+
+/**
+ * SDK features added after 1.0 that a plugin can only rely on when its range starts at their minor.
+ * They are fields, not exports (every 1.x has the same value exports but `pluginNetwork`), so the
+ * check looks for the field in the source. Not listed: 1.2's `roots` on a test result, because the
+ * word is too common to find reliably; ranges that use it need a reviewer's eye.
+ */
+const SDK_FEATURES = [
+  { since: '1.1.0', what: 'damagedOnly (the Damaged side)', pattern: /\bdamagedOnly\s*:/ },
+  { since: '1.1.0', what: "an output's shownWhen", pattern: /\bshownWhen\s*:/ },
+  { since: '1.3.0', what: 'pluginNetwork', pattern: /\bpluginNetwork\b/ },
+];
+
+const readJson = (path) => JSON.parse(readFileSync(path, 'utf8'));
+
+/** Non-test .ts files under `dir`, recursively. */
+function sourceFiles(dir) {
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir).flatMap((f) => {
+    const path = join(dir, f);
+    if (statSync(path).isDirectory()) return sourceFiles(path);
+    return f.endsWith('.ts') && !f.endsWith('.test.ts') ? [path] : [];
+  });
+}
+
+/** Source text without comments, so a comment naming a feature does not count as using it. */
+function code(path) {
+  return readFileSync(path, 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/(^|[^:])\/\/.*$/gm, '$1');
+}
+
+/** packages/<dir> by package name, for following a plugin's workspace dependencies. */
+function workspacePackages(root) {
+  const dir = join(root, 'packages');
+  const byName = new Map();
+  if (!existsSync(dir)) return byName;
+  for (const name of readdirSync(dir)) {
+    const pkgPath = join(dir, name, 'package.json');
+    if (existsSync(pkgPath)) byName.set(readJson(pkgPath).name, join(dir, name));
+  }
+  return byName;
+}
+
+function sdkPin(pkg) {
+  return pkg.devDependencies?.[SDK] ?? pkg.dependencies?.[SDK];
+}
 
 export function checkPlugins(root) {
   const errors = [];
   const pluginsDir = join(root, 'plugins');
   if (!existsSync(pluginsDir)) return errors;
+  const rootPkgPath = join(root, 'package.json');
+  const rootPin = existsSync(rootPkgPath) ? sdkPin(readJson(rootPkgPath)) : undefined;
+  const packages = workspacePackages(root);
+  for (const dir of packages.values()) {
+    const pin = sdkPin(readJson(join(dir, 'package.json')));
+    if (rootPin !== undefined && pin !== undefined && pin !== rootPin) {
+      errors.push(`${relative(root, dir)}: pins ${SDK} ${pin}; the root pins ${rootPin}`);
+    }
+  }
   for (const name of readdirSync(pluginsDir)) {
     const pkgPath = join(pluginsDir, name, 'package.json');
     if (!existsSync(pkgPath)) continue;
-    const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
+    const pkg = readJson(pkgPath);
     const at = `plugins/${name}`;
     if (!/^[a-z][a-z0-9-]*$/.test(name)) errors.push(`${at}: directory name must be kebab-case`);
     if (pkg.name !== `@transcoda/plugin-${name}`) {
@@ -42,6 +103,44 @@ export function checkPlugins(root) {
       if (pkg.scripts?.[script]) errors.push(`${at}: install script '${script}' is not allowed`);
     }
     if (!pkg.scripts?.bundle) errors.push(`${at}: missing bundle script`);
+    errors.push(...sdkErrors(at, pkg, rootPin, join(pluginsDir, name), packages));
+    const sources = sourceFiles(join(pluginsDir, name, 'src'));
+    const hasSecret = sources.some((f) => /\bsecret\(/.test(code(f)));
+    if (hasSecret && !existsSync(join(pluginsDir, name, 'src', 'secret-hygiene.test.ts'))) {
+      errors.push(`${at}: has a secret setting but no src/secret-hygiene.test.ts`);
+    }
+  }
+  return errors;
+}
+
+/** The SDK pin and range rules for one plugin. */
+function sdkErrors(at, pkg, rootPin, dir, packages) {
+  const errors = [];
+  const pin = sdkPin(pkg);
+  if (pin === undefined) return [`${at}: missing the ${SDK} devDependency`];
+  if (rootPin !== undefined && pin !== rootPin) {
+    errors.push(`${at}: pins ${SDK} ${pin}; the root pins ${rootPin}`);
+  }
+  const range = pkg.transcoda?.sdk;
+  if (typeof range !== 'string' || semver.validRange(range) === null) return errors;
+  if (semver.valid(pin) !== null && !semver.satisfies(pin, range, { includePrerelease: true })) {
+    errors.push(`${at}: transcoda.sdk '${range}' is not satisfied by the pinned ${SDK} ${pin}`);
+  }
+  const min = semver.minVersion(range);
+  if (min === null) return errors;
+  const dirs = [dir];
+  for (const [dep, spec] of Object.entries(pkg.devDependencies ?? {})) {
+    if (String(spec).startsWith('workspace:') && packages.has(dep)) dirs.push(packages.get(dep));
+  }
+  const text = dirs.flatMap((d) => sourceFiles(join(d, 'src'))).map(code);
+  for (const feature of SDK_FEATURES) {
+    if (semver.gte(min, feature.since)) continue;
+    if (text.some((t) => feature.pattern.test(t))) {
+      const minor = feature.since.replace(/\.0$/, '');
+      errors.push(
+        `${at}: uses ${feature.what}, new in SDK ${minor}, but transcoda.sdk '${range}' allows ${min}; use '^${minor}'`,
+      );
+    }
   }
   return errors;
 }
