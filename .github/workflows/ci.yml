@@ -55,16 +55,34 @@ jobs:
             plugins/*/dist/*.manifest.json
           if-no-files-found: error
 
+  # No source file over 1200 lines, except the ones in the allowlist, whose numbers may only
+  # shrink. `pnpm check` runs the same budget; here a pull request's allowlist is also compared
+  # with its base's, so no entry is added or raised.
+  file-size:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: transcoda/.github/actions/file-size@43cbb990910eca37108711aedaa1b939835a1941 # v1.1.0
+        with:
+          max-lines: 1200
+          allowlist: .github/file-size-allowlist.json
+          globs: |
+            **/*.{ts,mts,mjs,js}
+
   # One stable name for the ruleset to require: the matrix job names change with the matrix.
   ci-ok:
     name: ci-ok
     if: ${{ always() }}
-    needs: [check]
+    needs: [check, file-size]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - env:
-          RESULT: ${{ needs.check.result }}
+          CHECK: ${{ needs.check.result }}
+          FILE_SIZE: ${{ needs.file-size.result }}
         run: |
-          echo "check: $RESULT"
-          [ "$RESULT" = success ]
+          echo "check: $CHECK, file-size: $FILE_SIZE"
+          [ "$CHECK" = success ] && [ "$FILE_SIZE" = success ]
