@@ -2,6 +2,7 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended", ":pinAllExceptPeerDependencies", ":semanticCommits"],
   "enabledManagers": ["npm", "nodenv", "github-actions"],
+  "timezone": "America/New_York",
   "minimumReleaseAge": "3 days",
   "minimumReleaseAgeBehaviour": "timestamp-optional",
   "prCreation": "not-pending",
@@ -40,6 +41,13 @@
       "matchPackageNames": ["@transcoda/sdk"],
       "minimumReleaseAge": null,
       "prCreation": "immediate"
+    },
+    {
+      "description": "pnpm (the packageManager field): its own pull request, on core's Sunday-evening schedule and with the same release-age wait, so both repositories move to the same pnpm version in the same week. CI runs pnpm from this field against both checkouts.",
+      "matchDepTypes": ["packageManager"],
+      "matchPackageNames": ["pnpm"],
+      "groupName": "pnpm",
+      "schedule": ["* 17-23 * * 0"]
     },
     {
       "description": "Node.js: .node-version, engines and @types/node move together on the LTS line CI runs; majors by hand.",

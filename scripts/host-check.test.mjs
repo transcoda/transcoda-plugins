@@ -16,12 +16,13 @@ function repo(manifest = stamp) {
   return root;
 }
 const ok = { ok: true, compatible: true, ...stamp };
-const run = (root, result) =>
+const run = (root, result, coreSdk = null) =>
   hostCheck(
     root,
     '/fake/main.js',
     () => result,
     () => {},
+    coreSdk,
   );
 
 test('passes when core accepts the bundle and agrees with the stamped manifest', () => {
@@ -36,6 +37,23 @@ test('fails when core says ok:false', () => {
 
 test('fails when the sdk range is not compatible', () => {
   assert.match(run(repo(), { ...ok, compatible: false })[0], /not satisfied/);
+});
+
+test('skips a bundle whose range starts above an older core, and says so', () => {
+  const printed = [];
+  const failures = hostCheck(
+    repo({ ...stamp, sdk: '^1.1' }),
+    '/fake/main.js',
+    () => ({ ...ok, sdk: '^1.1', compatible: false }),
+    (line) => printed.push(line),
+    '1.0.0',
+  );
+  assert.deepEqual(failures, []);
+  assert.match(printed.join('\n'), /skipped \(sdk \^1\.1 needs a newer core than sdk 1\.0\.0\)/);
+});
+
+test('still fails when the core is newer than the range allows', () => {
+  assert.match(run(repo(), { ...ok, compatible: false }, '2.0.0')[0], /not satisfied/);
 });
 
 test('fails when core reports a different name, version or sdk than the stamp', () => {

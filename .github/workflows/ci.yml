@@ -1,7 +1,9 @@
 name: CI
 
 on:
+  # Branches are tested by their pull request; a push run on every branch would only repeat it.
   push:
+    branches: [main]
   pull_request:
 
 concurrency:
@@ -19,9 +21,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Every supported core version. Placeholder until core cuts releases: replace
-        # with release tags (e.g. v1.0.0, v1.1.0) and keep `main` to catch breakage early.
-        core: [main]
+        # Core's main catches breakage early; the release tags are what users run.
+        # - v0.7.0: the latest release.
+        # - v0.5.0: the newest core on Node 24 and the first with SDK 1.3 (the range of every plugin
+        #   matches it, including Sonarr and Radarr's ^1.1).
+        # - v0.1.0: the oldest release, SDK 1.0.0, the bottom of the ^1 range most plugins declare.
+        #   Sonarr and Radarr (^1.1) are skipped there by the host check.
+        # Move these when a plugin raises its range or a new core release ships.
+        core: [main, v0.7.0, v0.5.0, v0.1.0]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup
@@ -32,8 +39,13 @@ jobs:
       - run: pnpm bundle
       # No node:fs, child_process, eval, global fetch ... in any built bundle.
       - run: node scripts/check-bundles.mjs
+      # The host check runs on the Node version this core runs on (Node 24 up to v0.5.0), so the
+      # bundles' node24 target is tested where it matters.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .core/transcoda/.node-version
       # Starts every bundle in core's real sandboxed host and checks its sdk range.
-      - run: node scripts/host-check.mjs
+      - run: node --version && node scripts/host-check.mjs
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: bundles-core-${{ matrix.core }}
@@ -42,3 +54,17 @@ jobs:
             plugins/*/dist/*.js.sha256
             plugins/*/dist/*.manifest.json
           if-no-files-found: error
+
+  # One stable name for the ruleset to require: the matrix job names change with the matrix.
+  ci-ok:
+    name: ci-ok
+    if: ${{ always() }}
+    needs: [check]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - env:
+          RESULT: ${{ needs.check.result }}
+        run: |
+          echo "check: $RESULT"
+          [ "$RESULT" = success ]

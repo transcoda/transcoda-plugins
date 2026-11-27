@@ -39,8 +39,11 @@ catalog/
   blocklist.json           hand-edited blocklist source; CI signs and publishes it
 .github/
   actions/setup            checks out the core repo next to this one and installs both
-  workflows/ci.yml         typecheck, lint, test, bundle against each supported core version
-  workflows/release.yml    builds, signs, attests and releases one plugin per tag
+  workflows/ci.yml         pnpm check, bundle, bundle checks and host check against core's main and
+                           released cores (see "Core versions CI tests against"); `ci-ok` sums them up
+  workflows/release.yml    builds, signs, attests and releases one plugin per tag, then opens a
+                           pull request removing the release notes it published
+  workflows/nightly.yml    every check against core's main, nightly; files an issue per failing test
   workflows/release-note.yml  PR check: a release note or the `no user-facing change` label
   workflows/catalog.yml    builds and signs index.json and blocklist.json, pushes to branch `catalog`
 ```
@@ -72,9 +75,10 @@ default export (the bare name; `package.json` keeps `@transcoda/plugin-example`)
 
 ## The SDK dependency
 
-Plugins get the SDK from npm: `"@transcoda/sdk": "1.0.0"`, exact-pinned, in each plugin's
-`devDependencies` (it is bundled, so never a runtime dependency). Move the pin in one pull request
-across every package when a new SDK release is out; the SDK's own release steps are in core's
+Plugins get the SDK from npm, exact-pinned (`"@transcoda/sdk": "1.3.0"` today) to the same version
+in the root `package.json` and in every plugin's and package's `devDependencies` (it is bundled, so
+never a runtime dependency). Move the pin in one pull request across every package when a new SDK
+release is out; the SDK's own release steps are in core's
 [`docs/releasing.md`](https://github.com/transcoda/transcoda/blob/main/docs/releasing.md).
 
 CI still checks out `transcoda/transcoda` into `.core/` and symlinks it to `../transcoda`, for two
@@ -82,6 +86,27 @@ things: `scripts/host-check.mjs` runs every built bundle through core's real plu
 (`--check-plugin`), and `test/example-workflow.test.ts` cross-checks core's example workflow
 against the plugins' node schemas. Locally, keep a core checkout next to this repo for the same
 reason.
+
+### Core versions CI tests against
+
+`ci.yml` runs every check once per core version in its matrix: core's `main`, to catch breakage
+early, and released tags, because those are what users run:
+
+- the latest release;
+- the newest release on Node 24 (`v0.5.0`): bundles target `node24` so that hosts on Node 24 still
+  load them, so the host check there runs on that core's own Node version (from its
+  `.node-version`);
+- the oldest release whose SDK satisfies the lowest `transcoda.sdk` range a plugin declares
+  (`v0.1.0`, SDK 1.0.0, for `^1`).
+
+Against an older core, the host check skips a bundle whose range starts above that core's SDK (for
+example Sonarr's `^1.1` on SDK 1.0.0) instead of failing it; a core newer than a range still fails.
+When a release ships, move the "latest" entry; when a plugin raises its range, or the lowest range
+moves, move the oldest one. Core's releases and their SDK versions: `gh release list -R
+transcoda/transcoda` and `packages/sdk/package.json` at each tag.
+
+The ruleset requires the `ci-ok` job, which passes only when every matrix job passed, so the
+required check keeps its name when the matrix changes.
 
 ## Development
 
@@ -145,7 +170,22 @@ Every pull request that changes something a user can notice adds a note,
 one or two sentences for people who use Transcoda (format in `.changes/README.md`). A pull
 request with no user-facing change gets the `no user-facing change` label instead; CI checks
 for one of the two. The release workflow pastes the plugin's notes into the release, grouped
-New, Improved, Fixed and Breaking. Removing the notes a release consumed is a manual follow-up.
+New, Improved, Fixed and Breaking.
+
+The notes have to go once they are published, or the plugin's next release publishes them again.
+The release workflow does that: after the release, its `remove-notes` job takes the note files the
+tag held (the same `.changes/<plugin>/*.md` and `.changes/<plugin>-*.md` the release body was
+built from), deletes those still on `main` on a branch `release-notes/<tag>` and opens a pull
+request "Release notes: remove the notes <tag> published" with the `no user-facing change` label.
+Notes merged after the tag stay for the next release. Merge that pull request. Two things to
+know:
+
+- GitHub starts no workflows for a pull request opened with the workflow's own token, so its
+  checks do not run; close and reopen it to start them.
+- Opening the pull request needs "Allow GitHub Actions to create and approve pull requests"
+  (Settings > Actions > General). Without it the job pushes the branch, logs a warning, and the
+  pull request is opened by hand from that branch. The job never fails the release run, because
+  the catalog workflow publishes only after a successful one.
 
 A plugin bumps its major version when it drops support for an SDK major; widening the
 `transcoda.sdk` range is a minor release.
