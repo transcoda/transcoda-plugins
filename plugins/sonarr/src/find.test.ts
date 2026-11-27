@@ -57,6 +57,23 @@ describe('findSeriesForPath', () => {
     expect(ctx.calls.filter((c) => c.url === `${BASE}/api/v3/series`)).toHaveLength(1);
   });
 
+  it('caches only what the lookups use, not the whole series record', async () => {
+    const ctx = fakePluginContext({
+      settings,
+      responses: [get('/api/v3/series', [SHOW]), get('/api/v3/episodefile?seriesId=1', [])],
+    });
+    await findSeriesForPath(ctx, '/data/shows/Show/a.mkv');
+    const [cached] = (await ctx.cache.get('series')) as Record<string, unknown>[];
+    expect(cached).toEqual({
+      id: 1,
+      title: 'Show',
+      path: '/data/shows/Show',
+      tvdbId: 123456,
+      tmdbId: 98765,
+      imdbId: 'tt0000001',
+    });
+  });
+
   it('returns the series with no file and an empty episode label when the file is unknown', async () => {
     const ctx = fakePluginContext({
       settings,

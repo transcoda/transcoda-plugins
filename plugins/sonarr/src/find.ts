@@ -1,6 +1,7 @@
 import {
   ArrHttpError,
   arrClient,
+  cachedItems,
   idsOf,
   type JsonValue,
   pickByPath,
@@ -21,8 +22,6 @@ export interface EpisodeFileRef {
   id: number;
   path: string;
 }
-
-const SERIES_TTL_MS = 600_000;
 
 const isObj = (v: unknown): v is Record<string, JsonValue> =>
   typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -57,17 +56,8 @@ export function idsOfSeries(series: SeriesRef): ReturnType<typeof idsOf> {
   return idsOf(o);
 }
 
-async function allSeries(ctx: PluginContext): Promise<SeriesRef[]> {
-  const cached = await ctx.cache.get('series');
-  let raw: JsonValue;
-  if (cached !== undefined) {
-    raw = cached;
-  } else {
-    raw = await arrClient(ctx, 'Sonarr').get('/api/v3/series');
-    if (Array.isArray(raw)) await ctx.cache.set('series', raw, SERIES_TTL_MS);
-  }
-  if (!Array.isArray(raw)) return [];
-  return raw.map(toSeries).filter((s): s is SeriesRef => s !== null);
+function allSeries(ctx: PluginContext): Promise<SeriesRef[]> {
+  return cachedItems(ctx, 'Sonarr', { key: 'series', path: '/api/v3/series', slim: toSeries });
 }
 
 const pad2 = (n: number) => String(n).padStart(2, '0');

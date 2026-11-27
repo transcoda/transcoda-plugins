@@ -35,12 +35,13 @@ export const originalLanguage = defineNode({
           reason: await notKnownMessage(ctx.plugin, 'Radarr', remotePath),
         };
       }
+      const label = movieLabel(movie);
       const lang = originalLanguageOf(ctx.plugin, {
         originalLanguage: movie.originalLanguage ?? null,
       });
       return {
-        value: { language: lang.language, title: movieLabel(movie), ids: idsOf({ ...movie }) },
-        reason: lang.reason,
+        value: { language: lang.language, title: label, ids: idsOf({ ...movie }) },
+        reason: `${label}: ${lang.reason}`,
       };
     } catch (e) {
       // Never throws for an expected failure, so the trace shows the reason.

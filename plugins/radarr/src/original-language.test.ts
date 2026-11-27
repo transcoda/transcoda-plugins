@@ -26,7 +26,7 @@ describe('radarr:original-language', () => {
       title: 'Example Movie (2019)',
       ids: { tmdbId: 603, imdbId: 'tt0000003' },
     });
-    expect(res.reason).toContain('Japanese');
+    expect(res.reason).toMatch(/^Example Movie \(2019\): original language Japanese/);
   });
 
   it('gives unknown for a language Radarr reports as Unknown', async () => {

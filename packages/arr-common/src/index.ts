@@ -21,6 +21,7 @@ export {
   recentMarkedFailed,
 } from './history.ts';
 export { idsOf } from './ids.ts';
+export { cachedItems, ITEMS_TTL_MS } from './items.ts';
 export type { JsonValue } from './json.ts';
 export { originalLanguageOf } from './language.ts';
 export { isUnder, pickByPath, sameFile } from './paths.ts';

@@ -248,10 +248,16 @@ describe('forbidden commands', () => {
     (f) => f.endsWith('.ts') && !f.endsWith('.test.ts') && f !== 'test-util.ts',
   );
 
+  // The shared Sonarr/Radarr code is inlined into the bundle too, so it is checked as well.
+  const common = fileURLToPath(new URL('../../../packages/arr-common/src/', import.meta.url));
+  const commonSources = readdirSync(common)
+    .filter((f) => f.endsWith('.ts') && !f.endsWith('.test.ts') && f !== 'test-util.ts')
+    .map((f) => `${common}${f}`);
+
   it('no source file names a command that could import or refresh', () => {
     expect(sources).toContain('rescan.ts');
-    for (const f of sources) {
-      const text = readFileSync(`${dir}${f}`, 'utf8');
+    for (const f of [...sources.map((s) => `${dir}${s}`), ...commonSources]) {
+      const text = readFileSync(f, 'utf8');
       for (const bad of ['DownloadedMoviesScan', 'ManualImport', 'RefreshMovie']) {
         expect(text, `${f} mentions ${bad}`).not.toContain(bad);
       }
