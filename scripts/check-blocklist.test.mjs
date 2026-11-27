@@ -4,6 +4,8 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { it } from 'node:test';
+import fc from 'fast-check';
+import { configureFastCheck } from '../test/fast-check.mjs';
 import { checkBlocklist } from './check-blocklist.mjs';
 
 const doc = (entries) => ({ schema: 1, generated: '2026-10-17T00:00:00.000Z', entries });
@@ -103,4 +105,92 @@ it('cli exits 1 with one line per problem', () => {
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+});
+
+configureFastCheck();
+
+// Property tests: random entries, valid ones and ones with exactly one rule broken.
+const hex64 = fc.stringMatching(/^[0-9a-f]{64}$/);
+const name = fc.stringMatching(/^[a-z][a-z0-9-]{0,39}$/);
+const iso = fc
+  .date({
+    min: new Date('2020-01-01T00:00:00Z'),
+    max: new Date('2026-10-17T00:00:00Z'),
+    noInvalidDate: true,
+  })
+  .map((d) => d.toISOString());
+const reason = fc
+  .string({ minLength: 1, maxLength: 200 })
+  .filter((r) => r.trim() === r && r !== '');
+const range = fc.constantFrom('*', '1.0.0', '>=1.0.0 <2.0.0', '^1.2.3', '~0.4.0', '<=3 || 5.x');
+const validEntry = fc
+  .record({
+    sha256: fc.option(hex64, { nil: undefined }),
+    name: fc.option(name, { nil: undefined }),
+    versions: fc.option(range, { nil: undefined }),
+    reason,
+    url: fc.option(fc.webUrl({ validSchemes: ['https'] }), { nil: null }),
+    added: iso,
+  })
+  .filter((e) => e.sha256 !== undefined || e.name !== undefined)
+  .map((e) => (e.name === undefined ? { ...e, versions: undefined } : e));
+const validDoc = fc
+  .array(validEntry, { maxLength: 6 })
+  .map((entries) => doc(entries.map((e, i) => ({ id: `bl-${i}`, ...e }))));
+const json = (v) => JSON.parse(JSON.stringify(v));
+
+it('property: any valid blocklist passes, also after a JSON round trip', () => {
+  fc.assert(
+    fc.property(validDoc, (d) => {
+      assert.deepEqual(checkBlocklist(d), []);
+      assert.deepEqual(checkBlocklist(json(d)), []);
+    }),
+  );
+});
+
+it('property: breaking one rule of one entry is reported against that entry', () => {
+  const breakages = [
+    (e) => ({ ...e, id: '' }),
+    (e) => ({ ...e, sha256: 'F'.repeat(64) }),
+    (e) => ({ ...e, name: 'Bad Name' }),
+    (e) => ({ ...e, sha256: undefined, name: undefined, versions: undefined }),
+    (e) => ({ ...e, reason: '   ' }),
+    (e) => ({ ...e, reason: 'x'.repeat(201) }),
+    (e) => ({ ...e, url: 'http://example.com/' }),
+    (e) => ({ ...e, added: '2026-13-01T00:00:00Z' }),
+    (e) => ({ ...e, added: '2027-01-01T00:00:00.000Z' }),
+    (e) => ({ ...e, surprise: true }),
+  ];
+  fc.assert(
+    fc.property(
+      validDoc.filter((d) => d.entries.length > 0),
+      fc.nat(),
+      fc.constantFrom(...breakages),
+      (d, pick, breakIt) => {
+        const i = pick % d.entries.length;
+        const entries = d.entries.map((e, j) => (j === i ? breakIt(e) : e));
+        const problems = checkBlocklist(json({ ...d, entries }));
+        assert.ok(problems.length > 0);
+        for (const p of problems) assert.match(p, new RegExp(`^entries\\[${i}\\]`));
+      },
+    ),
+  );
+});
+
+it('property: any JSON value gives a list of problems, never an exception', () => {
+  fc.assert(
+    fc.property(
+      fc.oneof(
+        fc.jsonValue(),
+        fc
+          .tuple(validDoc, fc.jsonValue())
+          .map(([d, odd]) => ({ ...d, entries: [...d.entries, odd] })),
+      ),
+      (v) => {
+        const problems = checkBlocklist(v);
+        assert.ok(Array.isArray(problems));
+        for (const p of problems) assert.equal(typeof p, 'string');
+      },
+    ),
+  );
 });

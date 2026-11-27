@@ -8,12 +8,19 @@ type Entry = { id: string; path: string | null };
 
 export class LookupFailed extends Error {}
 
+/**
+ * The separator of a path Jellyfin reports: `\` for a Windows path (`D:\Movies`, `\\server\share`),
+ * which has no `/`; otherwise `/`, and a `\` is a character of a file or folder name.
+ */
+function separatorOf(path: string): '/' | '\\' {
+  return path.includes('/') || !path.includes('\\') ? '/' : '\\';
+}
+
 /** True when `path` is `dir` itself or lies inside it, for / and \ separated paths alike. */
 export function isWithin(path: string, dir: string): boolean {
   if (path === dir) return true;
-  const last = dir.at(-1);
-  const prefix = last === '/' || last === '\\' ? dir : `${dir}${dir.includes('\\') ? '\\' : '/'}`;
-  return path.startsWith(prefix);
+  const sep = separatorOf(dir);
+  return path.startsWith(dir.endsWith(sep) ? dir : `${dir}${sep}`);
 }
 
 function str(v: unknown): string | null {
@@ -81,7 +88,7 @@ async function items(ctx: PluginContext, parentId: string, recursive: boolean): 
 
 /** The folder part of a / or \\ separated path. */
 export function parentDir(path: string): string {
-  return path.slice(0, Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\')));
+  return path.slice(0, Math.max(0, path.lastIndexOf(separatorOf(path))));
 }
 
 /**

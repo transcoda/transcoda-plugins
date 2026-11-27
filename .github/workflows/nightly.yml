@@ -61,6 +61,8 @@ jobs:
         run: pnpm lint
       - id: check-plugins
         if: ${{ !cancelled() }}
+        env:
+          FC_NUM_RUNS: 10000
         run: pnpm check-plugins
       - id: check-blocklist
         if: ${{ !cancelled() }}
@@ -68,8 +70,12 @@ jobs:
       - id: check-file-size
         if: ${{ !cancelled() }}
         run: pnpm check-file-size
+      # The property tests (fast-check) try 10000 cases each instead of 100, from a new seed each
+      # night; about 10 s on a laptop. The longer timeout is for the ones that build long strings.
       - if: ${{ !cancelled() }}
-        run: pnpm test --reporter=default --reporter=json --outputFile.json=.nightly/vitest.json
+        env:
+          FC_NUM_RUNS: 10000
+        run: pnpm test --testTimeout=120000 --reporter=default --reporter=json --outputFile.json=.nightly/vitest.json
       - id: bundle
         if: ${{ !cancelled() }}
         run: pnpm bundle

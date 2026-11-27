@@ -1,3 +1,4 @@
+import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { parseTitle } from './parse-title.ts';
 
@@ -180,5 +181,67 @@ describe('parseTitle', () => {
 
   it('keeps a title that starts with a release word in the very first position', () => {
     expect(parseTitle('Atmos.2019.mkv', '').title).toBe('Atmos');
+  });
+});
+
+describe('parseTitle (properties)', () => {
+  const word = fc.oneof(
+    fc.string({ unit: fc.constantFrom('a', 'B', 'é', '&', "'", '!'), minLength: 1, maxLength: 8 }),
+    fc.constantFrom(
+      '1080p',
+      'WEB',
+      'x265',
+      'S01E02',
+      '1x03',
+      'Season 1',
+      'Jr.',
+      'Dr.',
+      '-',
+      '(',
+      ')',
+      '[',
+      ']',
+    ),
+    fc.integer({ min: 1880, max: 2099 }).map(String),
+  );
+  const name = fc
+    .tuple(
+      fc.array(word, { maxLength: 10 }),
+      fc.constantFrom(' ', '.', '_'),
+      fc.constantFrom('', '.mkv', '.mp4', '.MKV'),
+    )
+    .map(([w, sep, ext]) => w.join(sep) + ext);
+  const folder = fc.array(name, { maxLength: 3 }).map((p) => `/data/${p.join('/')}`);
+
+  it('always answers: a known kind, a plausible year, a title without edge separators', () => {
+    fc.assert(
+      fc.property(name, folder, (file, dir) => {
+        const r = parseTitle(file, dir);
+        expect(['movie', 'tv', 'unknown']).toContain(r.kind);
+        if (r.year !== null) {
+          expect(Number.isInteger(r.year)).toBe(true);
+          expect(r.year).toBeGreaterThanOrEqual(1900);
+          expect(r.year).toBeLessThanOrEqual(2099);
+        }
+        expect(r.title).toBe(r.title.trim());
+        expect(r.title).not.toMatch(/^[-–—:,]|[-–—:,]$/);
+        expect(r.title).not.toMatch(/\s{2}|\.(?:mkv|mp4)$/i);
+        if (r.kind === 'movie') expect(r.year).not.toBeNull();
+      }),
+    );
+  });
+
+  it('an episode marker makes it tv, wherever the name came from', () => {
+    fc.assert(
+      fc.property(
+        fc.array(word, { maxLength: 4 }),
+        fc.integer({ min: 1, max: 30 }),
+        folder,
+        (w, ep, dir) => {
+          const file = `${w.join('.')}.S01E${String(ep).padStart(2, '0')}.mkv`;
+          expect(parseTitle(file, dir).kind).toBe('tv');
+        },
+      ),
+    );
   });
 });

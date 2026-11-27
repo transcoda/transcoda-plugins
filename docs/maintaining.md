@@ -147,6 +147,26 @@ pnpm bundle
 - `pnpm format`: apply Biome formatting and import sorting.
 - One plugin only: `pnpm --filter ./plugins/example bundle`.
 
+### Property tests
+
+Some tests are properties checked on random input with [fast-check](https://fast-check.dev):
+path matching (`packages/arr-common`, Jellyfin), the Discord and ntfy length limits, title
+parsing (TMDB), failure reasons, the catalog and the blocklist check. Each property runs
+`FC_NUM_RUNS` cases (100 when unset, so `pnpm check` stays fast; the nightly runs 10000) from a
+new random seed every run; `test/fast-check.mjs` sets this for Vitest (through `test/setup.ts`)
+and for the script tests.
+
+A failing property prints its counterexample and a line such as
+`{ seed: -1220931384, path: "29:2:0", endOnFailure: true }`. To replay exactly that case, pass the
+seed and path to the failing `fc.assert` while you fix it, and take them out again afterwards:
+
+```ts
+fc.assert(fc.property(/* ... */), { seed: -1220931384, path: '29:2:0' });
+```
+
+Then add the counterexample as an ordinary example test next to the property, so it stays checked.
+To look harder for a failure locally, raise the count: `FC_NUM_RUNS=100000 pnpm test`.
+
 Biome, the tsconfig base, the release-note format and the file-size budget come from
 `@transcoda/dev-config`, and the release-note, PR-title, nightly, main-red and file-size checks
 from the actions in [transcoda/.github](https://github.com/transcoda/.github), all at the same tag.
