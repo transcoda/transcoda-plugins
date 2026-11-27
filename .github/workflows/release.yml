@@ -111,9 +111,13 @@ jobs:
           PLUGIN: ${{ steps.tag.outputs.plugin }}
           VERSION: ${{ steps.tag.outputs.version }}
           ATTESTATION_URL: ${{ steps.attest.outputs.attestation-url }}
+          ATTESTATION_BUNDLE: ${{ steps.attest.outputs.bundle-path }}
           BY_HAND: ${{ inputs.tag != '' && github.sha || '' }}
         run: |
           dist="plugins/$PLUGIN/dist"
+          # The attestation's Sigstore bundle (one JSON line: the signed SLSA provenance for the
+          # bundle), attached as <name>-<version>.intoto.jsonl so it can be verified offline.
+          cp "$ATTESTATION_BUNDLE" "$dist/$PLUGIN-$VERSION.intoto.jsonl"
           prerelease=()
           [[ "$VERSION" == *-* ]] && prerelease=(--prerelease)
           # Body: the core version, the attestation line the catalog reads, then the release notes
@@ -131,6 +135,7 @@ jobs:
           } > "$RUNNER_TEMP/release-notes.md"
           gh release create "$TAG" "$dist/$PLUGIN-$VERSION.js" "$dist/$PLUGIN-$VERSION.js.sha256" \
             "$dist/$PLUGIN-$VERSION.js.sig" "$dist/$PLUGIN-$VERSION.manifest.json" \
+            "$dist/$PLUGIN-$VERSION.intoto.jsonl" \
             --title "$PLUGIN $VERSION" --notes-file "$RUNNER_TEMP/release-notes.md" --verify-tag "${prerelease[@]}"
 
   # Opens a pull request that deletes the notes the release just published, so the next release of
