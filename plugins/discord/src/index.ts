@@ -11,6 +11,8 @@ export { notify } from './notify.ts';
 
 export const hooks: PluginHooks = {
   async onJobFailed(ctx: PluginContext, job: HookJob) {
+    // A dry run writes nothing, so its failure is not worth a channel message (ntfy does the same).
+    if (job.dryRun) return;
     const account = integration.settings.safeParse(ctx.settings);
     if (!account.success || !account.data.notifyOnFailed) return;
     const result = await postMessage(ctx, {
