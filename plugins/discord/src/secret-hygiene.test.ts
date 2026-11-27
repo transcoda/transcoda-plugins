@@ -1,3 +1,4 @@
+import { assertSecretHygiene } from '@transcoda/plugin-test-utils';
 import {
   FetchFailed,
   FetchRateLimited,
@@ -51,16 +52,12 @@ const job: HookJob = {
   jobUrl: null,
 } as const;
 
-function expectClean(ctx: ReturnType<typeof fakePluginContext>, results: unknown[]) {
-  const hay = [
-    ...ctx.logs.map(([, m]) => m),
-    ...results.map((r) => JSON.stringify(r)),
-    ...ctx.calls.map((c) => JSON.stringify({ h: c.headers ?? null, b: c.body ?? null })),
-  ].join('\n');
-  expect(hay).not.toContain(SENTINEL);
-  expect(hay).not.toContain('/api/webhooks/');
-  expect(hay).not.toContain('webhooks');
-}
+// The whole webhook URL is the secret: it may be the request's target, and nothing else.
+const expectClean = (ctx: ReturnType<typeof fakePluginContext>, results: unknown[]) =>
+  assertSecretHygiene(ctx, [SENTINEL, '/api/webhooks/', 'webhooks'], results, {
+    secretInUrl: true,
+    requireCalls: false,
+  });
 
 describe('secret hygiene', () => {
   const runCtx = (plug: ReturnType<typeof fakePluginContext>) => ({

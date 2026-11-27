@@ -1,8 +1,8 @@
 import { FetchTimeout, integrationMetadata } from '@transcoda/sdk';
 import { fakePluginContext, runTest } from '@transcoda/sdk/testing';
 import { describe, expect, it } from 'vitest';
-import { BASE, jellyfinFixture, settings } from '../test/fixtures.ts';
 import { DEFAULT_MAPPINGS, integration } from './integration.ts';
+import { BASE, jellyfinFixture, settings } from './test-util.ts';
 
 const pub = jellyfinFixture('system-info-public');
 const info = jellyfinFixture('system-info');

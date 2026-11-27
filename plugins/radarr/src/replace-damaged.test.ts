@@ -10,7 +10,7 @@ import {
   type Responses,
   runContext,
   SENTINEL,
-} from './test-support.ts';
+} from './test-util.ts';
 
 const FILE = '/data/movies/Example Movie (2019)/Example Movie (2019).mkv';
 const MOVIE_URL = `${BASE}/api/v3/movie`;

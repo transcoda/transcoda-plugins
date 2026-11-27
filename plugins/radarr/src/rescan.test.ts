@@ -4,7 +4,7 @@ import { coalesceReset } from '@transcoda/plugin-arr-common';
 import { fakeHookContext, runFinish, runFinishRun } from '@transcoda/sdk/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { rescan } from './rescan.ts';
-import { BASE, ctxWith, fixture, movies, type Responses, runContext } from './test-support.ts';
+import { BASE, ctxWith, fixture, movies, type Responses, runContext } from './test-util.ts';
 
 const MOVIE_URL = `${BASE}/api/v3/movie`;
 const FILE_URL = `${BASE}/api/v3/moviefile?movieId=11`;
@@ -245,7 +245,7 @@ describe('radarr:rescan run', () => {
 describe('forbidden commands', () => {
   const dir = fileURLToPath(new URL('.', import.meta.url));
   const sources = readdirSync(dir).filter(
-    (f) => f.endsWith('.ts') && !f.endsWith('.test.ts') && f !== 'test-support.ts',
+    (f) => f.endsWith('.ts') && !f.endsWith('.test.ts') && f !== 'test-util.ts',
   );
 
   it('no source file names a command that could import or refresh', () => {

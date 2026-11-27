@@ -1,3 +1,4 @@
+import { assertSecretHygiene } from '@transcoda/plugin-test-utils';
 import { FetchTimeout } from '@transcoda/sdk';
 import {
   fakeHookContext,
@@ -11,18 +12,9 @@ import { integration, originalLanguage } from './index.ts';
 
 const SENTINEL = 'SENTINEL-SECRET-9f3a';
 
-function assertClean(ctx: ReturnType<typeof fakePluginContext>, outputs: unknown[]) {
-  expect(ctx.calls.length).toBeGreaterThan(0);
-  for (const call of ctx.calls) {
-    expect(call.url).not.toContain(SENTINEL);
-    expect(JSON.stringify(call.headers ?? {})).not.toContain(SENTINEL);
-    expect(JSON.stringify(call.body ?? null)).not.toContain(SENTINEL);
-    // The sentinel is not a 32-hex key, so it travels as a bearer token inside auth only.
-    expect(call.auth).toEqual({ bearer: SENTINEL });
-  }
-  expect(JSON.stringify(ctx.logs)).not.toContain(SENTINEL);
-  expect(JSON.stringify(outputs)).not.toContain(SENTINEL);
-}
+// The sentinel is not a 32-hex key, so it travels as a bearer token inside auth only.
+const assertClean = (ctx: ReturnType<typeof fakePluginContext>, outputs: unknown[]) =>
+  assertSecretHygiene(ctx, SENTINEL, outputs, { auth: { bearer: SENTINEL } });
 
 const scenarios: Array<[string, ScriptedResponse[]]> = [
   ['success', [{ match: { url: /\/3\/movie\/1\?/ }, body: { original_language: 'en' } }]],
@@ -97,17 +89,8 @@ describe('tmdb secret hygiene with a key-shaped credential', () => {
     ['unscripted', []],
   ];
 
-  function clean(ctx: ReturnType<typeof fakePluginContext>, outputs: unknown[]) {
-    expect(ctx.calls.length).toBeGreaterThan(0);
-    for (const call of ctx.calls) {
-      expect(call.auth).toEqual({ query: { name: 'api_key', value: KEY } });
-      expect(call.url).not.toContain(KEY);
-      expect(JSON.stringify(call.headers ?? {})).not.toContain(KEY);
-      expect(JSON.stringify(call.body ?? null)).not.toContain(KEY);
-    }
-    expect(JSON.stringify(ctx.logs)).not.toContain(KEY);
-    expect(JSON.stringify(outputs)).not.toContain(KEY);
-  }
+  const clean = (ctx: ReturnType<typeof fakePluginContext>, outputs: unknown[]) =>
+    assertSecretHygiene(ctx, KEY, outputs, { auth: { query: { name: 'api_key', value: KEY } } });
 
   it.each(bad)('test() (%s)', async (_n, responses) => {
     const ctx = fakePluginContext({ settings: { credential: KEY }, responses });

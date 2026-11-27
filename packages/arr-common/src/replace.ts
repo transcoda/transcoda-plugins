@@ -1,5 +1,6 @@
-import { type FinishRunContext, type FinishRunResult, fetchErrorKind } from '@transcoda/sdk';
-import { type ArrClient, ArrHttpError, type ArrProduct } from './client.ts';
+import type { FinishRunContext, FinishRunResult } from '@transcoda/sdk';
+import type { ArrClient, ArrProduct } from './client.ts';
+import { describeFailure } from './errors.ts';
 import {
   type BlocklistItem,
   importedGrab,
@@ -58,20 +59,11 @@ interface Pending {
   todo: string;
 }
 
-/** A short, secret-free reason for an expected failure; null for a programming error. */
-function describe(product: ArrProduct, e: unknown): { message: string; retryable: boolean } | null {
-  const kind = fetchErrorKind(e);
-  if (kind !== null)
-    return { message: `${product} unreachable: ${kind}`, retryable: kind !== 'refused' };
-  if (e instanceof ArrHttpError) return { message: e.message, retryable: e.status >= 500 };
-  return null;
-}
-
 async function step<T>(product: ArrProduct, name: string, fn: () => Promise<T>): Promise<T> {
   try {
     return await fn();
   } catch (e) {
-    const failure = describe(product, e);
+    const failure = describeFailure(product, e);
     if (failure === null) throw e;
     throw new StepFailed(name, failure.retryable, failure.message);
   }

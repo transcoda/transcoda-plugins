@@ -1,6 +1,7 @@
 import {
   arrClient,
   coalesce,
+  describeFailure,
   type JsonValue,
   notKnownMessage,
   runCommand,
@@ -8,7 +9,6 @@ import {
 } from '@transcoda/plugin-arr-common';
 import { defineNode } from '@transcoda/sdk';
 import { z } from 'zod';
-import { describeFailure } from './errors.ts';
 import { findMovieForPath, movieFiles, movieLabel } from './find.ts';
 
 const COALESCE_MS = 5000;
@@ -86,7 +86,7 @@ export const rescan = defineNode({
             message: `Radarr does not list ${newRemote} after rescan; ${label} may show as missing`,
           };
     } catch (e) {
-      const failure = describeFailure(e);
+      const failure = describeFailure('Radarr', e);
       if (failure === null) throw e;
       return { ok: false, retryable: failure.retryable, message: failure.message };
     }

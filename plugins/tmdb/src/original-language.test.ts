@@ -1,8 +1,8 @@
 import { nodeMetadata } from '@transcoda/sdk';
 import { fakeHookContext, fakePluginContext, runData } from '@transcoda/sdk/testing';
 import { describe, expect, it } from 'vitest';
-import { readFixture } from './fixture.ts';
 import plugin, { originalLanguage } from './index.ts';
+import { readFixture } from './test-util.ts';
 
 const KEY = '0123456789abcdef0123456789abcdef';
 

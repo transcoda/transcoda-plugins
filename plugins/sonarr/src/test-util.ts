@@ -1,6 +1,5 @@
 // Shared by the tests only; index.ts never imports it.
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { arrFixture } from '@transcoda/plugin-arr-common/test-util';
 import type { FakePluginContext, ScriptedResponse } from '@transcoda/sdk/testing';
 import { fakeHookContext } from '@transcoda/sdk/testing';
 
@@ -54,8 +53,4 @@ export function runCtx(plugin: FakePluginContext, over: Record<string, unknown> 
   };
 }
 
-/** A recorded JSON fixture from test/fixtures/arr. */
-export function arrFixture(name: string): unknown {
-  const url = new URL(`../../../test/fixtures/arr/${name}.json`, import.meta.url);
-  return JSON.parse(readFileSync(fileURLToPath(url), 'utf8'));
-}
+export { arrFixture };

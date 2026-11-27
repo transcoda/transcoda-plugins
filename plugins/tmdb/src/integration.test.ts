@@ -1,8 +1,8 @@
 import { FetchTimeout } from '@transcoda/sdk';
 import { fakePluginContext, runTest } from '@transcoda/sdk/testing';
 import { describe, expect, it } from 'vitest';
-import { readFixture } from './fixture.ts';
 import { integration } from './integration.ts';
+import { readFixture } from './test-util.ts';
 
 const KEY = '0123456789abcdef0123456789abcdef';
 const auth = /\/3\/authentication/;

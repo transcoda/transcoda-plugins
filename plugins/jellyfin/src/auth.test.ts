@@ -1,7 +1,7 @@
 import { fakePluginContext } from '@transcoda/sdk/testing';
 import { describe, expect, it } from 'vitest';
-import { BASE, jellyfinFixture, KEY, settings } from '../test/fixtures.ts';
 import { jellyfinAuth, jellyfinGet } from './auth.ts';
+import { BASE, jellyfinFixture, KEY, settings } from './test-util.ts';
 
 const info = jellyfinFixture('system-info');
 const url = `${BASE}/System/Info`;

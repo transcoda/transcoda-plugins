@@ -1,3 +1,4 @@
+import { assertSecretHygiene } from '@transcoda/plugin-test-utils';
 import { FetchRefused } from '@transcoda/sdk';
 import {
   fakeHookContext,
@@ -7,10 +8,10 @@ import {
   runTest,
 } from '@transcoda/sdk/testing';
 import { describe, expect, it } from 'vitest';
-import { BASE, jellyfinFixture, KEY, settings } from '../test/fixtures.ts';
 import plugin from './index.ts';
 import { integration } from './integration.ts';
 import { refresh } from './refresh.ts';
+import { BASE, jellyfinFixture, KEY, settings } from './test-util.ts';
 
 const pub = jellyfinFixture('system-info-public');
 const info = jellyfinFixture('system-info');
@@ -30,15 +31,9 @@ function scripted(): ReturnType<typeof fakePluginContext> {
   });
 }
 
-function assertClean(ctx: ReturnType<typeof fakePluginContext>, outputs: unknown[]) {
-  for (const [, line] of ctx.logs) expect(line).not.toContain(KEY);
-  expect(JSON.stringify(outputs)).not.toContain(KEY);
-  for (const call of ctx.calls) {
-    expect(call.url).not.toContain(KEY);
-    expect(JSON.stringify(call.headers ?? {})).not.toContain(KEY);
-    expect(JSON.stringify(call.body ?? null)).not.toContain(KEY);
-  }
-}
+// Some calls are unauthenticated (System/Info/Public), so `auth` is checked per test, not here.
+const assertClean = (ctx: ReturnType<typeof fakePluginContext>, outputs: unknown[]) =>
+  assertSecretHygiene(ctx, KEY, outputs);
 
 describe('secret hygiene', () => {
   it('keeps the key inside auth for test(), finish and run', async () => {

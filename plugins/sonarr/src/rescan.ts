@@ -1,12 +1,12 @@
 import {
-  ArrHttpError,
   arrClient,
   coalesce,
+  describeFailure,
   notKnownMessage,
   runCommand,
   sameFile,
 } from '@transcoda/plugin-arr-common';
-import { defineNode, fetchErrorKind } from '@transcoda/sdk';
+import { defineNode } from '@transcoda/sdk';
 import { z } from 'zod';
 import { findSeriesForPath, listEpisodeFiles } from './find.ts';
 
@@ -98,18 +98,9 @@ export const rescan = defineNode({
         message: `Sonarr does not list ${newRemote} after rescan${missing}`,
       };
     } catch (e) {
-      const kind = fetchErrorKind(e);
-      if (kind !== null) {
-        return {
-          ok: false,
-          retryable: kind !== 'refused',
-          message: `Sonarr unreachable: ${kind}`,
-        };
-      }
-      if (e instanceof ArrHttpError) {
-        return { ok: false, retryable: e.status >= 500, message: e.message };
-      }
-      throw e;
+      const failure = describeFailure('Sonarr', e);
+      if (failure === null) throw e;
+      return { ok: false, retryable: failure.retryable, message: failure.message };
     }
   },
 });

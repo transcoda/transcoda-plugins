@@ -1,4 +1,5 @@
 import { coalesceReset } from '@transcoda/plugin-arr-common';
+import { assertSecretHygiene } from '@transcoda/plugin-test-utils';
 import { runBuild, runData, runDecide, runFinishRun, runTest } from '@transcoda/sdk/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getSubtitlesNow } from './get-subtitles-now.ts';
@@ -36,18 +37,11 @@ afterEach(() => vi.useRealTimers());
 
 type Ctx = ReturnType<typeof ctxWith>;
 
-function assertClean(ctx: Ctx, outputs: unknown[]) {
-  expect(ctx.calls.length).toBeGreaterThan(0);
-  for (const [, line] of ctx.logs) expect(line).not.toContain(SENTINEL);
-  expect(JSON.stringify(outputs)).not.toContain(SENTINEL);
-  for (const call of ctx.calls) {
-    expect(call.url).not.toContain(SENTINEL);
-    expect(JSON.stringify(call.headers ?? {})).not.toContain(SENTINEL);
-    expect(JSON.stringify(call.body ?? null)).not.toContain(SENTINEL);
-    // Every request authenticates through the structured field.
-    expect(call.auth).toEqual({ header: { name: 'X-API-KEY', value: SENTINEL } });
-  }
-}
+// Every request authenticates through the structured field.
+const assertClean = (ctx: Ctx, outputs: unknown[]) =>
+  assertSecretHygiene(ctx, SENTINEL, outputs, {
+    auth: { header: { name: 'X-API-KEY', value: SENTINEL } },
+  });
 
 /** Every hook and test(), in turn, against one context; thrown messages are collected too. */
 async function everything(ctx: Ctx, file: string = EPISODE_FILE): Promise<unknown[]> {
