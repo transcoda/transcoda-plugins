@@ -62,6 +62,8 @@ jobs:
     if: needs.changed.outputs.run == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    outputs:
+      step-failed: ${{ steps.outcome.outputs.step-failed }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup
@@ -71,12 +73,16 @@ jobs:
         run: echo "Tested against transcoda/transcoda@$(git -C ../transcoda rev-parse --short HEAD)" | tee -a "$GITHUB_STEP_SUMMARY"
       # The steps of `pnpm check`, each run even when one before it failed, so one night reports
       # every failure.
-      - run: pnpm typecheck
-      - if: ${{ !cancelled() }}
+      - id: typecheck
+        run: pnpm typecheck
+      - id: lint
+        if: ${{ !cancelled() }}
         run: pnpm lint
-      - if: ${{ !cancelled() }}
+      - id: check-plugins
+        if: ${{ !cancelled() }}
         run: pnpm check-plugins
-      - if: ${{ !cancelled() }}
+      - id: check-blocklist
+        if: ${{ !cancelled() }}
         run: pnpm check-blocklist
       - if: ${{ !cancelled() }}
         run: pnpm test --reporter=default --reporter=json --outputFile.json=.nightly/vitest.json
@@ -84,11 +90,23 @@ jobs:
         if: ${{ !cancelled() }}
         run: pnpm bundle
       # No node:fs, child_process, eval, global fetch ... in any built bundle.
-      - if: ${{ !cancelled() && steps.bundle.outcome == 'success' }}
+      - id: check-bundles
+        if: ${{ !cancelled() && steps.bundle.outcome == 'success' }}
         run: node scripts/check-bundles.mjs
       # Starts every bundle in core's real sandboxed host and checks its sdk range.
-      - if: ${{ !cancelled() && steps.bundle.outcome == 'success' }}
+      - id: host-check
+        if: ${{ !cancelled() && steps.bundle.outcome == 'success' }}
         run: node scripts/host-check.mjs
+      # A step that is not a test failed: the run issue, even when tests fail too.
+      - id: outcome
+        if: ${{ !cancelled() }}
+        env:
+          FAILED: >-
+            ${{ steps.typecheck.outcome == 'failure' || steps.lint.outcome == 'failure'
+            || steps.check-plugins.outcome == 'failure' || steps.check-blocklist.outcome == 'failure'
+            || steps.bundle.outcome == 'failure' || steps.check-bundles.outcome == 'failure'
+            || steps.host-check.outcome == 'failure' }}
+        run: echo "step-failed=$FAILED" >> "$GITHUB_OUTPUT"
       - if: ${{ !cancelled() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -130,6 +148,7 @@ jobs:
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           SHA: ${{ github.sha }}
           RUN_FAILED: ${{ needs.check.result != 'success' }}
+          STEP_FAILED: ${{ needs.check.outputs.step-failed == 'true' }}
           # The check job's checkout: vitest's paths are made relative to it.
           TEST_ROOT: ${{ github.workspace }}
         run: node core/scripts/nightly-issues.ts .nightly/vitest.json
