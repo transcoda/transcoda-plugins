@@ -105,6 +105,9 @@ documentation addresses (`192.0.2.x`, `example.invalid`) and made-up ids.
    { auth })` from `@transcoda/plugin-test-utils` (add it as a `workspace:*` devDependency).
    That fails when the secret is in a URL, header, body, log line or result, or a request lacks
    the expected `auth`. `plugins/sonarr/src/secret-hygiene.test.ts` is a short example.
+   Code that takes arbitrary input (paths, names, text with a length limit, parsers) also gets
+   fast-check properties; no fixed seed, run count from `FC_NUM_RUNS`. How to replay a failure:
+   docs/maintaining.md, "Property tests".
 5. **Fixtures.** Recorded-style responses in `test/fixtures/<service>/*.json`, listed in
    `test/fixtures/README.md`. Invented data only (see above).
 6. **Release note.** `.changes/<name>/<short-name>.md`, `type: new`.

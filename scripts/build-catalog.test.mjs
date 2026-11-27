@@ -4,6 +4,9 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { it } from 'node:test';
+import fc from 'fast-check';
+import semver from 'semver';
+import { configureFastCheck } from '../test/fast-check.mjs';
 import { buildCatalog } from './build-catalog.mjs';
 
 const BASE = 'https://github.com/transcoda/transcoda-plugins/releases/download';
@@ -168,4 +171,67 @@ it('cli: --from reads a GitHub releases dump (slurped pages) and writes the inde
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+});
+
+configureFastCheck();
+
+it('property: each plugin lists every version newest first; latest is the newest stable one', () => {
+  const version = fc
+    .tuple(
+      fc.nat(3),
+      fc.nat(3),
+      fc.nat(3),
+      fc.option(fc.constantFrom('alpha.1', 'beta.1', 'beta.2', 'rc.1'), { nil: null }),
+    )
+    .map(([a, b, c, pre]) => `${a}.${b}.${c}${pre ? `-${pre}` : ''}`);
+  const releases = fc.uniqueArray(
+    fc.tuple(fc.constantFrom('demo', 'other'), version, fc.boolean()),
+    {
+      selector: ([name, v]) => `${name}-${v}`,
+      maxLength: 12,
+    },
+  );
+  fc.assert(
+    fc.property(releases, (list) => {
+      const index = buildCatalog(
+        list.map(([name, v, flagged]) => release(name, v, { prerelease: flagged })),
+        packages,
+        now,
+      );
+      const names = index.plugins.map((p) => p.name);
+      assert.deepEqual(names, [...names].sort());
+      for (const name of ['demo', 'other']) {
+        const mine = list.filter(([n]) => n === name);
+        const stable = mine.filter(([, v, flagged]) => !flagged && semver.prerelease(v) === null);
+        const plugin = index.plugins.find((p) => p.name === name);
+        if (stable.length === 0) {
+          assert.equal(plugin, undefined);
+          continue;
+        }
+        assert.ok(plugin);
+        const versions = plugin.versions.map((v) => v.version);
+        assert.deepEqual(versions, mine.map(([, v]) => v).sort(semver.rcompare));
+        assert.equal(plugin.latest, stable.map(([, v]) => v).sort(semver.rcompare)[0]);
+      }
+    }),
+  );
+});
+
+it('property: the attestation line is read only as a whole line of its own', () => {
+  const url = fc.webUrl().filter((u) => !/\s/.test(u));
+  const noise = fc.string().map((s) => s.replace(/Attestation: /g, ''));
+  fc.assert(
+    fc.property(url, noise, noise, fc.constantFrom('', ' ', '\t'), (u, before, after, pad) => {
+      const body = `${before}\nAttestation: ${u}${pad}\n${after}`;
+      const [version] = buildCatalog([release('demo', '1.0.0', { body })], packages, now).plugins[0]
+        .versions;
+      assert.equal(version.attestation, u);
+      const inline = buildCatalog(
+        [release('demo', '1.0.0', { body: `x Attestation: ${u}` })],
+        packages,
+        now,
+      );
+      assert.equal(inline.plugins[0].versions[0].attestation, null);
+    }),
+  );
 });

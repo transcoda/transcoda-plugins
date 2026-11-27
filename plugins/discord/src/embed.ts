@@ -30,6 +30,8 @@ const COLOR_FAILED = 0xc62828;
 const TITLE_MAX = 256;
 const DESCRIPTION_MAX = 4096;
 const FIELD_MAX = 1024;
+/** Discord's limit for the characters of an embed's title, description and fields together. */
+const EMBED_MAX = 6000;
 
 /** Cuts to `max` code points (never splits a surrogate pair), ending in an ellipsis when it cut. */
 export function truncate(s: string, max: number): string {
@@ -91,9 +93,15 @@ export function buildEmbed(input: EmbedInput): Embed {
   } else if (input.reason !== null && input.reason !== '') {
     fields.push({ name: 'Reason', value: truncate(input.reason, FIELD_MAX), inline: false });
   }
+  const title = truncate(input.workflowName, TITLE_MAX);
+  // The description gets what the title and fields leave of the embed's total.
+  const used = [title, ...fields.flatMap((f) => [f.name, f.value])].reduce(
+    (n, s) => n + Array.from(s).length,
+    0,
+  );
   const embed: Embed = {
-    title: truncate(input.workflowName, TITLE_MAX),
-    description: truncate(basename(input.path), DESCRIPTION_MAX),
+    title,
+    description: truncate(basename(input.path), Math.min(DESCRIPTION_MAX, EMBED_MAX - used)),
     color: failed ? COLOR_FAILED : problems.length > 0 ? COLOR_PROBLEMS : COLOR_CLEAN,
     fields,
   };

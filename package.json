@@ -24,6 +24,7 @@
     "@transcoda/dev-config": "github:transcoda/.github#v1.1.0",
     "@transcoda/sdk": "1.3.0",
     "@types/node": "26.6.6",
+    "fast-check": "4.11.0",
     "semver": "7.8.6",
     "tsdown": "0.23.7",
     "typescript": "7.0.2",
