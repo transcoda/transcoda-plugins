@@ -21,9 +21,7 @@ if (Object.keys(pkg.dependencies ?? {}).length > 0) {
 // A keyword right after a quote is the end of a string such as `id: "import"`, never an import:
 // a real `import "x"` or `from "x"` follows code or white space.
 const specifiers = [
-  ...code
-    .toString('utf8')
-    .matchAll(/(?<!['"`])(?:\bfrom\s*|\bimport\s*\(?\s*)['"]([^'"]+)['"]/g),
+  ...code.toString('utf8').matchAll(/(?<!['"`])(?:\bfrom\s*|\bimport\s*\(?\s*)['"]([^'"]+)['"]/g),
 ].map((m) => m[1]);
 for (const spec of new Set(specifiers)) {
   if (!spec.startsWith('node:')) {

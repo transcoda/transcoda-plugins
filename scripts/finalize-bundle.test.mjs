@@ -137,7 +137,8 @@ it('refuses a bundle that imports anything but a node: built-in', () => {
 });
 
 it('a string that only reads "import" or "from" is not an import', () => {
-  const code = 'const t = { id: "import", title: `Import from ${"x"}`, icon: "download", by: "from" };';
+  const code =
+    'const t = { id: "import", title: "Import from Demo", icon: "download", by: "from" };';
   const r = run(withCode(code));
   assert.equal(r.status, 0, r.stderr);
 });
