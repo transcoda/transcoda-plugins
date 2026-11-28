@@ -11,7 +11,7 @@ describe('sonarr plugin manifest', () => {
       sdk: '^1.1',
       nodes: ['sonarr:original-language', 'sonarr:rescan', 'sonarr:replace-damaged'],
       integration: 'sonarr',
-      triggers: [],
+      triggers: ['import'],
       hooks: [],
     });
     expect(m.nodeVersions).toEqual([

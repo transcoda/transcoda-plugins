@@ -18,8 +18,11 @@ const errors = [];
 if (Object.keys(pkg.dependencies ?? {}).length > 0) {
   errors.push('package.json must not have runtime `dependencies`; bundle them (devDependencies).');
 }
+// `import` right after a quote is the end of a string such as `id: "import"`, never an import
+// statement, which follows code or white space. `from` is always checked: it can follow a quoted
+// export name (`export * as "ns" from "x"`).
 const specifiers = [
-  ...code.toString('utf8').matchAll(/(?:\bfrom\s*|\bimport\s*\(?\s*)['"]([^'"]+)['"]/g),
+  ...code.toString('utf8').matchAll(/(?:\bfrom\s*|(?<!['"`])\bimport\s*\(?\s*)['"]([^'"]+)['"]/g),
 ].map((m) => m[1]);
 for (const spec of new Set(specifiers)) {
   if (!spec.startsWith('node:')) {
