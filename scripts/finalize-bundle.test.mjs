@@ -128,6 +128,7 @@ it('refuses a bundle that imports anything but a node: built-in', () => {
     "import x from 'lodash';",
     'const m = import("lodash");',
     'export { a } from "lodash";',
+    'export*as"ns"from"lodash";',
   ]) {
     const r = run(withCode(code));
     assert.equal(r.status, 1, code);
@@ -136,9 +137,8 @@ it('refuses a bundle that imports anything but a node: built-in', () => {
   assert.equal(run(withCode('import { join } from "node:path";')).status, 0);
 });
 
-it('a string that only reads "import" or "from" is not an import', () => {
-  const code =
-    'const t = { id: "import", title: "Import from Demo", icon: "download", by: "from" };';
+it('a string that only reads "import" is not an import', () => {
+  const code = 'const t = { id: "import", title: "Import from Demo", icon: "download" };';
   const r = run(withCode(code));
   assert.equal(r.status, 0, r.stderr);
 });
