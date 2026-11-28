@@ -9,3 +9,9 @@ export function arrFixture(name: string): JsonValue {
   const url = new URL(`../../../test/fixtures/arr/${name}.json`, import.meta.url);
   return JSON.parse(readFileSync(fileURLToPath(url), 'utf8')) as JsonValue;
 }
+
+/** Reads a recorded webhook body (what Sonarr or Radarr POSTs) from test/fixtures/webhooks. */
+export function webhookFixture(name: string): JsonValue {
+  const url = new URL(`../../../test/fixtures/webhooks/${name}.json`, import.meta.url);
+  return JSON.parse(readFileSync(fileURLToPath(url), 'utf8')) as JsonValue;
+}

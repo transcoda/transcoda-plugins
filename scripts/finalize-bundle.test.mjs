@@ -113,3 +113,31 @@ for (const [what, announce, pattern] of [
     assert.equal(existsSync(join(dir, 'dist', 'demo-1.0.0.manifest.json')), false);
   });
 }
+
+/** The demo plugin with `code` put before its default export. */
+function withCode(code) {
+  const dir = plugin(good);
+  const file = join(dir, 'dist', 'demo-1.0.0.js');
+  writeFileSync(file, `${code}\n${readFileSync(file, 'utf8')}`);
+  return dir;
+}
+
+it('refuses a bundle that imports anything but a node: built-in', () => {
+  for (const code of [
+    'import "lodash";',
+    "import x from 'lodash';",
+    'const m = import("lodash");',
+    'export { a } from "lodash";',
+  ]) {
+    const r = run(withCode(code));
+    assert.equal(r.status, 1, code);
+    assert.match(r.stderr, /imports 'lodash'; only node: built-ins/);
+  }
+  assert.equal(run(withCode('import { join } from "node:path";')).status, 0);
+});
+
+it('a string that only reads "import" or "from" is not an import', () => {
+  const code = 'const t = { id: "import", title: `Import from ${"x"}`, icon: "download", by: "from" };';
+  const r = run(withCode(code));
+  assert.equal(r.status, 0, r.stderr);
+});

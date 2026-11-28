@@ -29,4 +29,5 @@ export { type ReplaceTarget, replaceDamagedFile } from './replace.ts';
 export { type RescanTarget, rescanAndVerify } from './rescan.ts';
 export { notKnownMessage, rootFolders } from './roots.ts';
 export { arrIntegrationTest, testStatus } from './status.ts';
+export { importTrigger } from './trigger.ts';
 export { unmonitorWarning } from './unmonitor.ts';

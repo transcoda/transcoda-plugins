@@ -10,7 +10,7 @@ Jellyfin a file changed, get a push when a job is done.
 
 | Plugin | What it does | Needs |
 | --- | --- | --- |
-| **Sonarr** | Reads a series' original language; rescans the series after a file is replaced; replaces a damaged file. | URL and API key |
+| **Sonarr** | Reads a series' original language; rescans the series after a file is replaced; replaces a damaged file; queues a file the moment Sonarr imports it (a webhook in Sonarr). | URL and API key |
 | **Radarr** | The same for movies. | URL and API key |
 | **Jellyfin** | Rescans a file or the whole library after a file is replaced, and has Jellyfin read the new file. | URL and API key |
 | **Bazarr** | Checks which subtitles a file has, fetches missing ones before a rewrite, rescans after. | URL and API key |

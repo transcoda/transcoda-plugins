@@ -2,10 +2,22 @@
 // (nodes, node versions, ports, settings, hooks, integration settings) with the product name taken
 // out, so a step, setting or port added to one plugin and not the other fails here. Wording that
 // names the domain (movie, series) is left out on purpose: titles and descriptions differ.
-import { type AnyNodeDefinition, nodeMetadata, pluginManifest } from '@transcoda/sdk';
+import {
+  type AnyNodeDefinition,
+  type AnyTrigger,
+  nodeMetadata,
+  pluginManifest,
+  triggerMetadata,
+} from '@transcoda/sdk';
 import { describe, expect, it } from 'vitest';
-import radarr, { integration as radarrIntegration } from '../plugins/radarr/src/index.ts';
-import sonarr, { integration as sonarrIntegration } from '../plugins/sonarr/src/index.ts';
+import radarr, {
+  integration as radarrIntegration,
+  trigger as radarrTrigger,
+} from '../plugins/radarr/src/index.ts';
+import sonarr, {
+  integration as sonarrIntegration,
+  trigger as sonarrTrigger,
+} from '../plugins/sonarr/src/index.ts';
 
 const suffix = (type: string) => type.slice(type.indexOf(':') + 1);
 
@@ -55,5 +67,13 @@ describe('Sonarr and Radarr parity', () => {
       hasTest: typeof i.test === 'function',
     });
     expect(shape(sonarrIntegration)).toEqual(shape(radarrIntegration));
+  });
+
+  it('have the same import trigger: id, auth, icon and settings', () => {
+    const shape = (t: AnyTrigger) => {
+      const { id, icon, auth, settingsSchema } = triggerMetadata(t);
+      return { id, icon, auth, settingsSchema };
+    };
+    expect(shape(sonarrTrigger)).toEqual(shape(radarrTrigger));
   });
 });

@@ -15,7 +15,7 @@ describe('radarr plugin', () => {
         { type: 'radarr:replace-damaged', version: 1 },
       ],
       integration: 'radarr',
-      triggers: [],
+      triggers: ['import'],
       hooks: [],
     });
   });
